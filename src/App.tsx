@@ -7,6 +7,8 @@ import PocketBase from "pocketbase";
 import { useTernaryDarkMode } from "usehooks-ts";
 import { z } from "zod";
 
+import { Bars3Icon, Cog6ToothIcon } from "@heroicons/react/24/solid";
+
 const queryClient = new QueryClient();
 const pb = new PocketBase("http://10.28.28.5:8090");
 
@@ -119,7 +121,6 @@ const Mangas = () => {
   // console.log(data);
   return (
     <>
-      <p className="text-black dark:text-white">Mangas</p>
       <div className="flex flex-col gap-4 p-2">
         {data.items.map((item) => {
           return (
@@ -161,35 +162,18 @@ const Home = () => {
 
   return (
     <div className={`${isDarkMode ? "dark" : ""}`}>
-      <div className="h-screen w-full overflow-scroll bg-white dark:bg-slate-800">
-        <div className="flex gap-4">
-          <button
-            className="rounded bg-red-200 px-2 py-0"
-            onClick={() => {
-              setTernaryDarkMode("dark");
-            }}
-          >
-            Dark
-          </button>
-          <button
-            className="rounded bg-red-200 px-2 py-0"
-            onClick={() => {
-              setTernaryDarkMode("light");
-            }}
-          >
-            Light
-          </button>
-          <button
-            className="rounded bg-red-200 px-2 py-0"
-            onClick={() => {
-              setTernaryDarkMode("system");
-            }}
-          >
-            System
+      <div className="h-screen w-full overflow-hidden bg-white dark:bg-slate-800">
+        <div className="flex h-16 justify-between border-b-2 border-gray-50 px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
+          <button>
+            <Bars3Icon className="w-10 dark:text-white" />
           </button>
         </div>
-        <p className="text-black dark:text-white">{ternaryDarkMode}</p>
-        <Mangas />
+        <div className="flex h-full">
+          <div className="hidden h-[calc(100vh-64px)] w-56 flex-col justify-between bg-white shadow-lg dark:bg-gray-700 lg:flex"></div>
+          <div className="flex-1 overflow-auto">
+            <Mangas />
+          </div>
+        </div>
       </div>
     </div>
   );
