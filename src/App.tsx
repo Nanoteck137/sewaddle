@@ -109,6 +109,58 @@ function isValidHttpUrl(s: string) {
   return url.protocol === "http:" || url.protocol === "https:";
 }
 
+const Item = (props: { manga: Manga }) => {
+  const { manga } = props;
+  return (
+    <div
+      key={manga.id}
+      className="flex cursor-pointer overflow-hidden rounded border-2 border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-600"
+      onClick={() => {
+        console.log("Click");
+      }}
+    >
+      <img
+        className="w-[80px] min-w-[80px] overflow-clip"
+        src={
+          isValidHttpUrl(manga.cover)
+            ? manga.cover
+            : pb.getFileUrl(manga, manga.cover)
+        }
+        alt=""
+      />
+      <div className="flex flex-col justify-between gap-2 p-2">
+        <p className="line-clamp-2 font-bold text-black dark:text-white">
+          {manga.name}
+        </p>
+        <p className="text-xs text-gray-600 dark:text-gray-200">
+          Chapters: {manga.totalChapters}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const ItemTest = (props: { manga: Manga }) => {
+  const { manga } = props;
+  return (
+    <div className="relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded bg-gray-600  md:max-w-sm">
+      <div className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-400">
+        <p>{manga.totalChapters}</p>
+      </div>
+      <img
+        className="h-auto max-w-full overflow-clip object-cover md:h-full"
+        src={
+          isValidHttpUrl(manga.cover)
+            ? manga.cover
+            : pb.getFileUrl(manga, manga.cover)
+        }
+        alt=""
+      />
+      <p className="p-4 text-center text-black dark:text-white">{manga.name}</p>
+    </div>
+  );
+};
+
 const Mangas = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["mangas"],
@@ -121,35 +173,9 @@ const Mangas = () => {
   // console.log(data);
   return (
     <>
-      <div className="flex flex-col gap-4 p-2">
+      <div className="grid grid-cols-1 place-items-center gap-4 p-2 md:grid-cols-2 lg:grid-cols-4">
         {data.items.map((item) => {
-          return (
-            <div
-              key={item.id}
-              className="flex cursor-pointer overflow-hidden rounded border-2 border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-600"
-              onClick={() => {
-                console.log("Click");
-              }}
-            >
-              <img
-                className="w-[80px] min-w-[80px] overflow-clip"
-                src={
-                  isValidHttpUrl(item.cover)
-                    ? item.cover
-                    : pb.getFileUrl(item, item.cover)
-                }
-                alt=""
-              />
-              <div className="flex flex-col justify-between gap-2 p-2">
-                <p className="line-clamp-2 font-bold text-black dark:text-white">
-                  {item.name}
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-200">
-                  Chapters: {item.totalChapters}
-                </p>
-              </div>
-            </div>
-          );
+          return <ItemTest key={item.id} manga={item} />;
         })}
       </div>
     </>
@@ -162,6 +188,7 @@ const Home = () => {
 
   return (
     <div className={`${isDarkMode ? "dark" : ""}`}>
+      <div className="fixed h-screen w-full bg-white dark:bg-slate-800"></div>
       <div className="flex h-screen">
         <div className="fixed left-0 right-0 z-50 h-16 border-b-2 border-gray-50 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
           <div className="flex h-full items-center">
@@ -171,17 +198,13 @@ const Home = () => {
           </div>
         </div>
         <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 lg:block">
-          <div className="flex h-full flex-col justify-between">
-            <p className="text-black dark:text-white">Hello World</p>
-            <p className="text-black dark:text-white">Hello World</p>
-            <p className="text-black dark:text-white">Hello World</p>
+          <div className="flex h-full flex-col overflow-auto">
             <p className="text-black dark:text-white">Hello World</p>
             <p className="text-black dark:text-white">Hello World</p>
             <p className="text-black dark:text-white">Hello World</p>
             <p className="text-black dark:text-white">Hello World</p>
           </div>
         </div>
-        <div className="fixed h-full w-full bg-white dark:bg-slate-800"></div>
         <div className="z-40 mt-16 flex-grow lg:ml-60">
           <Mangas />
         </div>
