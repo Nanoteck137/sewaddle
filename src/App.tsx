@@ -111,7 +111,6 @@ const Mangas = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["mangas"],
     queryFn: getMangas,
-    initialData: () => {},
   });
 
   if (isError) return <p>Error</p>;
@@ -132,7 +131,7 @@ const Mangas = () => {
               }}
             >
               <img
-                className="w-[80px] overflow-clip"
+                className="w-[80px] min-w-[80px] overflow-clip"
                 src={
                   isValidHttpUrl(item.cover)
                     ? item.cover
@@ -162,7 +161,7 @@ const Home = () => {
 
   return (
     <div className={`${isDarkMode ? "dark" : ""}`}>
-      <div className="h-screen w-full bg-white dark:bg-slate-800">
+      <div className="h-screen w-full overflow-scroll bg-white dark:bg-slate-800">
         <div className="flex gap-4">
           <button
             className="rounded bg-red-200 px-2 py-0"
