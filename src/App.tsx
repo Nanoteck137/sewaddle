@@ -162,17 +162,28 @@ const Home = () => {
 
   return (
     <div className={`${isDarkMode ? "dark" : ""}`}>
-      <div className="h-screen w-full overflow-hidden bg-white dark:bg-slate-800">
-        <div className="flex h-16 justify-between border-b-2 border-gray-50 px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
-          <button>
-            <Bars3Icon className="w-10 dark:text-white" />
-          </button>
-        </div>
-        <div className="flex h-full">
-          <div className="hidden h-[calc(100vh-64px)] w-56 flex-col justify-between bg-white shadow-lg dark:bg-gray-700 lg:flex"></div>
-          <div className="flex-1 overflow-auto">
-            <Mangas />
+      <div className="flex h-screen">
+        <div className="fixed left-0 right-0 z-50 h-16 border-b-2 border-gray-50 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
+          <div className="flex h-full items-center">
+            <button>
+              <Bars3Icon className="h-10 w-10 dark:text-white" />
+            </button>
           </div>
+        </div>
+        <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 lg:block">
+          <div className="flex h-full flex-col justify-between">
+            <p className="text-black dark:text-white">Hello World</p>
+            <p className="text-black dark:text-white">Hello World</p>
+            <p className="text-black dark:text-white">Hello World</p>
+            <p className="text-black dark:text-white">Hello World</p>
+            <p className="text-black dark:text-white">Hello World</p>
+            <p className="text-black dark:text-white">Hello World</p>
+            <p className="text-black dark:text-white">Hello World</p>
+          </div>
+        </div>
+        <div className="fixed h-full w-full bg-white dark:bg-slate-800"></div>
+        <div className="z-40 mt-16 flex-grow lg:ml-60">
+          <Mangas />
         </div>
       </div>
     </div>
