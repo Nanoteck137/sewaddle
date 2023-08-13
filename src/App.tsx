@@ -2,12 +2,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import PocketBase from "pocketbase";
 
-import AccountPage from "./pages/AccountPage";
-import LoginPage from "./pages/LoginPage";
-import AboutPage from "./pages/AboutPage";
-import SeriesPage from "./pages/SeriesPage";
-import HomePage from "./pages/HomePage";
 import DefaultLayout from "./layouts/DefaultLayout";
+import AboutPage from "./pages/AboutPage";
+import AccountPage from "./pages/AccountPage";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import SeriesPage from "./pages/SeriesPage";
 
 const queryClient = new QueryClient();
 export const pb = new PocketBase("http://10.28.28.5:8090");

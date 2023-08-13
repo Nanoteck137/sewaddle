@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { z } from "zod";
+
 import { pb } from "../App";
 
 const Manga = z.object({
