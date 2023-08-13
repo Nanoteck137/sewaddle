@@ -13,6 +13,7 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/24/solid";
 import { Listbox } from "@headlessui/react";
+import { BrowserRouter, Link, Outlet, Route, Routes } from "react-router-dom";
 
 const queryClient = new QueryClient();
 const pb = new PocketBase("http://10.28.28.5:8090");
@@ -42,8 +43,8 @@ const MangaList = z.object({
 });
 
 async function getMangas() {
-  const res = await pb.collection("manga_list").getList();
-  return await MangaList.parseAsync(res);
+  // const res = await pb.collection("manga_list").getList();
+  // return await MangaList.parseAsync(res);
 
   const items = new Array(100).fill(0).map(() => genRandomManga());
   return {
@@ -212,7 +213,7 @@ const ThemeControl = () => {
   );
 };
 
-const Home = () => {
+const Layout = () => {
   const { isDarkMode } = useTernaryDarkMode();
 
   return (
@@ -220,10 +221,16 @@ const Home = () => {
       <div className="fixed h-screen w-full bg-white dark:bg-slate-800"></div>
       <div className="flex h-screen">
         <div className="fixed left-0 right-0 z-50 h-16 border-b-2 border-gray-50 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
-          <div className="flex h-full items-center">
+          <div className="flex h-full items-center justify-between">
             <button>
               <Bars3Icon className="h-10 w-10 dark:text-white" />
             </button>
+            <div>
+              <Link to="/" className="text-2xl dark:text-white">
+                Sewaddle
+              </Link>
+            </div>
+            <div></div>
           </div>
         </div>
         <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
@@ -231,19 +238,37 @@ const Home = () => {
             <ThemeControl />
           </div>
         </div>
-        <div className="z-40 mt-16 flex-grow xl:ml-60">
-          <Mangas />
+        <div className="fixed bottom-0 top-16 z-50 hidden w-24 bg-red-200 shadow-lg dark:bg-gray-700 lg:block xl:hidden">
+          {/* <div className="flex h-full flex-col overflow-auto px-2"></div> */}
+        </div>
+        <div className="z-40 mt-16 flex-grow lg:ml-24 xl:ml-60">
+          <Outlet />
         </div>
       </div>
     </div>
   );
 };
 
+const Home = () => {
+  return <Mangas />;
+};
+
+const About = () => {
+  return <p className="dark:text-white">About page</p>;
+};
+
 const App = () => {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <Home />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="about" element={<About />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </QueryClientProvider>
     </>
   );
