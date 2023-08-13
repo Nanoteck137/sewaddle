@@ -11,7 +11,7 @@ export const Collection = z.object({
 });
 export type Collection = z.infer<typeof Collection>;
 
-export function createGetRequestSchema<ItemType extends z.AnyZodObject>(
+export function createGetListSchema<ItemType extends z.AnyZodObject>(
   itemType: ItemType,
 ) {
   return z.object({

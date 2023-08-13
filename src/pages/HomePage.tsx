@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 
-import { useMangaViews } from "../api/manga";
+import { useMangas } from "../api/manga";
 import { pb } from "../api/pocketbase";
 import { MangaView } from "../models/manga";
+import { isValidHttpUrl } from "../utils";
 
 // const items = new Array(100).fill(0).map(() => genRandomManga());
 // const demo = {
@@ -60,18 +61,6 @@ import { MangaView } from "../models/manga";
 //   };
 // }
 
-function isValidHttpUrl(s: string) {
-  let url;
-
-  try {
-    url = new URL(s);
-  } catch (_) {
-    return false;
-  }
-
-  return url.protocol === "http:" || url.protocol === "https:";
-}
-
 const Item = (props: { manga: MangaView }) => {
   const { manga } = props;
   return (
@@ -96,7 +85,7 @@ const Item = (props: { manga: MangaView }) => {
           {manga.name}
         </p>
         <p className="text-xs text-gray-600 dark:text-gray-200">
-          Chapters: {manga.totalChapters}
+          Chapters: {manga.chaptersAvailable}
         </p>
       </div>
     </div>
@@ -111,7 +100,7 @@ const ItemTest = (props: { manga: MangaView }) => {
       className="relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm"
     >
       <div className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/90 text-white">
-        <p>{manga.totalChapters}</p>
+        <p>{manga.chaptersAvailable}</p>
       </div>
       <img
         className="h-auto max-w-full overflow-clip object-cover md:h-full"
@@ -142,7 +131,7 @@ const MangaList = (props: { list: MangaView[] }) => {
 };
 
 const HomePage = () => {
-  const { data, isLoading, isError } = useMangaViews();
+  const { data, isLoading, isError } = useMangas();
 
   if (isError) return <p>Error</p>;
   if (isLoading) return <p>Loading...</p>;
