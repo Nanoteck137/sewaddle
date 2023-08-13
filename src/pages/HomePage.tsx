@@ -2,94 +2,65 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 
-import { pb } from "../App";
+import { useMangaViews } from "../api/manga";
+import { pb } from "../api/pocketbase";
+import { MangaView } from "../models/manga";
 
-const Manga = z.object({
-  id: z.string(),
-  name: z.string(),
-  cover: z.string(),
-  malUrl: z.string(),
+// const items = new Array(100).fill(0).map(() => genRandomManga());
+// const demo = {
+//   items: items,
+//   page: 0,
+//   perPage: 0,
+//   totalItems: 0,
+//   totalPages: 0,
+// };
 
-  totalChapters: z.number(),
+// function genRandomManga(): Manga {
+//   const mangaTitles = [
+//     "Konosuba: God's Blessing On This Wonderful World!",
+//     "Konosuba: An Explosion On This Wonderful World!",
+//     "That Time I Got Reincarnated As A Slime",
+//     "More Than A Married Couple, But Not Lovers",
+//     "The Ice Guy And His Cool Female Colleague",
+//     "I've Been Killing Slimes For 300 Years And Maxed Out My Level",
+//     "Hell's Paradise: Jigokuraku",
+//     "JoJo no Kimyou na Bouken Part 7: Steel Ball Run",
+//     "The Quintessential Quintuplets",
+//     "One Piece",
+//     "Berserk",
+//     "Chainsaw Man",
+//     "My Hero Academia",
+//     "One-Punch Man",
+//     "Tokyo Ghoul",
+//     "I Belong To The Baddest Girl At School",
+//     "Jujutsu Kaisen",
+//     "Karma of Purgatory",
+//     "Kubo Won't Let Me Be Invisible",
+//   ];
 
-  created: z.coerce.date(),
-  updated: z.coerce.date(),
+//   const i = Math.floor(Math.random() * mangaTitles.length);
+//   const name = mangaTitles[i];
 
-  collectionId: z.string(),
-  collectionName: z.string(),
-});
-type Manga = z.infer<typeof Manga>;
+//   const min = 650;
+//   const max = 800;
+//   const height = Math.floor(Math.random() * (max - min)) + min;
+//   // console.log("Height", height);
 
-const MangaList = z.object({
-  items: z.array(Manga),
-  page: z.number(),
-  perPage: z.number(),
-  totalItems: z.number(),
-  totalPages: z.number(),
-});
-type MangaList = z.infer<typeof MangaList>;
+//   return {
+//     id: Math.floor(Math.random() * 1000000).toString(),
+//     name,
+//     cover: `https://placehold.co/460x${800}`,
+//     malUrl: "",
 
-const items = new Array(100).fill(0).map(() => genRandomManga());
-const demo = {
-  items: items,
-  page: 0,
-  perPage: 0,
-  totalItems: 0,
-  totalPages: 0,
-};
+//     totalChapters: Math.floor(Math.random() * 2000),
 
-async function getMangas() {
-  // const res = await pb.collection("manga_list").getList();
-  // return await MangaList.parseAsync(res);
-  return demo;
-}
+//     created: new Date(),
+//     updated: new Date(),
 
-function genRandomManga(): Manga {
-  const mangaTitles = [
-    "Konosuba: God's Blessing On This Wonderful World!",
-    "Konosuba: An Explosion On This Wonderful World!",
-    "That Time I Got Reincarnated As A Slime",
-    "More Than A Married Couple, But Not Lovers",
-    "The Ice Guy And His Cool Female Colleague",
-    "I've Been Killing Slimes For 300 Years And Maxed Out My Level",
-    "Hell's Paradise: Jigokuraku",
-    "JoJo no Kimyou na Bouken Part 7: Steel Ball Run",
-    "The Quintessential Quintuplets",
-    "One Piece",
-    "Berserk",
-    "Chainsaw Man",
-    "My Hero Academia",
-    "One-Punch Man",
-    "Tokyo Ghoul",
-    "I Belong To The Baddest Girl At School",
-    "Jujutsu Kaisen",
-    "Karma of Purgatory",
-    "Kubo Won't Let Me Be Invisible",
-  ];
-
-  const i = Math.floor(Math.random() * mangaTitles.length);
-  const name = mangaTitles[i];
-
-  const min = 650;
-  const max = 800;
-  const height = Math.floor(Math.random() * (max - min)) + min;
-  // console.log("Height", height);
-
-  return {
-    id: Math.floor(Math.random() * 1000000).toString(),
-    name,
-    cover: `https://placehold.co/460x${800}`,
-    malUrl: "",
-
-    totalChapters: Math.floor(Math.random() * 2000),
-
-    created: new Date(),
-    updated: new Date(),
-
-    collectionId: "",
-    collectionName: "",
-  };
-}
+//     collectionId: "",
+//     collectionName: "",
+//   };
+// }
 
 function isValidHttpUrl(s: string) {
   let url;
@@ -103,7 +74,7 @@ function isValidHttpUrl(s: string) {
   return url.protocol === "http:" || url.protocol === "https:";
 }
 
-const Item = (props: { manga: Manga }) => {
+const Item = (props: { manga: MangaView }) => {
   const { manga } = props;
   return (
     <div
@@ -134,7 +105,7 @@ const Item = (props: { manga: Manga }) => {
   );
 };
 
-const ItemTest = (props: { manga: Manga }) => {
+const ItemTest = (props: { manga: MangaView }) => {
   const { manga } = props;
   return (
     <Link
@@ -158,13 +129,13 @@ const ItemTest = (props: { manga: Manga }) => {
   );
 };
 
-const SerieList = (props: { list: MangaList }) => {
+const MangaList = (props: { list: MangaView[] }) => {
   const { list } = props;
   // console.log(data);
   return (
     <>
       <div className="grid grid-cols-1 place-items-center gap-4 p-2 md:grid-cols-2 lg:grid-cols-4">
-        {list.items.map((item) => {
+        {list.map((item) => {
           return <ItemTest key={item.id} manga={item} />;
         })}
       </div>
@@ -173,15 +144,12 @@ const SerieList = (props: { list: MangaList }) => {
 };
 
 const HomePage = () => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["mangas"],
-    queryFn: getMangas,
-  });
+  const { data, isLoading, isError } = useMangaViews();
 
   if (isError) return <p>Error</p>;
   if (isLoading) return <p>Loading...</p>;
 
-  return <SerieList list={data} />;
+  return <MangaList list={data.items} />;
 };
 
 export default HomePage;

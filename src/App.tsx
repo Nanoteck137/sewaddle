@@ -12,7 +12,6 @@ import RegisterPage from "./pages/RegisterPage";
 import SeriesPage from "./pages/SeriesPage";
 
 const queryClient = new QueryClient();
-export const pb = new PocketBase("http://10.28.28.5:8090");
 
 const App = () => {
   return (
