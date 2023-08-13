@@ -110,7 +110,7 @@ const ItemTest = (props: { manga: MangaView }) => {
       to={`/series/${manga.id}`}
       className="relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm"
     >
-      <div className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-400">
+      <div className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/90 text-white">
         <p>{manga.totalChapters}</p>
       </div>
       <img
