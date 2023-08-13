@@ -8,6 +8,7 @@ import AboutPage from "./pages/AboutPage";
 import AccountPage from "./pages/AccountPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import SeriesPage from "./pages/SeriesPage";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => {
 
               <Route element={<BlankLayout />}>
                 <Route path="login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
               </Route>
             </Route>
           </Routes>
