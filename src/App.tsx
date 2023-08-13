@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import PocketBase from "pocketbase";
 
+import BlankLayout from "./layouts/BlankLayout";
 import DefaultLayout from "./layouts/DefaultLayout";
 import AboutPage from "./pages/AboutPage";
 import AccountPage from "./pages/AccountPage";
@@ -18,12 +19,18 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<DefaultLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="series/:id" element={<SeriesPage />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="account" element={<AccountPage />} />
-              <Route path="about" element={<AboutPage />} />
+            <Route path="/">
+              <Route element={<DefaultLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="series/:id" element={<SeriesPage />} />
+
+                <Route path="account" element={<AccountPage />} />
+                <Route path="about" element={<AboutPage />} />
+              </Route>
+
+              <Route element={<BlankLayout />}>
+                <Route path="login" element={<LoginPage />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>

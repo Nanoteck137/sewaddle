@@ -49,7 +49,7 @@ const DefaultLayout = () => {
                 Sewaddle
               </Link>
             </div>
-            <div></div>
+            <div className="w-10 h-10"></div>
           </div>
         </div>
         <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
