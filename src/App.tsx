@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import PocketBase from "pocketbase";
 
 import BlankLayout from "./layouts/BlankLayout";
 import DefaultLayout from "./layouts/DefaultLayout";

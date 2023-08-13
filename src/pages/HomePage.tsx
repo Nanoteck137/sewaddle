@@ -1,6 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { z } from "zod";
 
 import { useMangaViews } from "../api/manga";
 import { pb } from "../api/pocketbase";
