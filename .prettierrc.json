@@ -7,16 +7,7 @@
     "prettier-plugin-tailwindcss",
     "@ianvs/prettier-plugin-sort-imports"
   ],
-  "importOrder": [
-    "react",
-    "<THIRD_PARTY_MODULES>",
-    "",
-    "^[./]"
-  ],
-  "importOrderParserPlugins": [
-    "typescript",
-    "jsx",
-    "decorators-legacy"
-  ],
+  "importOrder": ["react", "<THIRD_PARTY_MODULES>", "", "^[./]"],
+  "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
   "importOrderTypeScriptVersion": "5.0.0"
 }
