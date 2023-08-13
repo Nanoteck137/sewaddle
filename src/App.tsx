@@ -13,7 +13,14 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/24/solid";
 import { Listbox } from "@headlessui/react";
-import { BrowserRouter, Link, Outlet, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Link,
+  Outlet,
+  Route,
+  Routes,
+  useParams,
+} from "react-router-dom";
 
 const queryClient = new QueryClient();
 const pb = new PocketBase("http://10.28.28.5:8090");
@@ -41,19 +48,21 @@ const MangaList = z.object({
   totalItems: z.number(),
   totalPages: z.number(),
 });
+type MangaList = z.infer<typeof MangaList>;
+
+const items = new Array(100).fill(0).map(() => genRandomManga());
+const demo = {
+  items: items,
+  page: 0,
+  perPage: 0,
+  totalItems: 0,
+  totalPages: 0,
+};
 
 async function getMangas() {
   // const res = await pb.collection("manga_list").getList();
   // return await MangaList.parseAsync(res);
-
-  const items = new Array(100).fill(0).map(() => genRandomManga());
-  return {
-    items: items,
-    page: 0,
-    perPage: 0,
-    totalItems: 0,
-    totalPages: 0,
-  };
+  return demo;
 }
 
 function genRandomManga(): Manga {
@@ -88,7 +97,7 @@ function genRandomManga(): Manga {
   // console.log("Height", height);
 
   return {
-    id: (Math.random() * 1000000).toString(),
+    id: Math.floor(Math.random() * 1000000).toString(),
     name,
     cover: `https://placehold.co/460x${800}`,
     malUrl: "",
@@ -149,7 +158,10 @@ const Item = (props: { manga: Manga }) => {
 const ItemTest = (props: { manga: Manga }) => {
   const { manga } = props;
   return (
-    <div className="relative flex h-full max-w-xs cursor-pointer flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm">
+    <Link
+      to={`/series/${manga.id}`}
+      className="relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm"
+    >
       <div className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-400">
         <p>{manga.totalChapters}</p>
       </div>
@@ -163,24 +175,17 @@ const ItemTest = (props: { manga: Manga }) => {
         alt=""
       />
       <p className="p-4 text-center text-black dark:text-white">{manga.name}</p>
-    </div>
+    </Link>
   );
 };
 
-const Mangas = () => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["mangas"],
-    queryFn: getMangas,
-  });
-
-  if (isError) return <p>Error</p>;
-  if (isLoading) return <p>Loading...</p>;
-
+const SerieList = (props: { list: MangaList }) => {
+  const { list } = props;
   // console.log(data);
   return (
     <>
       <div className="grid grid-cols-1 place-items-center gap-4 p-2 md:grid-cols-2 lg:grid-cols-4">
-        {data.items.map((item) => {
+        {list.items.map((item) => {
           return <ItemTest key={item.id} manga={item} />;
         })}
       </div>
@@ -220,7 +225,7 @@ const Layout = () => {
     <div className={`${isDarkMode ? "dark" : ""}`}>
       <div className="fixed h-screen w-full bg-white dark:bg-slate-800"></div>
       <div className="flex h-screen">
-        <div className="fixed left-0 right-0 z-50 h-16 border-b-2 border-gray-50 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
+        <div className="fixed left-0 right-0 z-50 h-16 border-b-2 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
           <div className="flex h-full items-center justify-between">
             <button>
               <Bars3Icon className="h-10 w-10 dark:text-white" />
@@ -250,11 +255,32 @@ const Layout = () => {
 };
 
 const Home = () => {
-  return <Mangas />;
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["mangas"],
+    queryFn: getMangas,
+  });
+
+  if (isError) return <p>Error</p>;
+  if (isLoading) return <p>Loading...</p>;
+
+  return <SerieList list={data} />;
 };
 
-const About = () => {
+const SeriesPage = () => {
+  const { id } = useParams();
+  return <p className="dark:text-white">Series Page: {id}</p>;
+};
+
+const AboutPage = () => {
   return <p className="dark:text-white">About page</p>;
+};
+
+const LoginPage = () => {
+  return <p className="dark:text-white">Login Page</p>;
+};
+
+const AccountPage = () => {
+  return <p className="dark:text-white">Account Page</p>;
 };
 
 const App = () => {
@@ -265,7 +291,10 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
-              <Route path="about" element={<About />} />
+              <Route path="series/:id" element={<SeriesPage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="account" element={<AccountPage />} />
+              <Route path="about" element={<AboutPage />} />
             </Route>
           </Routes>
         </BrowserRouter>
