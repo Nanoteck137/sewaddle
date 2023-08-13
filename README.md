@@ -1,3 +1,3 @@
 # sewaddle
 
-Comic/Manga viewer
+Manga viewer
