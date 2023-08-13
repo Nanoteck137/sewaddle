@@ -11,6 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.16",
+    "@headlessui/tailwindcss": "^0.2.0",
     "@heroicons/react": "^2.0.18",
     "@tanstack/react-query": "^4.32.6",
     "pocketbase": "^0.16.0",

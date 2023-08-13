@@ -7,7 +7,12 @@ import PocketBase from "pocketbase";
 import { useTernaryDarkMode } from "usehooks-ts";
 import { z } from "zod";
 
-import { Bars3Icon, Cog6ToothIcon } from "@heroicons/react/24/solid";
+import {
+  Bars3Icon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/solid";
+import { Listbox } from "@headlessui/react";
 
 const queryClient = new QueryClient();
 const pb = new PocketBase("http://10.28.28.5:8090");
@@ -37,8 +42,8 @@ const MangaList = z.object({
 });
 
 async function getMangas() {
-  // const res = await pb.collection("manga_list").getList();
-  // return await MangaList.parseAsync(res);
+  const res = await pb.collection("manga_list").getList();
+  return await MangaList.parseAsync(res);
 
   const items = new Array(100).fill(0).map(() => genRandomManga());
   return {
@@ -143,7 +148,7 @@ const Item = (props: { manga: Manga }) => {
 const ItemTest = (props: { manga: Manga }) => {
   const { manga } = props;
   return (
-    <div className="relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded bg-gray-600  md:max-w-sm">
+    <div className="relative flex h-full max-w-xs cursor-pointer flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm">
       <div className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-400">
         <p>{manga.totalChapters}</p>
       </div>
@@ -182,9 +187,33 @@ const Mangas = () => {
   );
 };
 
+function capitalizeFirstLetter(str: string) {
+  return str[0].toUpperCase() + str.slice(1);
+}
+
+const ThemeControl = () => {
+  const { setTernaryDarkMode, ternaryDarkMode } = useTernaryDarkMode();
+
+  return (
+    <Listbox value={ternaryDarkMode} onChange={setTernaryDarkMode} as="div">
+      <Listbox.Button className="flex w-full items-center justify-between rounded bg-gray-500 px-4">
+        <p>Theme: {capitalizeFirstLetter(ternaryDarkMode)}</p>
+        <ChevronRightIcon className="h-5 w-5 ui-open:hidden" />
+        <ChevronDownIcon className="hidden h-5 w-5 ui-open:block" />
+      </Listbox.Button>
+      <Listbox.Options>
+        <Listbox.Option className="cursor-pointer bg-gray-400" value={"dark"}>
+          Dark
+        </Listbox.Option>
+        <Listbox.Option value={"light"}>Light</Listbox.Option>
+        <Listbox.Option value={"system"}>System</Listbox.Option>
+      </Listbox.Options>
+    </Listbox>
+  );
+};
+
 const Home = () => {
-  const { isDarkMode, setTernaryDarkMode, ternaryDarkMode } =
-    useTernaryDarkMode();
+  const { isDarkMode } = useTernaryDarkMode();
 
   return (
     <div className={`${isDarkMode ? "dark" : ""}`}>
@@ -197,15 +226,12 @@ const Home = () => {
             </button>
           </div>
         </div>
-        <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 lg:block">
-          <div className="flex h-full flex-col overflow-auto">
-            <p className="text-black dark:text-white">Hello World</p>
-            <p className="text-black dark:text-white">Hello World</p>
-            <p className="text-black dark:text-white">Hello World</p>
-            <p className="text-black dark:text-white">Hello World</p>
+        <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
+          <div className="flex h-full flex-col overflow-auto px-2">
+            <ThemeControl />
           </div>
         </div>
-        <div className="z-40 mt-16 flex-grow lg:ml-60">
+        <div className="z-40 mt-16 flex-grow xl:ml-60">
           <Mangas />
         </div>
       </div>
