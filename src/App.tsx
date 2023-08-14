@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import SeriesPage from "./pages/SeriesPage";
+import ViewPage from "./pages/ViewPage";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => {
               <Route element={<DefaultLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="series/:id" element={<SeriesPage />} />
+                <Route path="view/:id" element={<ViewPage />} />
 
                 <Route path="account" element={<AccountPage />} />
                 <Route path="about" element={<AboutPage />} />

@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import { useManga, useMangaChaptersBasic } from "../api/manga";
 import { pb } from "../api/pocketbase";
@@ -8,12 +8,22 @@ import { isValidHttpUrl } from "../utils";
 
 const Chapter = (props: { chapter: BasicChapter }) => {
   const { chapter } = props;
+
   return (
-    <div className="flex gap-2 bg-gray-600 rounded p-2 cursor-pointer">
-      <p className="dark:text-white w-12">{chapter.index}</p>
-      <p className="dark:text-white">{chapter.name}</p>
-      <p className="dark:text-white">{chapter.name}</p>
-    </div>
+    <Link
+      to={`/view/${chapter.id}`}
+      className="flex flex-col gap-2 bg-gray-600 rounded p-2 items-center"
+    >
+      <img
+        className="h-44"
+        src={pb.getFileUrl(chapter, chapter.cover)}
+        alt="Chapter Cover"
+      />
+
+      <p className="dark:text-white">
+        {chapter.idx} - {chapter.name}
+      </p>
+    </Link>
   );
 };
 
@@ -52,7 +62,7 @@ const SeriesPage = () => {
           alt=""
         />
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
         {chapters.pages.map((page, i) => {
           return (
             <Fragment key={i}>
@@ -75,10 +85,6 @@ const SeriesPage = () => {
             ? "Load More"
             : "Nothing more to load"}
         </button>
-        {/* {chapters.items.map((item) => {
-          return (
-          );
-        })} */}
       </div>
     </div>
   );

@@ -1,6 +1,11 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { GetBasicChapterList } from "../models/chapters";
+import {
+  BASIC_CHAPTER_INFO_COLLECTION,
+  Chapter,
+  GetBasicChapterList,
+  NextChapter,
+} from "../models/chapters";
 import {
   GetMangaViewRequest,
   MANGA_VIEWS_COLLECTION_NAME,
@@ -21,13 +26,24 @@ async function getMangaView(id: string) {
 }
 
 async function getMangaChaptersBasic(id: string, page: number) {
-  const raw = await pb.collection("chapters").getList(page, undefined, {
-    fields: "id,collectionId,collectionName,updated,created,name,index,manga",
-    filter: `manga = '${id}'`,
-  });
+  const raw = await pb
+    .collection(BASIC_CHAPTER_INFO_COLLECTION)
+    .getList(page, undefined, {
+      filter: `manga = '${id}'`,
+    });
   console.log(raw);
 
   return await GetBasicChapterList.parseAsync(raw);
+}
+
+async function getChapter(id: string) {
+  let raw = await pb.collection("chapters").getOne(id);
+  return Chapter.parseAsync(raw);
+}
+
+async function getNextChapter(id: string) {
+  let raw = await pb.collection("nextChapters").getOne(id);
+  return NextChapter.parseAsync(raw);
 }
 
 export function useMangas() {
@@ -47,7 +63,7 @@ export function useManga(input: { id?: string }) {
 
 export function useMangaChaptersBasic(input: { id?: string }) {
   return useInfiniteQuery({
-    queryKey: ["chapters", input.id],
+    queryKey: ["basicChapters", input.id],
     queryFn: async ({ pageParam = 0 }) =>
       await getMangaChaptersBasic(input.id || "", pageParam),
     getNextPageParam: (lastPage, _pages) => {
@@ -58,6 +74,22 @@ export function useMangaChaptersBasic(input: { id?: string }) {
 
       return next;
     },
+    enabled: !!input.id,
+  });
+}
+
+export function useChapter(input: { id?: string }) {
+  return useQuery({
+    queryKey: ["chapters", input.id],
+    queryFn: async () => await getChapter(input.id || ""),
+    enabled: !!input.id,
+  });
+}
+
+export function useNextChapter(input: { id?: string }) {
+  return useQuery({
+    queryKey: ["nextChapters", input.id],
+    queryFn: async () => await getNextChapter(input.id || ""),
     enabled: !!input.id,
   });
 }

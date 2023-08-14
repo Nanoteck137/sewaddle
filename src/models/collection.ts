@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+export const ViewCollection = z.object({
+  id: z.string(),
+
+  collectionId: z.string(),
+  collectionName: z.string(),
+});
+export type ViewCollection = z.infer<typeof ViewCollection>;
+
 export const Collection = z.object({
   id: z.string(),
 
