@@ -12,7 +12,7 @@ const Chapter = (props: { chapter: BasicChapter }) => {
   return (
     <Link
       to={`/view/${chapter.id}`}
-      className="flex flex-col gap-2 bg-gray-600 rounded p-2 items-center"
+      className="flex flex-col items-center gap-2 rounded bg-gray-600 p-2"
     >
       <img
         className="h-44"
@@ -20,7 +20,7 @@ const Chapter = (props: { chapter: BasicChapter }) => {
         alt="Chapter Cover"
       />
 
-      <p className="dark:text-white">
+      <p>
         {chapter.idx} - {chapter.name}
       </p>
     </Link>
@@ -42,16 +42,12 @@ const SeriesPage = () => {
   return (
     <div className="flex flex-col gap-10 p-2">
       <div>
-        <p className="dark:text-white">Name: {manga.name}</p>
-        <p className="dark:text-white whitespace-pre-wrap">
-          {manga.description}
-        </p>
-        <a className="dark:text-white" href={manga.malUrl} target="_blank">
+        <p>Name: {manga.name}</p>
+        <p className="whitespace-pre-wrap">{manga.description}</p>
+        <a href={manga.malUrl} target="_blank">
           MAL Link
         </a>
-        <p className="dark:text-white">
-          Chapters Available: {manga.chaptersAvailable}
-        </p>
+        <p>Chapters Available: {manga.chaptersAvailable}</p>
         <img
           className="w-64"
           src={
@@ -62,7 +58,7 @@ const SeriesPage = () => {
           alt=""
         />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
         {chapters.pages.map((page, i) => {
           return (
             <Fragment key={i}>

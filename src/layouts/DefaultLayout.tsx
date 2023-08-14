@@ -24,7 +24,7 @@ const ThemeControl = () => {
       onChange={setTernaryDarkMode}
       as="div"
     >
-      <Listbox.Button className="flex w-full items-center justify-between rounded border-b-2 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+      <Listbox.Button className="flex w-full items-center justify-between rounded border-b-2 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
         <div className="flex items-center">
           <MoonIcon className="h-9 w-9" />
           <div className="w-5" />
@@ -61,7 +61,7 @@ const Option = (props: { value: string; name: string; icon: ReactNode }) => {
 
   return (
     <Listbox.Option
-      className={`flex cursor-pointer items-center gap-2  px-10 py-2 hover:bg-gray-200  dark:text-white dark:hover:bg-gray-500 ${
+      className={`flex cursor-pointer items-center gap-2  px-10 py-2 hover:bg-gray-200 dark:hover:bg-gray-500 ${
         value == ternaryDarkMode
           ? "bg-gray-200 dark:bg-gray-500"
           : "bg-white dark:bg-gray-600 "
@@ -93,7 +93,7 @@ const SmallThemeControl = () => {
       as="div"
       className="relative flex w-full justify-center"
     >
-      <Listbox.Button className="flex flex-col items-center dark:text-white">
+      <Listbox.Button className="flex flex-col items-center">
         <Icon />
         <p className="text-sm">Theme</p>
       </Listbox.Button>
@@ -127,33 +127,33 @@ const Header = () => {
             {({ open, close }) => (
               <>
                 <Popover.Button className="flex items-center">
-                  <Bars3Icon className="h-10 w-10 dark:text-white" />
+                  <Bars3Icon className="h-10 w-10" />
                 </Popover.Button>
                 {open && (
                   <>
                     <div className="fixed left-0 top-0 h-screen w-full bg-red-800/60 bg-white"></div>
                     <Popover.Panel
-                      className="fixed bottom-0 left-0 top-0 h-full w-60 bg-white dark:bg-gray-700 dark:text-white"
+                      className="fixed bottom-0 left-0 top-0 h-full w-60 bg-white dark:bg-gray-700"
                       static
                     >
-                      <div className="flex h-16 items-center gap-4 border-b-2 px-7 dark:border-gray-600 dark:text-white">
+                      <div className="flex h-16 items-center gap-4 border-b-2 px-7 dark:border-gray-600">
                         <button onClick={close}>
                           <Bars3Icon className="h-10 w-10" />
                         </button>
-                        <Link to="/" className="text-2xl">
+                        <Link to="/" className="text-2xl" onClick={close}>
                           Sewaddle
                         </Link>
                       </div>
                       <div className="flex flex-col gap-2 px-2 py-2">
                         <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
-                          <HomeIcon className="h-9 w-9 dark:text-white" />
+                          <HomeIcon className="h-9 w-9" />
                           <div className="w-5" />
-                          <p className="text-base dark:text-white">Home</p>
+                          <p className="text-base">Home</p>
                         </button>
                         <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
-                          <StarIcon className="h-9 w-9 dark:text-white" />
+                          <StarIcon className="h-9 w-9" />
                           <div className="w-5" />
-                          <p className="text-base dark:text-white">Saved</p>
+                          <p className="text-base">Saved</p>
                         </button>
                         <ThemeControl />
                       </div>
@@ -163,13 +163,13 @@ const Header = () => {
               </>
             )}
           </Popover>
-          <Link to="/" className="text-2xl dark:text-white">
+          <Link to="/" className="text-2xl">
             Sewaddle
           </Link>
         </div>
 
         <button>
-          <MagnifyingGlassIcon className="h-8 w-8 dark:text-white" />
+          <MagnifyingGlassIcon className="h-8 w-8" />
         </button>
       </div>
     </div>
@@ -181,14 +181,14 @@ const BigSidebar = () => {
     <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
       <div className="flex flex-col gap-2 p-2">
         <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
-          <HomeIcon className="h-9 w-9 dark:text-white" />
+          <HomeIcon className="h-9 w-9" />
           <div className="w-5" />
-          <p className="text-base dark:text-white">Home</p>
+          <p className="text-base">Home</p>
         </button>
         <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
-          <StarIcon className="h-9 w-9 dark:text-white" />
+          <StarIcon className="h-9 w-9" />
           <div className="w-5" />
-          <p className="text-base dark:text-white">Saved</p>
+          <p className="text-base">Saved</p>
         </button>
         <ThemeControl />
       </div>
@@ -201,13 +201,13 @@ const SmallSidebar = () => {
     <div className="fixed bottom-0 top-16 z-50 hidden w-24 border-r-2 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700 lg:block xl:hidden">
       <div className="flex flex-col items-center gap-6 py-4">
         <button className="flex flex-col items-center">
-          <HomeIcon className="h-8 w-8 dark:text-white" />
-          <p className="text-xs dark:text-white">Home</p>
+          <HomeIcon className="h-8 w-8" />
+          <p className="text-xs">Home</p>
         </button>
 
         <button className="flex flex-col items-center">
-          <StarIcon className="h-8 w-8 dark:text-white" />
-          <p className="text-xs dark:text-white">Saved</p>
+          <StarIcon className="h-8 w-8" />
+          <p className="text-xs">Saved</p>
         </button>
 
         <SmallThemeControl />

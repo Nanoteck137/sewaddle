@@ -12,9 +12,8 @@ const ViewPage = () => {
 
   const [currentPage, setCurrentPage] = useState(0);
 
-  if (chapterQuery.isError) return <p className="dark:text-white">Error</p>;
-  if (chapterQuery.isLoading)
-    return <p className="dark:text-white">Loading...</p>;
+  if (chapterQuery.isError) return <p>Error</p>;
+  if (chapterQuery.isLoading) return <p>Loading...</p>;
 
   const { data } = chapterQuery;
   const { data: nextChapter } = nextChapterQuery;
@@ -36,7 +35,7 @@ const ViewPage = () => {
   return (
     <div className="relative flex h-full w-full justify-center">
       <button
-        className="absolute bg-red-400/20 h-full w-1/2 left-0"
+        className="absolute left-0 h-full w-1/2 bg-red-400/20"
         onClick={nextPage}
       ></button>
 
@@ -47,12 +46,12 @@ const ViewPage = () => {
       />
 
       <button
-        className="absolute bg-blue-400/20 h-full w-1/2 right-0"
+        className="absolute right-0 h-full w-1/2 bg-blue-400/20"
         onClick={prevPage}
       ></button>
 
       {/* {nextChapter && (
-        <Link className="dark:text-white" to={`/view/${nextChapter.next}`}>
+        <Link to={`/view/${nextChapter.next}`}>
           Next Chapter
         </Link>
       )} */}

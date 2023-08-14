@@ -81,9 +81,7 @@ const Item = (props: { manga: MangaView }) => {
         alt=""
       />
       <div className="flex flex-col justify-between gap-2 p-2">
-        <p className="line-clamp-2 font-bold text-black dark:text-white">
-          {manga.name}
-        </p>
+        <p className="line-clamp-2 font-bold">{manga.name}</p>
         <p className="text-xs text-gray-600 dark:text-gray-200">
           Chapters: {manga.chaptersAvailable}
         </p>
@@ -111,7 +109,7 @@ const ItemTest = (props: { manga: MangaView }) => {
         }
         alt=""
       />
-      <p className="p-4 text-center text-black dark:text-white">{manga.name}</p>
+      <p className="p-4 text-center">{manga.name}</p>
     </Link>
   );
 };

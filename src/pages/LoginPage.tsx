@@ -24,22 +24,18 @@ const LoginPage = () => {
 
   return (
     <div className="h-full p-6">
-      <div className="w-full mx-auto">
-        <Link to="/" className="block dark:text-white text-4xl text-center">
+      <div className="mx-auto w-full">
+        <Link to="/" className="block text-center text-4xl">
           Sewaddle
         </Link>
         <div className="h-6" />
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-          <label className="dark:text-white" htmlFor="email">
-            Email
-          </label>
+          <label htmlFor="email">Email</label>
           <input id="email" type="text" {...register("email")} />
           {errors.email && (
             <p className="dark:text-red-500">{errors.email.message}</p>
           )}
-          <label className="dark:text-white" htmlFor="password">
-            Password
-          </label>
+          <label htmlFor="password">Password</label>
           <input id="password" type="password" {...register("password")} />
           {errors.password && (
             <p className="dark:text-red-500">{errors.password.message}</p>
