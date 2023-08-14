@@ -19,6 +19,7 @@ const SeriesPage = () => {
   return (
     <div>
       <p className="dark:text-white">Name: {manga.name}</p>
+      <p className="dark:text-white whitespace-pre-wrap">{manga.description}</p>
       <a className="dark:text-white" href={manga.malUrl} target="_blank">
         MAL Link
       </a>

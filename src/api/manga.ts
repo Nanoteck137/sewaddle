@@ -15,7 +15,7 @@ async function getMangaViews() {
 
 async function getMangaView(id: string) {
   const raw = await pb.collection(MANGA_VIEWS_COLLECTION_NAME).getOne(id);
-  console.log(raw);
+  console.log("RAW", raw);
 
   return await MangaView.parseAsync(raw);
 }

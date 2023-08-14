@@ -9,6 +9,7 @@ export const Manga = Collection.extend({
   name: z.string(),
   cover: z.string(),
   malUrl: z.string().url(),
+  description: z.string(),
 });
 export type Manga = z.infer<typeof Manga>;
 
