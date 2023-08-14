@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { GetBasicChapterList } from "../models/chapters";
 import {
@@ -20,8 +20,8 @@ async function getMangaView(id: string) {
   return await MangaView.parseAsync(raw);
 }
 
-async function getMangaChaptersBasic(id: string) {
-  const raw = await pb.collection("chapters").getList(undefined, undefined, {
+async function getMangaChaptersBasic(id: string, page: number) {
+  const raw = await pb.collection("chapters").getList(page, undefined, {
     fields: "id,collectionId,collectionName,updated,created,name,index,manga",
     filter: `manga = '${id}'`,
   });
@@ -46,9 +46,18 @@ export function useManga(input: { id?: string }) {
 }
 
 export function useMangaChaptersBasic(input: { id?: string }) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["chapters", input.id],
-    queryFn: async () => await getMangaChaptersBasic(input.id || ""),
+    queryFn: async ({ pageParam = 0 }) =>
+      await getMangaChaptersBasic(input.id || "", pageParam),
+    getNextPageParam: (lastPage, _pages) => {
+      const next = lastPage.page + 1;
+      if (next > lastPage.totalPages) {
+        return false;
+      }
+
+      return next;
+    },
     enabled: !!input.id,
   });
 }
