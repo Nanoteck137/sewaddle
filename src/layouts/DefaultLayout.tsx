@@ -217,20 +217,14 @@ const SmallSidebar = () => {
 };
 
 const DefaultLayout = () => {
-  const { isDarkMode } = useTernaryDarkMode();
-
   return (
-    <div className={`${isDarkMode ? "dark" : ""}`}>
-      <div className="fixed h-screen w-full bg-white dark:bg-slate-800"></div>
+    <div className="flex h-screen">
+      <Header />
+      <BigSidebar />
+      <SmallSidebar />
 
-      <div className="flex h-screen">
-        <Header />
-        <BigSidebar />
-        <SmallSidebar />
-
-        <div className="z-40 mt-16 flex-grow lg:ml-24 xl:ml-60">
-          <Outlet />
-        </div>
+      <div className="z-40 mt-16 flex-grow lg:ml-24 xl:ml-60">
+        <Outlet />
       </div>
     </div>
   );
