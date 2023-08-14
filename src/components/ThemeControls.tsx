@@ -6,6 +6,7 @@ import {
   MoonIcon,
   SunIcon,
 } from "@heroicons/react/24/solid";
+import { ReactNode } from "react";
 import { useTernaryDarkMode } from "usehooks-ts";
 
 const Option = (props: { value: string; name: string; icon: ReactNode }) => {
@@ -47,32 +48,37 @@ export const BigThemeControl = () => {
       onChange={setTernaryDarkMode}
       as="div"
     >
-      <Listbox.Button className="flex w-full items-center justify-between rounded border-b-2 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
-        <div className="flex items-center">
-          <Icon />
-          <div className="w-5" />
-          <p>Theme</p>
-        </div>
-        <ChevronRightIcon className="h-8 w-8 ui-open:hidden" />
-        <ChevronDownIcon className="h-8 w-8 ui-not-open:hidden" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute left-0 right-0 top-12 overflow-hidden rounded border-2 shadow dark:border-gray-500">
-        <Option
-          value="dark"
-          name="Dark"
-          icon={<MoonIcon className="h-5 w-5" />}
-        />
-        <Option
-          value="light"
-          name="Light"
-          icon={<SunIcon className="h-5 w-5" />}
-        />
-        <Option
-          value="system"
-          name="System"
-          icon={<GlobeAltIcon className="h-5 w-5" />}
-        />
-      </Listbox.Options>
+      {({ open }) => (
+        <>
+          <Listbox.Button className="flex w-full items-center justify-between rounded border-b-2 p-2 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
+            <div className="flex items-center">
+              <Icon />
+              <div className="w-5" />
+              <p>Theme</p>
+            </div>
+            <ChevronRightIcon
+              className={`h-8 w-8 ${open ? "rotate-90" : ""}`}
+            />
+          </Listbox.Button>
+          <Listbox.Options className="absolute left-0 right-0 top-14 overflow-hidden rounded border-2 shadow dark:border-gray-500">
+            <Option
+              value="dark"
+              name="Dark"
+              icon={<MoonIcon className="h-5 w-5" />}
+            />
+            <Option
+              value="light"
+              name="Light"
+              icon={<SunIcon className="h-5 w-5" />}
+            />
+            <Option
+              value="system"
+              name="System"
+              icon={<GlobeAltIcon className="h-5 w-5" />}
+            />
+          </Listbox.Options>
+        </>
+      )}
     </Listbox>
   );
 };
@@ -96,7 +102,7 @@ export const SmallThemeControl = () => {
       as="div"
       className="relative flex w-full justify-center"
     >
-      <Listbox.Button className="flex flex-col items-center">
+      <Listbox.Button className="flex h-20 w-20 flex-col items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-600">
         <Icon />
         <p className="text-sm">Theme</p>
       </Listbox.Button>
