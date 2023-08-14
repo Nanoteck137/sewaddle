@@ -3,9 +3,15 @@ import {
   Bars3Icon,
   ChevronDownIcon,
   ChevronRightIcon,
+  GlobeAltIcon,
+  HomeIcon,
   MagnifyingGlassIcon,
+  MoonIcon,
+  StarIcon,
+  SunIcon,
 } from "@heroicons/react/24/solid";
-import { Link, Outlet } from "react-router-dom";
+import { ReactNode } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTernaryDarkMode } from "usehooks-ts";
 
 function capitalizeFirstLetter(str: string) {
@@ -28,6 +34,67 @@ const ThemeControl = () => {
         </Listbox.Option>
         <Listbox.Option value={"light"}>Light</Listbox.Option>
         <Listbox.Option value={"system"}>System</Listbox.Option>
+      </Listbox.Options>
+    </Listbox>
+  );
+};
+
+const SmallThemeControl = () => {
+  const { isDarkMode, setTernaryDarkMode, ternaryDarkMode } =
+    useTernaryDarkMode();
+
+  const Icon = () => {
+    if (isDarkMode) {
+      return <MoonIcon className="h-8 w-8" />;
+    } else {
+      return <SunIcon className="h-8 w-8" />;
+    }
+  };
+
+  const Option = (props: { value: string; name: string; icon: ReactNode }) => {
+    const { value, name, icon } = props;
+    return (
+      <Listbox.Option
+        className={`flex cursor-pointer items-center gap-2  px-10 py-2 hover:bg-gray-200  dark:text-white dark:hover:bg-gray-500 ${
+          value == ternaryDarkMode
+            ? "bg-gray-200 dark:bg-gray-500"
+            : "bg-white dark:bg-gray-600 "
+        }`}
+        value={value}
+      >
+        {icon}
+        <p>{name}</p>
+      </Listbox.Option>
+    );
+  };
+
+  return (
+    <Listbox
+      value={ternaryDarkMode}
+      onChange={setTernaryDarkMode}
+      as="div"
+      className="relative flex w-full justify-center"
+    >
+      <Listbox.Button className="flex flex-col items-center dark:text-white">
+        <Icon />
+        <p className="text-sm ">Theme</p>
+      </Listbox.Button>
+      <Listbox.Options className="absolute -top-2 left-24 overflow-hidden rounded border-2 dark:border-gray-500">
+        <Option
+          value="dark"
+          name="Dark"
+          icon={<MoonIcon className="h-5 w-5" />}
+        />
+        <Option
+          value="light"
+          name="Light"
+          icon={<SunIcon className="h-5 w-5" />}
+        />
+        <Option
+          value="system"
+          name="System"
+          icon={<GlobeAltIcon className="h-5 w-5" />}
+        />
       </Listbox.Options>
     </Listbox>
   );
@@ -66,8 +133,22 @@ const BigSidebar = () => {
 
 const SmallSidebar = () => {
   return (
-    <div className="fixed bottom-0 top-16 z-50 hidden w-24 bg-red-200 shadow-lg dark:bg-gray-700 lg:block xl:hidden">
-      {/* <div className="flex h-full flex-col overflow-auto px-2"></div> */}
+    <div className="fixed bottom-0 top-16 z-50 hidden w-24 border-r-2 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700 lg:block xl:hidden">
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center">
+          <HomeIcon className="h-8 w-8 dark:text-white" />
+          <p className="text-xs dark:text-white">Home</p>
+        </div>
+        <div className="flex flex-col items-center">
+          <StarIcon className="h-8 w-8 dark:text-white" />
+          <p className="text-xs dark:text-white">Saved</p>
+        </div>
+        <SmallThemeControl />
+        {/* <div className="flex flex-col items-center">
+          <SunIcon className="h-8 w-8 dark:text-white" />
+          <p className="text-xs dark:text-white">Theme</p>
+        </div> */}
+      </div>
     </div>
   );
 };
