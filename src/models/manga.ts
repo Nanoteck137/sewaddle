@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Collection, createGetListSchema } from "./collection";
 
 export const MANGAS_COLLECTION_NAME = "mangas";
-export const MANGA_VIEWS_COLLECTION_NAME = "manga_views";
+export const MANGA_VIEWS_COLLECTION_NAME = "mangaViews";
 
 export const Manga = Collection.extend({
   name: z.string(),
