@@ -1,6 +1,5 @@
 import { Listbox } from "@headlessui/react";
 import {
-  ArrowLeftCircleIcon,
   Bars3Icon,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -12,12 +11,8 @@ import {
   SunIcon,
 } from "@heroicons/react/24/solid";
 import { ReactNode } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { useTernaryDarkMode } from "usehooks-ts";
-
-function capitalizeFirstLetter(str: string) {
-  return str[0].toUpperCase() + str.slice(1);
-}
 
 const ThemeControl = () => {
   const { setTernaryDarkMode, ternaryDarkMode } = useTernaryDarkMode();
@@ -127,8 +122,8 @@ const Header = () => {
   return (
     <div className="fixed left-0 right-0 z-50 h-16 border-b-2 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
       <div className="flex h-full items-center justify-between">
-        <div className="flex h-full items-center gap-8">
-          <button>
+        <div className="flex h-full items-center gap-8 px-3">
+          <button className="lg:hidden">
             <Bars3Icon className="h-10 w-10 dark:text-white" />
           </button>
           <Link to="/" className="text-2xl dark:text-white">
