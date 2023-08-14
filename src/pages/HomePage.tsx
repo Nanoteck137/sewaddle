@@ -5,62 +5,6 @@ import { pb } from "../api/pocketbase";
 import { MangaView } from "../models/manga";
 import { isValidHttpUrl } from "../utils";
 
-// const items = new Array(100).fill(0).map(() => genRandomManga());
-// const demo = {
-//   items: items,
-//   page: 0,
-//   perPage: 0,
-//   totalItems: 0,
-//   totalPages: 0,
-// };
-
-// function genRandomManga(): Manga {
-//   const mangaTitles = [
-//     "Konosuba: God's Blessing On This Wonderful World!",
-//     "Konosuba: An Explosion On This Wonderful World!",
-//     "That Time I Got Reincarnated As A Slime",
-//     "More Than A Married Couple, But Not Lovers",
-//     "The Ice Guy And His Cool Female Colleague",
-//     "I've Been Killing Slimes For 300 Years And Maxed Out My Level",
-//     "Hell's Paradise: Jigokuraku",
-//     "JoJo no Kimyou na Bouken Part 7: Steel Ball Run",
-//     "The Quintessential Quintuplets",
-//     "One Piece",
-//     "Berserk",
-//     "Chainsaw Man",
-//     "My Hero Academia",
-//     "One-Punch Man",
-//     "Tokyo Ghoul",
-//     "I Belong To The Baddest Girl At School",
-//     "Jujutsu Kaisen",
-//     "Karma of Purgatory",
-//     "Kubo Won't Let Me Be Invisible",
-//   ];
-
-//   const i = Math.floor(Math.random() * mangaTitles.length);
-//   const name = mangaTitles[i];
-
-//   const min = 650;
-//   const max = 800;
-//   const height = Math.floor(Math.random() * (max - min)) + min;
-//   // console.log("Height", height);
-
-//   return {
-//     id: Math.floor(Math.random() * 1000000).toString(),
-//     name,
-//     cover: `https://placehold.co/460x${800}`,
-//     malUrl: "",
-
-//     totalChapters: Math.floor(Math.random() * 2000),
-
-//     created: new Date(),
-//     updated: new Date(),
-
-//     collectionId: "",
-//     collectionName: "",
-//   };
-// }
-
 const Item = (props: { manga: MangaView }) => {
   const { manga } = props;
   return (
@@ -87,7 +31,7 @@ const Item = (props: { manga: MangaView }) => {
 
 const MangaList = (props: { list: MangaView[] }) => {
   const { list } = props;
-  // console.log(data);
+
   return (
     <>
       <div className="grid grid-cols-1 place-items-center gap-4 p-2 md:grid-cols-2 lg:grid-cols-4">
