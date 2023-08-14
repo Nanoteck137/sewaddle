@@ -1,4 +1,4 @@
-import { Listbox } from "@headlessui/react";
+import { Listbox, Popover } from "@headlessui/react";
 import {
   Bars3Icon,
   ChevronDownIcon,
@@ -122,10 +122,47 @@ const Header = () => {
   return (
     <div className="fixed left-0 right-0 z-50 h-16 border-b-2 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
       <div className="flex h-full items-center justify-between">
-        <div className="flex h-full items-center gap-8 px-3">
-          <button className="lg:hidden">
-            <Bars3Icon className="h-10 w-10 dark:text-white" />
-          </button>
+        <div className="flex h-full items-center gap-4 px-3">
+          <Popover className="relative lg:hidden">
+            {({ open, close }) => (
+              <>
+                <Popover.Button className="flex items-center">
+                  <Bars3Icon className="h-10 w-10 dark:text-white" />
+                </Popover.Button>
+                {open && (
+                  <>
+                    <div className="fixed left-0 top-0 h-screen w-full bg-red-800/60 bg-white"></div>
+                    <Popover.Panel
+                      className="fixed bottom-0 left-0 top-0 h-full w-60 bg-white dark:bg-gray-700 dark:text-white"
+                      static
+                    >
+                      <div className="flex h-16 items-center gap-4 border-b-2 px-7 dark:border-gray-600 dark:text-white">
+                        <button onClick={close}>
+                          <Bars3Icon className="h-10 w-10" />
+                        </button>
+                        <Link to="/" className="text-2xl">
+                          Sewaddle
+                        </Link>
+                      </div>
+                      <div className="flex flex-col gap-2 px-2 py-2">
+                        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
+                          <HomeIcon className="h-9 w-9 dark:text-white" />
+                          <div className="w-5" />
+                          <p className="text-base dark:text-white">Home</p>
+                        </button>
+                        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
+                          <StarIcon className="h-9 w-9 dark:text-white" />
+                          <div className="w-5" />
+                          <p className="text-base dark:text-white">Saved</p>
+                        </button>
+                        <ThemeControl />
+                      </div>
+                    </Popover.Panel>
+                  </>
+                )}
+              </>
+            )}
+          </Popover>
           <Link to="/" className="text-2xl dark:text-white">
             Sewaddle
           </Link>
