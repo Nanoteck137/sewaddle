@@ -1,18 +1,6 @@
-import { Listbox, Popover } from "@headlessui/react";
-import {
-  Bars3Icon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  GlobeAltIcon,
-  HomeIcon,
-  MagnifyingGlassIcon,
-  MoonIcon,
-  StarIcon,
-  SunIcon,
-} from "@heroicons/react/24/solid";
-import { ReactNode } from "react";
+import { Popover } from "@headlessui/react";
+import { Bars3Icon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { Link, Outlet } from "react-router-dom";
-import { useTernaryDarkMode } from "usehooks-ts";
 
 import {
   BigSidebarButtons,
@@ -25,7 +13,7 @@ const Header = () => {
       <div className="flex h-full items-center justify-between">
         <div className="flex h-full items-center gap-4 px-3">
           <Popover className="relative lg:hidden">
-            {({ open, close }) => (
+            {({ close }) => (
               <>
                 <Popover.Button className="flex items-center">
                   <Bars3Icon className="h-10 w-10" />

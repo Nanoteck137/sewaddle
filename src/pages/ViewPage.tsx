@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import { useChapter, useNextChapter } from "../api/manga";
 import { pb } from "../api/pocketbase";
