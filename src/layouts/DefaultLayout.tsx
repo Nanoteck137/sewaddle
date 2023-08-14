@@ -3,6 +3,7 @@ import {
   Bars3Icon,
   ChevronDownIcon,
   ChevronRightIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/solid";
 import { Link, Outlet } from "react-router-dom";
 import { useTernaryDarkMode } from "usehooks-ts";
@@ -32,34 +33,57 @@ const ThemeControl = () => {
   );
 };
 
+const Header = () => {
+  return (
+    <div className="fixed left-0 right-0 z-50 h-16 border-b-2 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
+      <div className="flex h-full items-center justify-between">
+        <div className="flex h-full items-center gap-8">
+          <button>
+            <Bars3Icon className="h-10 w-10 dark:text-white" />
+          </button>
+          <Link to="/" className="text-2xl dark:text-white">
+            Sewaddle
+          </Link>
+        </div>
+
+        <button>
+          <MagnifyingGlassIcon className="h-8 w-8 dark:text-white" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const BigSidebar = () => {
+  return (
+    <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
+      <div className="flex h-full flex-col overflow-auto px-2">
+        <ThemeControl />
+      </div>
+    </div>
+  );
+};
+
+const SmallSidebar = () => {
+  return (
+    <div className="fixed bottom-0 top-16 z-50 hidden w-24 bg-red-200 shadow-lg dark:bg-gray-700 lg:block xl:hidden">
+      {/* <div className="flex h-full flex-col overflow-auto px-2"></div> */}
+    </div>
+  );
+};
+
 const DefaultLayout = () => {
   const { isDarkMode } = useTernaryDarkMode();
 
   return (
     <div className={`${isDarkMode ? "dark" : ""}`}>
       <div className="fixed h-screen w-full bg-white dark:bg-slate-800"></div>
+
       <div className="flex h-screen">
-        <div className="fixed left-0 right-0 z-50 h-16 border-b-2 bg-white px-4 shadow-lg dark:border-gray-600 dark:bg-gray-700">
-          <div className="flex h-full items-center justify-between">
-            <button>
-              <Bars3Icon className="h-10 w-10 dark:text-white" />
-            </button>
-            <div>
-              <Link to="/" className="text-2xl dark:text-white">
-                Sewaddle
-              </Link>
-            </div>
-            <div className="w-10 h-10"></div>
-          </div>
-        </div>
-        <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
-          <div className="flex h-full flex-col overflow-auto px-2">
-            <ThemeControl />
-          </div>
-        </div>
-        <div className="fixed bottom-0 top-16 z-50 hidden w-24 bg-red-200 shadow-lg dark:bg-gray-700 lg:block xl:hidden">
-          {/* <div className="flex h-full flex-col overflow-auto px-2"></div> */}
-        </div>
+        <Header />
+        <BigSidebar />
+        <SmallSidebar />
+
         <div className="z-40 mt-16 flex-grow lg:ml-24 xl:ml-60">
           <Outlet />
         </div>
