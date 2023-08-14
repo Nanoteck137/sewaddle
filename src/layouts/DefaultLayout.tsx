@@ -1,5 +1,6 @@
 import { Listbox } from "@headlessui/react";
 import {
+  ArrowLeftCircleIcon,
   Bars3Icon,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -22,20 +23,59 @@ const ThemeControl = () => {
   const { setTernaryDarkMode, ternaryDarkMode } = useTernaryDarkMode();
 
   return (
-    <Listbox value={ternaryDarkMode} onChange={setTernaryDarkMode} as="div">
-      <Listbox.Button className="flex w-full items-center justify-between rounded bg-gray-500 px-4">
-        <p>Theme: {capitalizeFirstLetter(ternaryDarkMode)}</p>
-        <ChevronRightIcon className="h-5 w-5 ui-open:hidden" />
-        <ChevronDownIcon className="hidden h-5 w-5 ui-open:block" />
+    <Listbox
+      className="relative"
+      value={ternaryDarkMode}
+      onChange={setTernaryDarkMode}
+      as="div"
+    >
+      <Listbox.Button className="flex w-full items-center justify-between rounded border-b-2 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+        <div className="flex items-center">
+          <MoonIcon className="h-9 w-9" />
+          <div className="w-5" />
+          <p>Theme</p>
+        </div>
+        <ChevronRightIcon className="h-8 w-8 ui-open:hidden" />
+        <ChevronDownIcon className="h-8 w-8 ui-not-open:hidden" />
       </Listbox.Button>
-      <Listbox.Options>
-        <Listbox.Option className="cursor-pointer bg-gray-400" value={"dark"}>
-          Dark
-        </Listbox.Option>
-        <Listbox.Option value={"light"}>Light</Listbox.Option>
-        <Listbox.Option value={"system"}>System</Listbox.Option>
+      <Listbox.Options className="absolute left-0 right-0 top-12 overflow-hidden rounded border-2 shadow dark:border-gray-500">
+        <Option
+          value="dark"
+          name="Dark"
+          icon={<MoonIcon className="h-5 w-5" />}
+        />
+        <Option
+          value="light"
+          name="Light"
+          icon={<SunIcon className="h-5 w-5" />}
+        />
+        <Option
+          value="system"
+          name="System"
+          icon={<GlobeAltIcon className="h-5 w-5" />}
+        />
       </Listbox.Options>
     </Listbox>
+  );
+};
+
+const Option = (props: { value: string; name: string; icon: ReactNode }) => {
+  const { value, name, icon } = props;
+
+  const { ternaryDarkMode } = useTernaryDarkMode();
+
+  return (
+    <Listbox.Option
+      className={`flex cursor-pointer items-center gap-2  px-10 py-2 hover:bg-gray-200  dark:text-white dark:hover:bg-gray-500 ${
+        value == ternaryDarkMode
+          ? "bg-gray-200 dark:bg-gray-500"
+          : "bg-white dark:bg-gray-600 "
+      }`}
+      value={value}
+    >
+      {icon}
+      <p>{name}</p>
+    </Listbox.Option>
   );
 };
 
@@ -51,23 +91,6 @@ const SmallThemeControl = () => {
     }
   };
 
-  const Option = (props: { value: string; name: string; icon: ReactNode }) => {
-    const { value, name, icon } = props;
-    return (
-      <Listbox.Option
-        className={`flex cursor-pointer items-center gap-2  px-10 py-2 hover:bg-gray-200  dark:text-white dark:hover:bg-gray-500 ${
-          value == ternaryDarkMode
-            ? "bg-gray-200 dark:bg-gray-500"
-            : "bg-white dark:bg-gray-600 "
-        }`}
-        value={value}
-      >
-        {icon}
-        <p>{name}</p>
-      </Listbox.Option>
-    );
-  };
-
   return (
     <Listbox
       value={ternaryDarkMode}
@@ -77,7 +100,7 @@ const SmallThemeControl = () => {
     >
       <Listbox.Button className="flex flex-col items-center dark:text-white">
         <Icon />
-        <p className="text-sm ">Theme</p>
+        <p className="text-sm">Theme</p>
       </Listbox.Button>
       <Listbox.Options className="absolute -top-2 left-24 overflow-hidden rounded border-2 dark:border-gray-500">
         <Option
@@ -124,7 +147,17 @@ const Header = () => {
 const BigSidebar = () => {
   return (
     <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
-      <div className="flex h-full flex-col overflow-auto px-2">
+      <div className="flex flex-col gap-2 p-2">
+        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100">
+          <HomeIcon className="h-9 w-9 dark:text-white" />
+          <div className="w-5" />
+          <p className="text-base dark:text-white">Home</p>
+        </button>
+        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100">
+          <StarIcon className="h-9 w-9 dark:text-white" />
+          <div className="w-5" />
+          <p className="text-base dark:text-white">Saved</p>
+        </button>
         <ThemeControl />
       </div>
     </div>
@@ -134,20 +167,18 @@ const BigSidebar = () => {
 const SmallSidebar = () => {
   return (
     <div className="fixed bottom-0 top-16 z-50 hidden w-24 border-r-2 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700 lg:block xl:hidden">
-      <div className="flex flex-col items-center gap-6">
-        <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-6 py-4">
+        <button className="flex flex-col items-center">
           <HomeIcon className="h-8 w-8 dark:text-white" />
           <p className="text-xs dark:text-white">Home</p>
-        </div>
-        <div className="flex flex-col items-center">
+        </button>
+
+        <button className="flex flex-col items-center">
           <StarIcon className="h-8 w-8 dark:text-white" />
           <p className="text-xs dark:text-white">Saved</p>
-        </div>
+        </button>
+
         <SmallThemeControl />
-        {/* <div className="flex flex-col items-center">
-          <SunIcon className="h-8 w-8 dark:text-white" />
-          <p className="text-xs dark:text-white">Theme</p>
-        </div> */}
       </div>
     </div>
   );
