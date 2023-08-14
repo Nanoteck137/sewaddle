@@ -64,35 +64,6 @@ import { isValidHttpUrl } from "../utils";
 const Item = (props: { manga: MangaView }) => {
   const { manga } = props;
   return (
-    <div
-      key={manga.id}
-      className="flex cursor-pointer overflow-hidden rounded border-2 border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-600"
-      onClick={() => {
-        console.log("Click");
-      }}
-    >
-      <img
-        className="w-[80px] min-w-[80px] overflow-clip"
-        src={
-          isValidHttpUrl(manga.cover)
-            ? manga.cover
-            : pb.getFileUrl(manga, manga.cover)
-        }
-        alt=""
-      />
-      <div className="flex flex-col justify-between gap-2 p-2">
-        <p className="line-clamp-2 font-bold">{manga.name}</p>
-        <p className="text-xs text-gray-600 dark:text-gray-200">
-          Chapters: {manga.chaptersAvailable}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const ItemTest = (props: { manga: MangaView }) => {
-  const { manga } = props;
-  return (
     <Link
       to={`/series/${manga.id}`}
       className="relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm"
@@ -121,7 +92,7 @@ const MangaList = (props: { list: MangaView[] }) => {
     <>
       <div className="grid grid-cols-1 place-items-center gap-4 p-2 md:grid-cols-2 lg:grid-cols-4">
         {list.map((item) => {
-          return <ItemTest key={item.id} manga={item} />;
+          return <Item key={item.id} manga={item} />;
         })}
       </div>
     </>
