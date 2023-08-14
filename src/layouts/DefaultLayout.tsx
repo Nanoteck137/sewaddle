@@ -148,12 +148,12 @@ const BigSidebar = () => {
   return (
     <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
       <div className="flex flex-col gap-2 p-2">
-        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100">
+        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600">
           <HomeIcon className="h-9 w-9 dark:text-white" />
           <div className="w-5" />
           <p className="text-base dark:text-white">Home</p>
         </button>
-        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100">
+        <button className="flex items-center rounded border-b-2 border-gray-100 px-2 py-1 shadow-md hover:bg-gray-100 dark:border-gray-600">
           <StarIcon className="h-9 w-9 dark:text-white" />
           <div className="w-5" />
           <p className="text-base dark:text-white">Saved</p>
