@@ -54,7 +54,7 @@ const Header = () => {
                     leaveTo="-translate-x-full"
                   >
                     <Popover.Panel
-                      className="fixed z-50 h-screen w-60 bg-white dark:bg-gray-700"
+                      className="fixed z-50 h-screen w-60 bg-white pb-16 dark:bg-gray-700"
                       static
                     >
                       <div className="flex h-16 items-center gap-4 border-b-2 px-7 dark:border-gray-600">

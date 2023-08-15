@@ -1,7 +1,8 @@
-import { Listbox } from "@headlessui/react";
+import { Listbox, Transition } from "@headlessui/react";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   GlobeAltIcon,
   MoonIcon,
   SunIcon,
@@ -83,6 +84,63 @@ export const BigThemeControl = () => {
   );
 };
 
+export const TestThemeControl = () => {
+  const { isDarkMode, setTernaryDarkMode, ternaryDarkMode } =
+    useTernaryDarkMode();
+
+  const Icon = () => {
+    if (isDarkMode) {
+      return <MoonIcon className="h-8 w-8" />;
+    } else {
+      return <SunIcon className="h-8 w-8" />;
+    }
+  };
+
+  return (
+    <Listbox
+      value={ternaryDarkMode}
+      onChange={setTernaryDarkMode}
+      as="div"
+      className="relative flex w-full justify-center"
+    >
+      {({ open }) => (
+        <>
+          <Listbox.Button className="flex w-full items-center justify-between rounded border-b-2 p-2 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
+            <div className="flex items-center">
+              <Icon />
+              <div className="w-5" />
+              <p>Theme</p>
+            </div>
+            <ChevronUpIcon
+              className={`h-8 w-8 transition-transform duration-100 ${
+                open ? "rotate-180" : ""
+              }`}
+            />
+          </Listbox.Button>
+
+          <Listbox.Options className="absolute -top-32 left-0 right-0 z-50 overflow-hidden rounded border-2 dark:border-gray-500">
+            <Option
+              value="dark"
+              name="Dark"
+              icon={<MoonIcon className="h-5 w-5" />}
+            />
+            <Option
+              value="light"
+              name="Light"
+              icon={<SunIcon className="h-5 w-5" />}
+            />
+            <Option
+              value="system"
+              name="System"
+              icon={<GlobeAltIcon className="h-5 w-5" />}
+            />
+          </Listbox.Options>
+        </>
+      )}
+    </Listbox>
+  );
+};
+
 export const SmallThemeControl = () => {
   const { isDarkMode, setTernaryDarkMode, ternaryDarkMode } =
     useTernaryDarkMode();
@@ -106,7 +164,7 @@ export const SmallThemeControl = () => {
         <Icon />
         <p className="text-sm">Theme</p>
       </Listbox.Button>
-      <Listbox.Options className="absolute left-24 top-6 overflow-hidden rounded border-2 dark:border-gray-500">
+      <Listbox.Options className="absolute bottom-[calc(100%+0.5rem)] left-0 overflow-hidden rounded border-2 dark:border-gray-500">
         <Option
           value="dark"
           name="Dark"
