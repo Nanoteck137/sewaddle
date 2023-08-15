@@ -1,18 +1,20 @@
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+
+import { pb } from "../api/pocketbase";
+import { useAuth } from "../hooks/useAuth";
 
 const RegisterSchema = z
   .object({
     username: z.string().min(1),
-    email: z.string().email(),
     password: z.string().min(1),
-    confirmPassword: z.string().min(1),
+    passwordConfirm: z.string().min(1),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.passwordConfirm, {
     message: "Password don't match",
-    path: ["confirmPassword"],
+    path: ["passwordConfirm"],
   });
 type RegisterSchema = z.infer<typeof RegisterSchema>;
 
@@ -25,12 +27,19 @@ const RegisterPage = () => {
     resolver: zodResolver(RegisterSchema),
   });
 
-  const onSubmit = (data: RegisterSchema) => {
-    console.log("Register", data);
+  const navigate = useNavigate();
+  const auth = useAuth();
+
+  const onSubmit = async (data: RegisterSchema) => {
+    auth.register(data).then(() => {
+      navigate("/");
+    });
   };
 
   return (
     <div className="h-full p-6">
+      {auth.user && <Navigate to="/" />}
+
       <div className="mx-auto w-full">
         <Link to="/" className="block text-center text-4xl">
           Sewaddle
@@ -45,13 +54,6 @@ const RegisterPage = () => {
             )}
           </div>
           <div className="flex flex-col">
-            <label htmlFor="email">Email</label>
-            <input id="email" type="text" {...register("email")} />
-            {errors.email && (
-              <p className="dark:text-red-500">{errors.email.message}</p>
-            )}
-          </div>
-          <div className="flex flex-col">
             <label htmlFor="password">Password</label>
             <input id="password" type="password" {...register("password")} />
             {errors.password && (
@@ -59,15 +61,15 @@ const RegisterPage = () => {
             )}
           </div>
           <div className="flex flex-col">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+            <label htmlFor="passwordConfirm">Confirm Password</label>
             <input
-              id="confirmPassword"
+              id="passwordConfirm"
               type="password"
-              {...register("confirmPassword")}
+              {...register("passwordConfirm")}
             />
-            {errors.confirmPassword && (
+            {errors.passwordConfirm && (
               <p className="dark:text-red-500">
-                {errors.confirmPassword.message}
+                {errors.passwordConfirm.message}
               </p>
             )}
           </div>

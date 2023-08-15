@@ -1,10 +1,12 @@
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import { useAuth } from "../hooks/useAuth";
+
 const LoginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1),
   password: z.string().min(1),
 });
 type LoginSchema = z.infer<typeof LoginSchema>;
@@ -18,22 +20,28 @@ const LoginPage = () => {
     resolver: zodResolver(LoginSchema),
   });
 
+  const navigate = useNavigate();
+  const auth = useAuth();
+
   const onSubmit = (data: LoginSchema) => {
-    console.log("Login", data);
+    auth.login(data).then(() => {
+      navigate("/");
+    });
   };
 
   return (
     <div className="h-full p-6">
+      {auth.user && <Navigate to="/" />}
       <div className="mx-auto w-full">
         <Link to="/" className="block text-center text-4xl">
           Sewaddle
         </Link>
         <div className="h-6" />
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="text" {...register("email")} />
-          {errors.email && (
-            <p className="dark:text-red-500">{errors.email.message}</p>
+          <label htmlFor="username">Username</label>
+          <input id="username" type="text" {...register("username")} />
+          {errors.username && (
+            <p className="dark:text-red-500">{errors.username.message}</p>
           )}
           <label htmlFor="password">Password</label>
           <input id="password" type="password" {...register("password")} />

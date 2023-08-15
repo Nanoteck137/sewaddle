@@ -1,4 +1,4 @@
-import { HomeIcon, StarIcon } from "@heroicons/react/24/solid";
+import { HomeIcon, StarIcon, UserIcon } from "@heroicons/react/24/solid";
 import { useLocation } from "react-router-dom";
 
 import { BigThemeControl, SmallThemeControl } from "./ThemeControls";
@@ -7,6 +7,7 @@ export const BigSidebarButtons = () => {
   const location = useLocation();
 
   const isHome = location.pathname == "/";
+  const isAccount = false;
   const isSaved = false;
 
   return (
@@ -20,6 +21,17 @@ export const BigSidebarButtons = () => {
         <div className="w-5" />
         <p className="text-base">Home</p>
       </button>
+
+      <button
+        className={`flex items-center rounded border-b-2 border-gray-100 p-2 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600 ${
+          isAccount ? "bg-gray-100 dark:bg-gray-600" : ""
+        }`}
+      >
+        <UserIcon className="h-9 w-9" />
+        <div className="w-5" />
+        <p className="text-base">Account</p>
+      </button>
+
       <button
         className={`flex items-center rounded border-b-2 border-gray-100 p-2 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600 ${
           isSaved ? "bg-gray-100 dark:bg-gray-600" : ""
@@ -29,6 +41,7 @@ export const BigSidebarButtons = () => {
         <div className="w-5" />
         <p className="text-base">Saved</p>
       </button>
+
       <BigThemeControl />
     </div>
   );
@@ -38,6 +51,7 @@ export const SmallSidebarButtons = () => {
   const location = useLocation();
 
   const isHome = location.pathname == "/";
+  const isAccount = false;
   const isSaved = false;
 
   return (
@@ -49,6 +63,15 @@ export const SmallSidebarButtons = () => {
       >
         <HomeIcon className="h-8 w-8" />
         <p className="text-xs">Home</p>
+      </button>
+
+      <button
+        className={`flex h-20 w-20 flex-col items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-600 ${
+          isAccount ? "bg-gray-100 dark:bg-gray-600" : ""
+        }`}
+      >
+        <UserIcon className="h-8 w-8" />
+        <p className="text-xs">Account</p>
       </button>
 
       <button
