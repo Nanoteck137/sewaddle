@@ -6,10 +6,9 @@ import {
 } from "@heroicons/react/24/solid";
 import { Link, Outlet } from "react-router-dom";
 
+import { FloatingSidebar, Sidebar } from "../components/sidebar/Sidebar";
 import {
   BigSidebarButtons,
-  FloatingSidebar,
-  Sidebar,
   SmallSidebarButtons,
 } from "../components/SidebarButtons";
 import { useAuth } from "../hooks/useAuth";
