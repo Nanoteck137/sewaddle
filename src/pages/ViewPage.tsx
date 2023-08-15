@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useChapter, useNextChapter, usePrevChapter } from "../api/manga";
@@ -17,33 +18,10 @@ const ViewPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isLastPage, setLastPage] = useState(false);
 
-  useEffect(() => {
-    const page = search.get("page");
-    if (page !== null && chapterQuery.data) {
-      if (page === "") {
-        setCurrentPage(chapterQuery.data.pages.length - 1);
-      } else {
-        const n = parseInt(page);
-        if (n >= 0 && n < chapterQuery.data.pages.length) {
-          setCurrentPage(n);
-        }
-      }
-    }
-  }, [chapterQuery.data, search]);
-
-  useEffect(() => {
-    // NOTE(patrik): Need to reset the state when we navigate to
-    // the next chapter
-    setCurrentPage(0);
-    setLastPage(false);
-  }, [id]);
-
-  if (chapterQuery.isError) return <p>Error</p>;
-  if (chapterQuery.isLoading) return <p>Loading...</p>;
-
-  const { data } = chapterQuery;
-  const { data: nextChapter } = nextChapterQuery;
-  const { data: prevChapter } = prevChapterQuery;
+  useHotkeys("j", () => nextPage());
+  useHotkeys("k", () => prevPage());
+  useHotkeys("left", () => nextPage());
+  useHotkeys("right", () => prevPage());
 
   const nextPage = () => {
     const page = currentPage + 1;
@@ -73,6 +51,48 @@ const ViewPage = () => {
       }
     }
   };
+
+  useEffect(() => {
+    const page = search.get("page");
+    if (page !== null && chapterQuery.data) {
+      if (page === "") {
+        setCurrentPage(chapterQuery.data.pages.length - 1);
+      } else {
+        const n = parseInt(page);
+        if (n >= 0 && n < chapterQuery.data.pages.length) {
+          setCurrentPage(n);
+        }
+      }
+    }
+  }, [chapterQuery.data, search]);
+
+  useEffect(() => {
+    // NOTE(patrik): Need to reset the state when we navigate to
+    // the next chapter
+    setCurrentPage(0);
+    setLastPage(false);
+  }, [id]);
+
+  // const keyup = (event: KeyboardEvent) => {
+  //   if (event.key == "j") {
+  //     nextPage();
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   document.addEventListener("keyup", keyup);
+
+  //   return () => {
+  //     document.removeEventListener("keyup", keyup);
+  //   };
+  // }, []);
+
+  if (chapterQuery.isError) return <p>Error</p>;
+  if (chapterQuery.isLoading) return <p>Loading...</p>;
+
+  const { data } = chapterQuery;
+  const { data: nextChapter } = nextChapterQuery;
+  const { data: prevChapter } = prevChapterQuery;
 
   const getCurrentPageUrl = () => {
     return pb.getFileUrl(data, data.pages[currentPage]);
