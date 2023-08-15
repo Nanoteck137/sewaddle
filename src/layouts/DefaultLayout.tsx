@@ -1,16 +1,7 @@
-import { Popover, Transition } from "@headlessui/react";
-import {
-  Bars3Icon,
-  MagnifyingGlassIcon,
-  UserMinusIcon,
-} from "@heroicons/react/24/solid";
+import { MagnifyingGlassIcon, UserMinusIcon } from "@heroicons/react/24/solid";
 import { Link, Outlet } from "react-router-dom";
 
 import { FloatingSidebar, Sidebar } from "../components/sidebar/Sidebar";
-import {
-  BigSidebarButtons,
-  SmallSidebarButtons,
-} from "../components/SidebarButtons";
 import { useAuth } from "../hooks/useAuth";
 
 const Header = () => {
@@ -41,29 +32,11 @@ const Header = () => {
   );
 };
 
-const BigSidebar = () => {
-  return (
-    <div className="fixed bottom-0 top-16 z-50 hidden w-60 bg-white shadow-lg dark:bg-gray-700 xl:block">
-      <BigSidebarButtons />
-    </div>
-  );
-};
-
-const SmallSidebar = () => {
-  return (
-    <div className="fixed bottom-0 top-16 z-50 hidden w-24 border-r-2 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700 lg:block xl:hidden">
-      <SmallSidebarButtons />
-    </div>
-  );
-};
-
 const DefaultLayout = () => {
   return (
     <div className="flex h-screen">
       <Header />
       <Sidebar />
-      {/* <BigSidebar />
-      <SmallSidebar /> */}
 
       <div className="z-40 mt-16 flex-grow lg:ml-24 xl:ml-60">
         <Outlet />
