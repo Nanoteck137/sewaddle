@@ -3,7 +3,6 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { pb } from "../api/pocketbase";
 import { useAuth } from "../hooks/useAuth";
 
 const RegisterSchema = z

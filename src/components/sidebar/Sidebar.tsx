@@ -1,20 +1,68 @@
 import { Popover, Transition } from "@headlessui/react";
-import { Bars3Icon, HomeIcon } from "@heroicons/react/24/solid";
-import { Link } from "react-router-dom";
+import {
+  ArrowLeftOnRectangleIcon,
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  HomeIcon,
+  StarIcon,
+  UserIcon,
+} from "@heroicons/react/24/solid";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import { useAuth } from "../../hooks/useAuth";
 import { Button } from "./Button";
 import ThemeSelector from "./ThemeSelector";
 
 const Buttons = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const auth = useAuth();
+
+  const isHome = location.pathname === "/";
+  const isAccount = location.pathname === "/account";
+  const isSaved = location.pathname === "/account/saved";
+
   return (
     <div className="flex h-full w-full flex-col items-center justify-between p-2">
       <div className="flex w-full flex-col gap-2">
-        <Button title="Test" icon={HomeIcon} />
-        <Button title="Test" icon={HomeIcon} />
-        <Button title="Test" icon={HomeIcon} />
+        <Button
+          title="Home"
+          icon={HomeIcon}
+          selected={isHome}
+          onClick={() => navigate("/")}
+        />
+        <Button
+          title="Saved"
+          icon={StarIcon}
+          selected={isSaved}
+          onClick={() => navigate("/account/saved")}
+        />
       </div>
-      <div className="flex w-full flex-col">
-        <ThemeSelector />
+      <div className="flex w-full flex-col gap-2">
+        {auth.user && (
+          <>
+            <Button
+              title="Account"
+              icon={UserIcon}
+              selected={isAccount}
+              onClick={() => navigate("/account")}
+            />
+            <ThemeSelector />
+            <Button
+              title="Logout"
+              icon={ArrowLeftOnRectangleIcon}
+              onClick={() => auth.logout()}
+            />
+          </>
+        )}
+        {!auth.user && (
+          <Button
+            title="Login"
+            icon={ArrowRightOnRectangleIcon}
+            onClick={() => navigate("/login")}
+          />
+        )}
       </div>
     </div>
   );

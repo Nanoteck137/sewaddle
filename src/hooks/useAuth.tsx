@@ -12,6 +12,7 @@ type UserSchema = z.infer<typeof UserSchema>;
 
 export const useAuth = () => {
   const [user, setUser] = useState<UserSchema | null>(null);
+  const [isLoggedIn, setLoggedIn] = useState(pb.authStore.isValid);
 
   const register = useCallback(
     async (data: {
@@ -37,7 +38,23 @@ export const useAuth = () => {
   const logout = useCallback(() => {
     pb.authStore.clear();
     setUser(null);
+    setLoggedIn(false);
   }, []);
+
+  const changePassword = useCallback(
+    async (data: {
+      oldPassword: string;
+      password: string;
+      passwordConfirm: string;
+    }) => {
+      if (user) {
+        console.log("User", user);
+        await pb.collection("users").update(user.id, data);
+        logout();
+      }
+    },
+    [user],
+  );
 
   useEffect(() => {
     const current = pb.authStore.model;
@@ -46,14 +63,17 @@ export const useAuth = () => {
       setUser(user);
     } else {
       setUser(null);
+      setLoggedIn(false);
     }
 
     const unsub = pb.authStore.onChange((_token, model) => {
+      console.log("onChange", model);
       if (model && model instanceof Record) {
         const user = UserSchema.parse(model);
         setUser(user);
       } else {
         setUser(null);
+        setLoggedIn(false);
       }
     });
 
@@ -62,5 +82,5 @@ export const useAuth = () => {
     };
   }, []);
 
-  return { user, register, login, logout };
+  return { user, isLoggedIn, register, login, logout, changePassword };
 };
