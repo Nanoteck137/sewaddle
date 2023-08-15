@@ -1,16 +1,27 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { useChapter, useNextChapter } from "../api/manga";
 import { pb } from "../api/pocketbase";
 
 const ViewPage = () => {
   const { id } = useParams();
+  console.log("ID", id);
+
+  const navigate = useNavigate();
 
   const chapterQuery = useChapter({ id });
   const nextChapterQuery = useNextChapter({ id });
 
   const [currentPage, setCurrentPage] = useState(0);
+  const [isLastPage, setLastPage] = useState(false);
+
+  useEffect(() => {
+    // NOTE(patrik): Need to reset the state when we navigate to
+    // the next chapter
+    setCurrentPage(0);
+    setLastPage(false);
+  }, [id]);
 
   if (chapterQuery.isError) return <p>Error</p>;
   if (chapterQuery.isLoading) return <p>Loading...</p>;
@@ -19,13 +30,28 @@ const ViewPage = () => {
   const { data: nextChapter } = nextChapterQuery;
 
   const nextPage = () => {
-    // TODO(patrik): Check for overflow
-    setCurrentPage(currentPage + 1);
+    const page = currentPage + 1;
+    if (page < data.pages.length) {
+      setCurrentPage(page);
+    } else {
+      if (nextChapter) {
+        if (isLastPage) {
+          navigate(`/view/${nextChapter.next}`);
+        } else {
+          setLastPage(true);
+        }
+      }
+    }
   };
 
   const prevPage = () => {
-    // TODO(patrik): Check for underflow
-    setCurrentPage(currentPage - 1);
+    const page = currentPage - 1;
+    if (page >= 0) {
+      setCurrentPage(page);
+      if (isLastPage) {
+        setLastPage(false);
+      }
+    }
   };
 
   const getCurrentPageUrl = () => {
@@ -50,11 +76,11 @@ const ViewPage = () => {
         onClick={prevPage}
       ></button>
 
-      {/* {nextChapter && (
-        <Link to={`/view/${nextChapter.next}`}>
-          Next Chapter
-        </Link>
-      )} */}
+      {isLastPage && (
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded bg-gray-700/95 p-10 text-xl">
+          Last page
+        </div>
+      )}
     </div>
   );
 };
