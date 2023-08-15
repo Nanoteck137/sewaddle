@@ -18,10 +18,8 @@ const ViewPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isLastPage, setLastPage] = useState(false);
 
-  useHotkeys("j", () => nextPage());
-  useHotkeys("k", () => prevPage());
-  useHotkeys("left", () => nextPage());
-  useHotkeys("right", () => prevPage());
+  useHotkeys(["j", "left"], () => nextPage());
+  useHotkeys(["k", "right"], () => prevPage());
 
   const nextPage = () => {
     const page = currentPage + 1;
