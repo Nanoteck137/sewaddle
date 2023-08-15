@@ -1,20 +1,37 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { useChapter, useNextChapter } from "../api/manga";
+import { useChapter, useNextChapter, usePrevChapter } from "../api/manga";
 import { pb } from "../api/pocketbase";
 
 const ViewPage = () => {
   const { id } = useParams();
-  console.log("ID", id);
+  const [search] = useSearchParams();
+  console.log("ID", search);
 
   const navigate = useNavigate();
 
   const chapterQuery = useChapter({ id });
   const nextChapterQuery = useNextChapter({ id });
+  const prevChapterQuery = usePrevChapter({ id });
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isLastPage, setLastPage] = useState(false);
+
+  useEffect(() => {
+    const page = search.get("page");
+    console.log("PAGE", page);
+    if (page !== null && chapterQuery.data) {
+      if (page === "") {
+        setCurrentPage(chapterQuery.data.pages.length - 1);
+      } else {
+        const n = parseInt(page);
+        if (n >= 0 && n < chapterQuery.data.pages.length) {
+          setCurrentPage(n);
+        }
+      }
+    }
+  }, [chapterQuery.data, search]);
 
   useEffect(() => {
     // NOTE(patrik): Need to reset the state when we navigate to
@@ -28,6 +45,9 @@ const ViewPage = () => {
 
   const { data } = chapterQuery;
   const { data: nextChapter } = nextChapterQuery;
+  const { data: prevChapter } = prevChapterQuery;
+  console.log("Next", nextChapter);
+  console.log("Prev", prevChapter);
 
   const nextPage = () => {
     const page = currentPage + 1;
@@ -50,6 +70,10 @@ const ViewPage = () => {
       setCurrentPage(page);
       if (isLastPage) {
         setLastPage(false);
+      }
+    } else {
+      if (prevChapter) {
+        navigate(`/view/${prevChapter.prev}?page=`);
       }
     }
   };

@@ -18,8 +18,15 @@ export const BasicChapter = Chapter.omit({ pages: true }).extend({
 });
 export type BasicChapter = z.infer<typeof BasicChapter>;
 
-export const NextChapter = ViewCollection.extend({ next: z.string() });
+export const NextChapter = ViewCollection.extend({
+  next: z.string(),
+});
 export type NextChapter = z.infer<typeof NextChapter>;
+
+export const PrevChapter = ViewCollection.extend({
+  prev: z.string(),
+});
+export type PrevChapter = z.infer<typeof NextChapter>;
 
 export const GetChapterList = createGetListSchema(Chapter);
 export type GetChapterList = z.infer<typeof GetChapterList>;

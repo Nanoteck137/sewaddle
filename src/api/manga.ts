@@ -5,6 +5,7 @@ import {
   Chapter,
   GetBasicChapterList,
   NextChapter,
+  PrevChapter,
 } from "../models/chapters";
 import {
   GetMangaViewRequest,
@@ -44,6 +45,11 @@ async function getChapter(id: string) {
 async function getNextChapter(id: string) {
   let raw = await pb.collection("nextChapters").getOne(id);
   return NextChapter.parseAsync(raw);
+}
+
+async function getPrevChapter(id: string) {
+  let raw = await pb.collection("prevChapters").getOne(id);
+  return PrevChapter.parseAsync(raw);
 }
 
 export function useMangas() {
@@ -90,6 +96,14 @@ export function useNextChapter(input: { id?: string }) {
   return useQuery({
     queryKey: ["nextChapters", input.id],
     queryFn: async () => await getNextChapter(input.id || ""),
+    enabled: !!input.id,
+  });
+}
+
+export function usePrevChapter(input: { id?: string }) {
+  return useQuery({
+    queryKey: ["prevChapters", input.id],
+    queryFn: async () => await getPrevChapter(input.id || ""),
     enabled: !!input.id,
   });
 }
