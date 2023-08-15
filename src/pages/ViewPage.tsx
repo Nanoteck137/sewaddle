@@ -7,7 +7,6 @@ import { pb } from "../api/pocketbase";
 const ViewPage = () => {
   const { id } = useParams();
   const [search] = useSearchParams();
-  console.log("ID", search);
 
   const navigate = useNavigate();
 
@@ -20,7 +19,6 @@ const ViewPage = () => {
 
   useEffect(() => {
     const page = search.get("page");
-    console.log("PAGE", page);
     if (page !== null && chapterQuery.data) {
       if (page === "") {
         setCurrentPage(chapterQuery.data.pages.length - 1);
@@ -46,8 +44,6 @@ const ViewPage = () => {
   const { data } = chapterQuery;
   const { data: nextChapter } = nextChapterQuery;
   const { data: prevChapter } = prevChapterQuery;
-  console.log("Next", nextChapter);
-  console.log("Prev", prevChapter);
 
   const nextPage = () => {
     const page = currentPage + 1;
@@ -90,7 +86,7 @@ const ViewPage = () => {
       ></button>
 
       <img
-        className={"h-full object-scale-down"}
+        className={"h-full border-2 object-scale-down dark:border-gray-600"}
         src={getCurrentPageUrl()}
         alt=""
       />
