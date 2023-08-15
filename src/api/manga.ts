@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { ClientResponseError } from "pocketbase";
 
 import {
   BASIC_CHAPTER_INFO_COLLECTION,
@@ -43,13 +44,29 @@ async function getChapter(id: string) {
 }
 
 async function getNextChapter(id: string) {
-  let raw = await pb.collection("nextChapters").getOne(id);
-  return NextChapter.parseAsync(raw);
+  try {
+    let raw = await pb.collection("nextChapters").getOne(id);
+    return NextChapter.parseAsync(raw);
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      return null;
+    }
+
+    throw e;
+  }
 }
 
 async function getPrevChapter(id: string) {
-  let raw = await pb.collection("prevChapters").getOne(id);
-  return PrevChapter.parseAsync(raw);
+  try {
+    let raw = await pb.collection("prevChapters").getOne(id);
+    return PrevChapter.parseAsync(raw);
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      return null;
+    }
+
+    throw e;
+  }
 }
 
 export function useMangas() {
