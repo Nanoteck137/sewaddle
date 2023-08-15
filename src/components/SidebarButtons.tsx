@@ -35,14 +35,27 @@ export const BigSidebarButtons = () => {
 };
 
 export const SmallSidebarButtons = () => {
+  const location = useLocation();
+
+  const isHome = location.pathname == "/";
+  const isSaved = false;
+
   return (
     <div className="flex flex-col items-center gap-4 py-4">
-      <button className="flex h-20 w-20 flex-col items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+      <button
+        className={`flex h-20 w-20 flex-col items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-600 ${
+          isHome ? "bg-gray-100 dark:bg-gray-600" : ""
+        }`}
+      >
         <HomeIcon className="h-8 w-8" />
         <p className="text-xs">Home</p>
       </button>
 
-      <button className="flex h-20 w-20 flex-col items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+      <button
+        className={`flex h-20 w-20 flex-col items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-600 ${
+          isSaved ? "bg-gray-100 dark:bg-gray-600" : ""
+        }`}
+      >
         <StarIcon className="h-8 w-8" />
         <p className="text-xs">Saved</p>
       </button>

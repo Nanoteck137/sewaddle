@@ -106,7 +106,7 @@ export const SmallThemeControl = () => {
         <Icon />
         <p className="text-sm">Theme</p>
       </Listbox.Button>
-      <Listbox.Options className="absolute -top-2 left-24 overflow-hidden rounded border-2 dark:border-gray-500">
+      <Listbox.Options className="absolute left-24 top-6 overflow-hidden rounded border-2 dark:border-gray-500">
         <Option
           value="dark"
           name="Dark"
