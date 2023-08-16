@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { useManga, useMangaChaptersBasic } from "../api/manga";
@@ -32,7 +32,7 @@ const SeriesPage = () => {
   const mangaQuery = useManga({ id });
   const mangaChaptersQuery = useMangaChaptersBasic({ id });
 
-  const [collapsed, setCollapsed] = useState(true);
+  // const [collapsed, setCollapsed] = useState(true);
 
   if (mangaQuery.isError || mangaChaptersQuery.isError) return <p>Error</p>;
   if (mangaQuery.isLoading || mangaChaptersQuery.isLoading)

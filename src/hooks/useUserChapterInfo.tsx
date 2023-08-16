@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
-import { ClientResponseError, Record } from "pocketbase";
+import { useCallback } from "react";
+import { ClientResponseError } from "pocketbase";
 
 import { pb } from "../api/pocketbase";
 import {
