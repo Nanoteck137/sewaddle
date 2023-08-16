@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useChapter, useNextChapter, usePrevChapter } from "../api/manga";
 import { pb } from "../api/pocketbase";
+import useUserChapterInfo from "../hooks/useUserChapterInfo";
 
 const ViewPage = () => {
   const { id } = useParams();
@@ -15,22 +16,36 @@ const ViewPage = () => {
   const nextChapterQuery = useNextChapter({ id });
   const prevChapterQuery = usePrevChapter({ id });
 
-  const [currentPage, setCurrentPage] = useState(0);
+  const userChapter = useUserChapterInfo({ chapterId: id });
+
+  const [currentPage, setCurrentPage] = useState(
+    userChapter.data?.currentPage || 0,
+  );
   const [isLastPage, setLastPage] = useState(false);
 
   useHotkeys(["j", "left"], () => nextPage());
   useHotkeys(["k", "right"], () => prevPage());
 
+  // TODO(patrik): Instead of this we should set the page query parameter
+  // when we navigate to this page
+  useEffect(() => {
+    if (userChapter.data) {
+      setCurrentPage(userChapter.data.currentPage);
+    }
+  }, [userChapter.data]);
+
   const nextPage = () => {
     const page = currentPage + 1;
     if (page < data.pages.length) {
       setCurrentPage(page);
+      userChapter.setPage(page);
     } else {
       if (nextChapter) {
         if (isLastPage) {
           navigate(`/view/${nextChapter.next}`);
         } else {
           setLastPage(true);
+          userChapter.setRead(true);
         }
       }
     }
@@ -40,6 +55,7 @@ const ViewPage = () => {
     const page = currentPage - 1;
     if (page >= 0) {
       setCurrentPage(page);
+      userChapter.setPage(page);
       if (isLastPage) {
         setLastPage(false);
       }
@@ -71,20 +87,6 @@ const ViewPage = () => {
     setLastPage(false);
   }, [id]);
 
-  // const keyup = (event: KeyboardEvent) => {
-  //   if (event.key == "j") {
-  //     nextPage();
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   document.addEventListener("keyup", keyup);
-
-  //   return () => {
-  //     document.removeEventListener("keyup", keyup);
-  //   };
-  // }, []);
-
   if (chapterQuery.isError) return <p>Error</p>;
   if (chapterQuery.isLoading) return <p>Loading...</p>;
 
@@ -95,6 +97,8 @@ const ViewPage = () => {
   const getCurrentPageUrl = () => {
     return pb.getFileUrl(data, data.pages[currentPage]);
   };
+
+  // TODO(patrik): Disable controls if userChapter is null or undefined
 
   return (
     <div className="relative flex h-full w-full justify-center">
