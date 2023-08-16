@@ -42,7 +42,7 @@ const ViewPage = () => {
     } else {
       if (nextChapter) {
         if (isLastPage) {
-          navigate(`/view/${nextChapter.next}`);
+          navigate(`/view/${nextChapter.next}?page=0`);
         } else {
           setLastPage(true);
           userChapter.setRead(true);
