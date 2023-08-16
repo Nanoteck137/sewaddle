@@ -4,7 +4,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useChapter, useNextChapter, usePrevChapter } from "../api/manga";
 import { pb } from "../api/pocketbase";
-import useUserChapterInfo from "../hooks/useUserChapterInfo";
+import useChapterProgress from "../hooks/useChapterProgress";
 
 // TODO(patrik): Fix the flickering from the continue panel
 const ViewPage = () => {
@@ -17,7 +17,7 @@ const ViewPage = () => {
   const nextChapterQuery = useNextChapter({ id });
   const prevChapterQuery = usePrevChapter({ id });
 
-  const userChapter = useUserChapterInfo({ chapterId: id });
+  const chapterProgress = useChapterProgress({ chapterId: id });
 
   const [state, setState] = useState({
     currentPage: 0,
@@ -46,14 +46,14 @@ const ViewPage = () => {
     const page = state.currentPage + 1;
     if (page < data.pages.length) {
       setState((prev) => ({ ...prev, currentPage: page }));
-      userChapter.setPage(page);
+      chapterProgress.setPage(page);
     } else {
       if (nextChapter) {
         if (state.isLastPage) {
           navigate(`/view/${nextChapter.next}?page=0`);
         } else {
           setState((prev) => ({ ...prev, isLastPage: true }));
-          userChapter.setRead(true);
+          chapterProgress.setRead(true);
         }
       }
     }
@@ -63,7 +63,7 @@ const ViewPage = () => {
     const page = state.currentPage - 1;
     if (page >= 0) {
       setState((prev) => ({ ...prev, currentPage: page }));
-      userChapter.setPage(page);
+      chapterProgress.setPage(page);
       if (state.isLastPage) {
         setState((prev) => ({ ...prev, isLastPage: false }));
       }
@@ -113,8 +113,8 @@ const ViewPage = () => {
   useEffect(() => {
     console.log(state);
     if (
-      userChapter.data &&
-      userChapter.data.currentPage != 0 &&
+      chapterProgress.data &&
+      chapterProgress.data.currentPage != 0 &&
       !state.disableContinue
     ) {
       setState((prev) => ({
@@ -129,7 +129,7 @@ const ViewPage = () => {
         disableControls: false,
       }));
     }
-  }, [userChapter.data, state.disableContinue]);
+  }, [chapterProgress.data, state.disableContinue]);
 
   if (chapterQuery.isError) return <p>Error</p>;
   if (chapterQuery.isLoading) return <p>Loading...</p>;
@@ -162,7 +162,7 @@ const ViewPage = () => {
           ></div>
           <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded bg-gray-700 p-10 text-lg">
             <p>
-              Do you want to continue page '{userChapter.data?.currentPage}'
+              Do you want to continue page '{chapterProgress.data?.currentPage}'
             </p>
             <div className="flex justify-end gap-4">
               <button
@@ -173,7 +173,7 @@ const ViewPage = () => {
                     showContinue: false,
                     disableControls: false,
                     disableContinue: true,
-                    currentPage: userChapter.data?.currentPage || 0,
+                    currentPage: chapterProgress.data?.currentPage || 0,
                   })
                 }
               >
