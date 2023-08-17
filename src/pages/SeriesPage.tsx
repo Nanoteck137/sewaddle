@@ -32,6 +32,8 @@ const SeriesPage = () => {
   const mangaQuery = useManga({ id });
   const mangaChaptersQuery = useMangaChaptersBasic({ id });
 
+  console.log(mangaQuery.data);
+
   // const [collapsed, setCollapsed] = useState(true);
 
   if (mangaQuery.isError || mangaChaptersQuery.isError) return <p>Error</p>;
@@ -43,16 +45,12 @@ const SeriesPage = () => {
 
   return (
     <div className="flex flex-col gap-10 p-2">
-      <p className="text-center text-2xl">{manga.name}</p>
+      <p className="text-center text-2xl">{manga.englishTitle}</p>
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3">
         <div className="flex h-full flex-col justify-start">
           <img
             className=""
-            src={
-              isValidHttpUrl(manga.cover)
-                ? manga.cover
-                : pb.getFileUrl(manga, manga.cover)
-            }
+            src={pb.getFileUrl(manga, manga.coverExtraLarge)}
             alt=""
           />
 

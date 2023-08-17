@@ -3,28 +3,23 @@ import { Link } from "react-router-dom";
 import { useMangas } from "../api/manga";
 import { pb } from "../api/pocketbase";
 import { MangaView } from "../models/manga";
-import { isValidHttpUrl } from "../utils";
 
 const Item = (props: { manga: MangaView }) => {
   const { manga } = props;
   return (
     <Link
       to={`/series/${manga.id}`}
-      className="relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm"
+      className={`relative flex h-full max-w-xs flex-col items-center overflow-hidden rounded  border-2 bg-white shadow-md dark:border-gray-500 dark:bg-gray-600 md:max-w-sm`}
     >
       <div className="absolute right-2 top-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600/90 text-white">
         <p>{manga.chaptersAvailable}</p>
       </div>
       <img
         className="h-auto max-w-full overflow-clip object-cover md:h-full"
-        src={
-          isValidHttpUrl(manga.cover)
-            ? manga.cover
-            : pb.getFileUrl(manga, manga.cover)
-        }
+        src={pb.getFileUrl(manga, manga.coverExtraLarge)}
         alt=""
       />
-      <p className="p-4 text-center">{manga.name}</p>
+      <p className="p-4 text-center">{manga.englishTitle}</p>
     </Link>
   );
 };

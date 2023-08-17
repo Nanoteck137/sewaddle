@@ -1,10 +1,12 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ClientResponseError } from "pocketbase";
 
 import { useChapter, useNextChapter, usePrevChapter } from "../api/manga";
 import { pb } from "../api/pocketbase";
-import useChapterProgress from "../hooks/useChapterProgress";
+import { useAuth } from "../hooks/useAuth";
 
 // TODO(patrik): Fix the flickering from the continue panel
 const ViewPage = () => {
@@ -17,14 +19,86 @@ const ViewPage = () => {
   const nextChapterQuery = useNextChapter({ id });
   const prevChapterQuery = usePrevChapter({ id });
 
-  const chapterProgress = useChapterProgress({ chapterId: id });
+  // const chapterProgress = useChapterProgress({ chapterId: id });
+
+  const auth = useAuth();
+
+  const userLastRead = useQuery({
+    queryKey: ["userLastRead", auth.user?.id, id],
+    enabled: !!auth.user?.id && !!chapterQuery.data,
+    queryFn: async () => {
+      const fetch = async (userId: string, mangaId: string) => {
+        try {
+          const record = await pb
+            .collection("userLastReadChapter")
+            .getFirstListItem(`(user="${userId}" && manga="${mangaId}")`);
+          return record;
+        } catch (e) {
+          // if (e instanceof ClientResponseError) {
+          //   if (e.status == 404) {
+          //   }
+          // }
+
+          // throw e;
+          return null;
+        }
+      };
+
+      const userId = auth.user?.id || "";
+      const mangaId = chapterQuery.data?.manga || "";
+
+      let res = await fetch(userId, mangaId);
+
+      return res;
+    },
+  });
+
+  const updateUserLastRead = useMutation({
+    mutationFn: async (page: number) => {
+      try {
+        if (userLastRead.data) {
+          await pb
+            .collection("userLastReadChapter")
+            .update(userLastRead.data.id, {
+              chapter: id,
+              page,
+            });
+        } else if (
+          userLastRead.data === null &&
+          auth.user &&
+          id &&
+          chapterQuery.data
+        ) {
+          await pb.collection("userLastReadChapter").create({
+            user: auth.user.id,
+            manga: chapterQuery.data.manga,
+            chapter: id,
+            page,
+          });
+        }
+      } catch (e) {}
+    },
+  });
+
+  const setChapterRead = useMutation({
+    mutationFn: async () => {
+      if (auth.user && id) {
+        try {
+          await pb.collection("userChapterRead").create({
+            user: auth.user.id,
+            chapter: id,
+          });
+        } catch (e) {}
+      }
+    },
+  });
 
   const [state, setState] = useState({
     currentPage: 0,
     isLastPage: false,
-    showContinue: false,
-    disableContinue: false,
-    disableControls: false,
+    // showContinue: false,
+    // disableContinue: false,
+    // disableControls: false,
   });
 
   // const [isLastPage, setLastPage] = useState(false);
@@ -46,14 +120,16 @@ const ViewPage = () => {
     const page = state.currentPage + 1;
     if (page < data.pages.length) {
       setState((prev) => ({ ...prev, currentPage: page }));
-      chapterProgress.setPage(page);
+      // updateUserLastRead.mutate(page);
+      // chapterProgress.setPage(page);
     } else {
       if (nextChapter) {
         if (state.isLastPage) {
           navigate(`/view/${nextChapter.next}?page=0`);
         } else {
           setState((prev) => ({ ...prev, isLastPage: true }));
-          chapterProgress.setRead(true);
+          setChapterRead.mutate();
+          // chapterProgress.setRead(true);
         }
       }
     }
@@ -63,7 +139,8 @@ const ViewPage = () => {
     const page = state.currentPage - 1;
     if (page >= 0) {
       setState((prev) => ({ ...prev, currentPage: page }));
-      chapterProgress.setPage(page);
+      // updateUserLastRead.mutate(page);
+      // chapterProgress.setPage(page);
       if (state.isLastPage) {
         setState((prev) => ({ ...prev, isLastPage: false }));
       }
@@ -82,7 +159,7 @@ const ViewPage = () => {
         setState((prev) => ({
           ...prev,
           currentPage: page,
-          disableContinue: true,
+          // disableContinue: true,
         }));
       } else {
         const n = parseInt(page);
@@ -90,7 +167,7 @@ const ViewPage = () => {
           setState((prev) => ({
             ...prev,
             currentPage: n,
-            disableContinue: true,
+            // disableContinue: true,
           }));
         }
       }
@@ -100,36 +177,41 @@ const ViewPage = () => {
   useEffect(() => {
     // NOTE(patrik): Need to reset the state when we navigate to
     // the next chapter
+
     setState({
       currentPage: 0,
       isLastPage: false,
 
-      showContinue: false,
-      disableContinue: false,
-      disableControls: false,
+      // showContinue: false,
+      // disableContinue: false,
+      // disableControls: false,
     });
   }, [id]);
 
   useEffect(() => {
-    console.log(state);
-    if (
-      chapterProgress.data &&
-      chapterProgress.data.currentPage != 0 &&
-      !state.disableContinue
-    ) {
-      setState((prev) => ({
-        ...prev,
-        showContinue: true,
-        disableControls: true,
-      }));
-    } else {
-      setState((prev) => ({
-        ...prev,
-        showContinue: false,
-        disableControls: false,
-      }));
-    }
-  }, [chapterProgress.data, state.disableContinue]);
+    updateUserLastRead.mutate(state.currentPage);
+  }, [userLastRead.data, state.currentPage]);
+
+  // useEffect(() => {
+  //   console.log(state);
+  //   if (
+  //     chapterProgress.data &&
+  //     chapterProgress.data.currentPage != 0 &&
+  //     !state.disableContinue
+  //   ) {
+  //     setState((prev) => ({
+  //       ...prev,
+  //       showContinue: true,
+  //       disableControls: true,
+  //     }));
+  //   } else {
+  //     setState((prev) => ({
+  //       ...prev,
+  //       showContinue: false,
+  //       disableControls: false,
+  //     }));
+  //   }
+  // }, [chapterProgress.data, state.disableContinue]);
 
   if (chapterQuery.isError) return <p>Error</p>;
   if (chapterQuery.isLoading) return <p>Loading...</p>;
@@ -139,6 +221,7 @@ const ViewPage = () => {
   const { data: prevChapter } = prevChapterQuery;
 
   const getCurrentPageUrl = () => {
+    // TODO(patrik): If currentPage > page length just clamp it
     return pb.getFileUrl(data, data.pages[state.currentPage]);
   };
 
@@ -146,7 +229,7 @@ const ViewPage = () => {
 
   return (
     <div className="relative flex h-full w-full justify-center">
-      {state.showContinue && !state.disableContinue && (
+      {/* {state.showContinue && !state.disableContinue && (
         <>
           <div
             className="fixed bottom-0 left-0 right-0 top-0 cursor-pointer bg-black/60"
@@ -160,7 +243,7 @@ const ViewPage = () => {
               })
             }
           ></div>
-          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded bg-gray-700 p-10 text-lg">
+          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded border-2 bg-white p-10 text-lg shadow dark:border-gray-600 dark:bg-gray-700">
             <p>
               Do you want to continue page '{chapterProgress.data?.currentPage}'
             </p>
@@ -183,14 +266,12 @@ const ViewPage = () => {
             </div>
           </div>
         </>
-      )}
+      )} */}
 
-      {!state.disableControls && (
-        <button
-          className="absolute left-0 h-full w-1/2 bg-red-400/20"
-          onClick={nextPage}
-        ></button>
-      )}
+      <button
+        className="absolute left-0 h-full w-1/2 bg-red-400/20"
+        onClick={nextPage}
+      ></button>
 
       <img
         className={"h-full border-2 object-scale-down dark:border-gray-600"}
@@ -198,12 +279,10 @@ const ViewPage = () => {
         alt=""
       />
 
-      {!state.disableControls && (
-        <button
-          className="absolute right-0 h-full w-1/2 bg-blue-400/20"
-          onClick={prevPage}
-        ></button>
-      )}
+      <button
+        className="absolute right-0 h-full w-1/2 bg-blue-400/20"
+        onClick={prevPage}
+      ></button>
 
       {state.isLastPage && (
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded bg-gray-700/95 p-10 text-xl">

@@ -10,18 +10,18 @@ import {
 } from "../models/chapters";
 import {
   GetMangaViewRequest,
-  MANGA_VIEWS_COLLECTION_NAME,
+  MANGA_DISPLAY_COLLECTION_NAME,
   MangaView,
 } from "../models/manga";
 import { pb } from "./pocketbase";
 
 async function getMangaViews() {
-  const raw = await pb.collection(MANGA_VIEWS_COLLECTION_NAME).getList();
+  const raw = await pb.collection(MANGA_DISPLAY_COLLECTION_NAME).getList();
   return await GetMangaViewRequest.parseAsync(raw);
 }
 
 async function getMangaView(id: string) {
-  const raw = await pb.collection(MANGA_VIEWS_COLLECTION_NAME).getOne(id);
+  const raw = await pb.collection(MANGA_DISPLAY_COLLECTION_NAME).getOne(id);
   console.log("RAW", raw);
 
   return await MangaView.parseAsync(raw);
