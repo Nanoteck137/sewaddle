@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useTernaryDarkMode } from "usehooks-ts";
 
+import { AuthProvider } from "./contexts/authContext";
 import BlankLayout from "./layouts/BlankLayout";
 import DefaultLayout from "./layouts/DefaultLayout";
 import AboutPage from "./pages/AboutPage";
@@ -29,25 +30,27 @@ const App = () => {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/">
-              <Route element={<DefaultLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="series/:id" element={<SeriesPage />} />
-                <Route path="view/:id" element={<ViewPage />} />
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/">
+                <Route element={<DefaultLayout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="series/:id" element={<SeriesPage />} />
+                  <Route path="view/:id" element={<ViewPage />} />
 
-                <Route path="account" element={<AccountPage />} />
-                <Route path="about" element={<AboutPage />} />
-              </Route>
+                  <Route path="account" element={<AccountPage />} />
+                  <Route path="about" element={<AboutPage />} />
+                </Route>
 
-              <Route element={<BlankLayout />}>
-                <Route path="login" element={<LoginPage />} />
-                <Route path="register" element={<RegisterPage />} />
+                <Route element={<BlankLayout />}>
+                  <Route path="login" element={<LoginPage />} />
+                  <Route path="register" element={<RegisterPage />} />
+                </Route>
               </Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
       </QueryClientProvider>
     </>
   );

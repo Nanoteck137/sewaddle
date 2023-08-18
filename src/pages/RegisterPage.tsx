@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/authContext";
 
 const RegisterSchema = z
   .object({
@@ -37,7 +37,7 @@ const RegisterPage = () => {
 
   return (
     <div className="h-full p-6">
-      {auth.user && <Navigate to="/" />}
+      {auth.isLoggedIn && <Navigate to="/" />}
 
       <div className="mx-auto w-full">
         <Link to="/" className="block text-center text-4xl">

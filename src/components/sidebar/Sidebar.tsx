@@ -9,7 +9,8 @@ import {
 } from "@heroicons/react/24/solid";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../contexts/authContext";
+// import { useAuth } from "../../hooks/useAuth";
 import { Button } from "./Button";
 import ThemeSelector from "./ThemeSelector";
 
@@ -40,7 +41,7 @@ const Buttons = () => {
         />
       </div>
       <div className="flex w-full flex-col gap-2">
-        {auth.user && (
+        {auth.isLoggedIn && (
           <>
             <Button
               title="Account"
@@ -56,7 +57,7 @@ const Buttons = () => {
             />
           </>
         )}
-        {!auth.user && (
+        {!auth.isLoggedIn && (
           <Button
             title="Login"
             icon={ArrowRightOnRectangleIcon}

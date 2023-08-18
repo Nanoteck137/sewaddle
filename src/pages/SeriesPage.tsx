@@ -17,7 +17,7 @@ const Chapter = forwardRef<HTMLAnchorElement, { chapter: BasicChapter }>(
         className="flex flex-col items-center gap-2 rounded border-2 p-2 shadow dark:border-gray-500 dark:bg-gray-600"
       >
         <img
-          className="h-auto w-full"
+          className="h-full"
           src={pb.getFileUrl(chapter, chapter.cover)}
           alt="Chapter Cover"
         />

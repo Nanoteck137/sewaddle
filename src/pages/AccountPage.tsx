@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/authContext";
 
 const ChangePasswordSchema = z
   .object({
