@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { forwardRef, Fragment, useEffect } from "react";
+import { forwardRef, Fragment, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
@@ -12,25 +12,50 @@ import { Collection } from "../models/collection";
 
 const Chapter = forwardRef<
   HTMLAnchorElement,
-  { chapter: BasicChapter; hasRead: boolean }
+  {
+    chapter: BasicChapter;
+    isContinue: boolean;
+    hasRead: boolean;
+    isGroup: boolean;
+  }
 >((props, ref) => {
-  const { chapter, hasRead } = props;
+  const { chapter, isContinue, hasRead, isGroup } = props;
 
   return (
     <Link
       ref={ref}
       to={`/view/${chapter.id}`}
-      className="flex flex-col items-center gap-2 rounded border-2 p-2 shadow dark:border-gray-500 dark:bg-gray-600"
+      className="relative flex flex-col items-center rounded border-2 shadow dark:border-gray-500 dark:bg-gray-600"
     >
-      <img
-        className="h-full"
-        src={pb.getFileUrl(chapter, chapter.cover)}
-        alt="Chapter Cover"
-      />
+      {/* <div className="absolute left-4 top-4 flex w-10 items-center justify-center rounded-full border-2 border-black bg-red-400/95 text-black">
+        <p className="aspect-square">{chapter.idx}</p>
+      </div> */}
+      {isGroup && (
+        <p className="h-auto flex-grow p-1">
+          Ch. {chapter.group} - {chapter.name}
+        </p>
+      )}
+      {!isGroup && <p className="h-auto flex-grow p-1">Ch. {chapter.name}</p>}
 
-      <p>
-        {chapter.idx} - {chapter.name} - {hasRead ? "Read" : "Not Read"}
-      </p>
+      <div className="relative">
+        <img
+          className="h-full"
+          src={pb.getFileUrl(chapter, chapter.cover)}
+          alt="Chapter Cover"
+        />
+
+        <div
+          className={`absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full p-1 shadow-xl ${
+            isContinue
+              ? "bg-yellow-400/95"
+              : hasRead
+              ? "bg-green-400/95"
+              : "bg-red-500/95"
+          }`}
+        >
+          {chapter.pageCount}
+        </div>
+      </div>
     </Link>
   );
 });
@@ -83,7 +108,6 @@ const SeriesPage = () => {
     },
     enabled: !!auth.user?.id && !!id,
   });
-  console.log("Read", chapterRead.data);
 
   useEffect(() => {
     if (inView && mangaChaptersQuery.hasNextPage) {
@@ -95,7 +119,7 @@ const SeriesPage = () => {
     mangaChaptersQuery.fetchNextPage,
   ]);
 
-  // const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(true);
 
   if (mangaQuery.isError || mangaChaptersQuery.isError) return <p>Error</p>;
   if (mangaQuery.isLoading || mangaChaptersQuery.isLoading)
@@ -110,17 +134,17 @@ const SeriesPage = () => {
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3">
         <div className="flex h-full flex-col justify-start">
           <img
-            className=""
+            className="shadow-xl"
             src={pb.getFileUrl(manga, manga.coverExtraLarge)}
             alt=""
           />
 
-          <a href={manga.malUrl} target="_blank">
+          {/* <a href={manga.malUrl} target="_blank">
             MyAnimeList
-          </a>
+          </a> */}
         </div>
 
-        {/* <div className="col-span-2 flex h-full flex-col justify-between">
+        <div className="col-span-2 flex h-full flex-col justify-between">
           <div>
             <p
               className={`w-full md:hidden ${
@@ -139,11 +163,11 @@ const SeriesPage = () => {
             >
               Toggle
             </button>
-            <div className="hidden md:block">
+            <div className="hidden px-2 md:block">
               <p className="whitespace-pre-wrap">{manga.description}</p>
             </div>
-          </div> */}
-        {/* </div> */}
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -175,13 +199,17 @@ const SeriesPage = () => {
                     }
                   }
 
+                  const isContinue = lastChapterRead.data?.chapter === item.id;
+
                   if (isLastPage && isLastItem) {
                     return (
                       <Chapter
                         ref={ref}
                         key={item.id}
                         chapter={item}
+                        isContinue={isContinue}
                         hasRead={hasReadChapter}
+                        isGroup={manga.isGroup}
                       />
                     );
                   }
@@ -189,7 +217,9 @@ const SeriesPage = () => {
                     <Chapter
                       key={item.id}
                       chapter={item}
+                      isContinue={isContinue}
                       hasRead={hasReadChapter}
+                      isGroup={manga.isGroup}
                     />
                   );
                 })}

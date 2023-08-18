@@ -7,6 +7,7 @@ export const BASIC_CHAPTER_INFO_COLLECTION = "basicChapterInfo";
 export const Chapter = Collection.extend({
   name: z.string(),
   idx: z.number(),
+  group: z.number(),
   manga: z.string(),
   cover: z.string(),
   pages: z.array(z.string()),
