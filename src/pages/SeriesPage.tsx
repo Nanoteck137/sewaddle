@@ -10,29 +10,30 @@ import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
 import { Collection } from "../models/collection";
 
-const Chapter = forwardRef<HTMLAnchorElement, { chapter: BasicChapter }>(
-  (props, ref) => {
-    const { chapter } = props;
+const Chapter = forwardRef<
+  HTMLAnchorElement,
+  { chapter: BasicChapter; hasRead: boolean }
+>((props, ref) => {
+  const { chapter, hasRead } = props;
 
-    return (
-      <Link
-        ref={ref}
-        to={`/view/${chapter.id}`}
-        className="flex flex-col items-center gap-2 rounded border-2 p-2 shadow dark:border-gray-500 dark:bg-gray-600"
-      >
-        <img
-          className="h-full"
-          src={pb.getFileUrl(chapter, chapter.cover)}
-          alt="Chapter Cover"
-        />
+  return (
+    <Link
+      ref={ref}
+      to={`/view/${chapter.id}`}
+      className="flex flex-col items-center gap-2 rounded border-2 p-2 shadow dark:border-gray-500 dark:bg-gray-600"
+    >
+      <img
+        className="h-full"
+        src={pb.getFileUrl(chapter, chapter.cover)}
+        alt="Chapter Cover"
+      />
 
-        <p>
-          {chapter.idx} - {chapter.name}
-        </p>
-      </Link>
-    );
-  },
-);
+      <p>
+        {chapter.idx} - {chapter.name} - {hasRead ? "Read" : "Not Read"}
+      </p>
+    </Link>
+  );
+});
 
 const SeriesPage = () => {
   const { id } = useParams();
@@ -64,6 +65,25 @@ const SeriesPage = () => {
     },
     enabled: !!auth.user?.id && !!id,
   });
+
+  const TestSchema = z.array(
+    Collection.extend({
+      user: z.string(),
+      chapter: z.string(),
+    }),
+  );
+
+  const chapterRead = useQuery({
+    queryKey: ["chapterRead", auth.user?.id, id],
+    queryFn: async () => {
+      const list = await pb.collection("userChapterRead").getFullList({
+        filter: `user = "${auth.user?.id}" && chapter.manga = "${id}"`,
+      });
+      return await TestSchema.parseAsync(list);
+    },
+    enabled: !!auth.user?.id && !!id,
+  });
+  console.log("Read", chapterRead.data);
 
   useEffect(() => {
     if (inView && mangaChaptersQuery.hasNextPage) {
@@ -143,10 +163,35 @@ const SeriesPage = () => {
               <Fragment key={i}>
                 {page.items.map((item, i) => {
                   const isLastItem = i == page.items.length - 1;
-                  if (isLastPage && isLastItem) {
-                    return <Chapter ref={ref} key={item.id} chapter={item} />;
+
+                  let hasReadChapter = false;
+                  if (chapterRead.data) {
+                    const data = chapterRead.data.find(
+                      (obj) => obj.chapter == item.id,
+                    );
+
+                    if (data) {
+                      hasReadChapter = true;
+                    }
                   }
-                  return <Chapter key={item.id} chapter={item} />;
+
+                  if (isLastPage && isLastItem) {
+                    return (
+                      <Chapter
+                        ref={ref}
+                        key={item.id}
+                        chapter={item}
+                        hasRead={hasReadChapter}
+                      />
+                    );
+                  }
+                  return (
+                    <Chapter
+                      key={item.id}
+                      chapter={item}
+                      hasRead={hasReadChapter}
+                    />
+                  );
                 })}
               </Fragment>
             );
