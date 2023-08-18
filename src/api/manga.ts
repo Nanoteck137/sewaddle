@@ -20,7 +20,6 @@ async function getMangaViews() {
 
 async function getMangaView(id: string) {
   const raw = await pb.collection(MANGA_DISPLAY_COLLECTION_NAME).getOne(id);
-  console.log("RAW", raw);
 
   return await MangaView.parseAsync(raw);
 }
@@ -31,7 +30,6 @@ async function getMangaChaptersBasic(id: string, page: number) {
     .getList(page, undefined, {
       filter: `manga = '${id}'`,
     });
-  console.log(raw);
 
   return await GetBasicChapterList.parseAsync(raw);
 }
