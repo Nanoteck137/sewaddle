@@ -117,19 +117,6 @@ const SeriesPage = () => {
               </Fragment>
             );
           })}
-          <button
-            onClick={() => mangaChaptersQuery.fetchNextPage()}
-            disabled={
-              !mangaChaptersQuery.hasNextPage ||
-              mangaChaptersQuery.isFetchingNextPage
-            }
-          >
-            {mangaChaptersQuery.isFetchingNextPage
-              ? "Loading more..."
-              : mangaChaptersQuery.hasNextPage
-              ? "Load More"
-              : "Nothing more to load"}
-          </button>
         </div>
       </div>
     </div>
