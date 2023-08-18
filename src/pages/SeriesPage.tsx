@@ -4,7 +4,6 @@ import { Link, useParams } from "react-router-dom";
 import { useManga, useMangaChaptersBasic } from "../api/manga";
 import { pb } from "../api/pocketbase";
 import { BasicChapter } from "../models/chapters";
-import { isValidHttpUrl } from "../utils";
 
 const Chapter = (props: { chapter: BasicChapter }) => {
   const { chapter } = props;
