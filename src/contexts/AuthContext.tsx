@@ -126,19 +126,12 @@ export const AuthProvider = (props: AuthProviderProps) => {
     };
   }, []);
 
-  useEffect(() => {
-    console.log("TEST");
-  }, [pb.authStore.isValid]);
-
   const base = {
     register,
     login,
     logout,
     changePassword,
   };
-
-  console.log(user);
-  console.log("Model", pb.authStore.isValid);
 
   return (
     <AuthContext.Provider
