@@ -43,10 +43,14 @@ async function getChapter(id: string) {
   return Chapter.parseAsync(raw);
 }
 
-async function getNextChapter(id: string) {
+async function getNextChapter(chapter: Chapter) {
   try {
-    let raw = await pb.collection("nextChapters").getOne(id);
-    return NextChapter.parseAsync(raw);
+    const rec = await pb
+      .collection("chapters")
+      .getFirstListItem(`(manga="${chapter.manga}" && idx > ${chapter.idx})`, {
+        fields: "id",
+      });
+    return rec.id;
   } catch (e) {
     if (e instanceof ClientResponseError) {
       return null;
@@ -56,10 +60,14 @@ async function getNextChapter(id: string) {
   }
 }
 
-async function getPrevChapter(id: string) {
+async function getPrevChapter(chapter: Chapter) {
   try {
-    let raw = await pb.collection("prevChapters").getOne(id);
-    return PrevChapter.parseAsync(raw);
+    const rec = await pb
+      .collection("chapters")
+      .getFirstListItem(`(manga="${chapter.manga}" && idx < ${chapter.idx})`, {
+        fields: "id",
+      });
+    return rec.id;
   } catch (e) {
     if (e instanceof ClientResponseError) {
       return null;
@@ -109,18 +117,18 @@ export function useChapter(input: { id?: string }) {
   });
 }
 
-export function useNextChapter(input: { id?: string }) {
+export function useNextChapter(input: { chapter?: Chapter }) {
   return useQuery({
-    queryKey: ["nextChapters", input.id],
-    queryFn: async () => await getNextChapter(input.id || ""),
-    enabled: !!input.id,
+    queryKey: ["nextChapters", input.chapter?.id],
+    queryFn: async () => await getNextChapter(input.chapter!),
+    enabled: !!input.chapter,
   });
 }
 
-export function usePrevChapter(input: { id?: string }) {
+export function usePrevChapter(input: { chapter?: Chapter }) {
   return useQuery({
-    queryKey: ["prevChapters", input.id],
-    queryFn: async () => await getPrevChapter(input.id || ""),
-    enabled: !!input.id,
+    queryKey: ["prevChapters", input.chapter?.id],
+    queryFn: async () => await getPrevChapter(input.chapter!),
+    enabled: !!input.chapter,
   });
 }

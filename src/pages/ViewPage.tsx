@@ -14,8 +14,10 @@ const ViewPage = () => {
   const navigate = useNavigate();
 
   const chapterQuery = useChapter({ id });
-  const nextChapterQuery = useNextChapter({ id });
-  const prevChapterQuery = usePrevChapter({ id });
+
+  // TODO(patrik): Combine to one query
+  const nextChapterQuery = useNextChapter({ chapter: chapterQuery.data });
+  const prevChapterQuery = usePrevChapter({ chapter: chapterQuery.data });
 
   const auth = useAuth();
 
@@ -99,7 +101,7 @@ const ViewPage = () => {
     } else {
       if (nextChapter) {
         if (state.isLastPage) {
-          navigate(`/view/${nextChapter.next}?page=0`);
+          navigate(`/view/${nextChapter}?page=0`);
         } else {
           setState((prev) => ({ ...prev, isLastPage: true }));
           setChapterRead.mutate();
@@ -113,14 +115,12 @@ const ViewPage = () => {
     if (page >= 0) {
       setState((prev) => ({ ...prev, currentPage: page }));
       setSearch({ page: page.toString() });
-      // updateUserLastRead.mutate(page);
-      // chapterProgress.setPage(page);
       if (state.isLastPage) {
         setState((prev) => ({ ...prev, isLastPage: false }));
       }
     } else {
       if (prevChapter) {
-        navigate(`/view/${prevChapter.prev}?page=`);
+        navigate(`/view/${prevChapter}?page=`);
       }
     }
   };
