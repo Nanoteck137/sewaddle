@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { Collection, createGetListSchema, ViewCollection } from "./collection";
+import { Collection, createGetListSchema } from "./collection";
 
 export const BASIC_CHAPTER_INFO_COLLECTION = "basicChapterInfo";
 
@@ -17,16 +17,6 @@ export const BasicChapter = Chapter.omit({ pages: true }).extend({
   pageCount: z.number(),
 });
 export type BasicChapter = z.infer<typeof BasicChapter>;
-
-export const NextChapter = ViewCollection.extend({
-  next: z.string(),
-});
-export type NextChapter = z.infer<typeof NextChapter>;
-
-export const PrevChapter = ViewCollection.extend({
-  prev: z.string(),
-});
-export type PrevChapter = z.infer<typeof NextChapter>;
 
 export const GetChapterList = createGetListSchema(Chapter);
 export type GetChapterList = z.infer<typeof GetChapterList>;

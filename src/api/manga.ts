@@ -5,8 +5,6 @@ import {
   BASIC_CHAPTER_INFO_COLLECTION,
   Chapter,
   GetBasicChapterList,
-  NextChapter,
-  PrevChapter,
 } from "../models/chapters";
 import {
   GetMangaViewRequest,
