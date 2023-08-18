@@ -1,10 +1,14 @@
+import { useQuery } from "@tanstack/react-query";
 import { forwardRef, Fragment, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
+import { z } from "zod";
 
 import { useManga, useMangaChaptersBasic } from "../api/manga";
 import { pb } from "../api/pocketbase";
+import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
+import { Collection } from "../models/collection";
 
 const Chapter = forwardRef<HTMLAnchorElement, { chapter: BasicChapter }>(
   (props, ref) => {
@@ -36,6 +40,30 @@ const SeriesPage = () => {
   const mangaChaptersQuery = useMangaChaptersBasic({ id });
 
   const [ref, inView] = useInView();
+
+  const auth = useAuth();
+
+  const Schema = Collection.extend({
+    user: z.string(),
+    manga: z.string(),
+    chapter: z.string(),
+    page: z.number(),
+  });
+
+  const lastChapterRead = useQuery({
+    queryKey: ["lastChapterRead", auth.user?.id, id],
+    queryFn: async () => {
+      try {
+        const rec = await pb
+          .collection("userLastReadChapter")
+          .getFirstListItem(`(user = "${auth.user?.id}" && manga = "${id}")`);
+        return await Schema.parseAsync(rec);
+      } catch (e) {
+        return null;
+      }
+    },
+    enabled: !!auth.user?.id && !!id,
+  });
 
   useEffect(() => {
     if (inView && mangaChaptersQuery.hasNextPage) {
@@ -99,6 +127,14 @@ const SeriesPage = () => {
       </div>
 
       <div className="flex flex-col gap-2">
+        {lastChapterRead.data && (
+          <Link
+            className="w-fit rounded bg-red-300 px-4 py-2"
+            to={`/view/${lastChapterRead.data.chapter}?page=${lastChapterRead.data.page}`}
+          >
+            Continue
+          </Link>
+        )}
         <p>Chapters Available: {manga.chaptersAvailable}</p>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
           {chapters.pages.map((page, i) => {
