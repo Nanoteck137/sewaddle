@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { useAuth } from "../contexts/authContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const RegisterSchema = z
   .object({

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useTernaryDarkMode } from "usehooks-ts";
 
-import { AuthProvider } from "./contexts/authContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import BlankLayout from "./layouts/BlankLayout";
 import DefaultLayout from "./layouts/DefaultLayout";
 import AboutPage from "./pages/AboutPage";

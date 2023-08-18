@@ -5,7 +5,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { useChapter, useNextChapter, usePrevChapter } from "../api/manga";
 import { pb } from "../api/pocketbase";
-import { useAuth } from "../contexts/authContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const ViewPage = () => {
   const { id } = useParams();

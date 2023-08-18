@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../contexts/authContext";
+import { useAuth } from "../../contexts/AuthContext";
 // import { useAuth } from "../../hooks/useAuth";
 import { Button } from "./Button";
 import ThemeSelector from "./ThemeSelector";
