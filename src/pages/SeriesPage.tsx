@@ -1,37 +1,53 @@
-import { Fragment } from "react";
+import { forwardRef, Fragment, useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
 
 import { useManga, useMangaChaptersBasic } from "../api/manga";
 import { pb } from "../api/pocketbase";
 import { BasicChapter } from "../models/chapters";
 
-const Chapter = (props: { chapter: BasicChapter }) => {
-  const { chapter } = props;
+const Chapter = forwardRef<HTMLAnchorElement, { chapter: BasicChapter }>(
+  (props, ref) => {
+    const { chapter } = props;
 
-  return (
-    <Link
-      to={`/view/${chapter.id}`}
-      className="flex flex-col items-center gap-2 rounded border-2 p-2 shadow dark:border-gray-500 dark:bg-gray-600"
-    >
-      <img
-        className="h-44"
-        src={pb.getFileUrl(chapter, chapter.cover)}
-        alt="Chapter Cover"
-      />
+    return (
+      <Link
+        ref={ref}
+        to={`/view/${chapter.id}`}
+        className="flex flex-col items-center gap-2 rounded border-2 p-2 shadow dark:border-gray-500 dark:bg-gray-600"
+      >
+        <img
+          className="h-auto w-full max-w-full"
+          src={pb.getFileUrl(chapter, chapter.cover)}
+          alt="Chapter Cover"
+        />
 
-      <p>
-        {chapter.idx} - {chapter.name}
-      </p>
-    </Link>
-  );
-};
+        <p>
+          {chapter.idx} - {chapter.name}
+        </p>
+      </Link>
+    );
+  },
+);
 
 const SeriesPage = () => {
   const { id } = useParams();
   const mangaQuery = useManga({ id });
   const mangaChaptersQuery = useMangaChaptersBasic({ id });
 
+  const [ref, inView] = useInView();
+
   console.log(mangaQuery.data);
+
+  useEffect(() => {
+    if (inView && mangaChaptersQuery.hasNextPage) {
+      mangaChaptersQuery.fetchNextPage();
+    }
+  }, [
+    inView,
+    mangaChaptersQuery.hasNextPage,
+    mangaChaptersQuery.fetchNextPage,
+  ]);
 
   // const [collapsed, setCollapsed] = useState(true);
 
@@ -88,9 +104,14 @@ const SeriesPage = () => {
         <p>Chapters Available: {manga.chaptersAvailable}</p>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
           {chapters.pages.map((page, i) => {
+            const isLastPage = i == chapters.pages.length - 1;
             return (
               <Fragment key={i}>
-                {page.items.map((item) => {
+                {page.items.map((item, i) => {
+                  const isLastItem = i == page.items.length - 1;
+                  if (isLastPage && isLastItem) {
+                    return <Chapter ref={ref} key={item.id} chapter={item} />;
+                  }
                   return <Chapter key={item.id} chapter={item} />;
                 })}
               </Fragment>
