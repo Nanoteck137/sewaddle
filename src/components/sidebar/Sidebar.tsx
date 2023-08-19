@@ -29,13 +29,13 @@ const Buttons = () => {
       <div className="flex w-full flex-col gap-2">
         <Button
           title="Home"
-          icon={HomeIcon}
+          icon={<HomeIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />}
           selected={isHome}
           onClick={() => navigate("/")}
         />
         <Button
           title="Saved"
-          icon={StarIcon}
+          icon={<StarIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />}
           selected={isSaved}
           onClick={() => navigate("/account/saved")}
         />
@@ -45,14 +45,18 @@ const Buttons = () => {
           <>
             <Button
               title="Account"
-              icon={UserIcon}
+              icon={
+                <UserIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />
+              }
               selected={isAccount}
               onClick={() => navigate("/account")}
             />
             <ThemeSelector />
             <Button
               title="Logout"
-              icon={ArrowLeftOnRectangleIcon}
+              icon={
+                <ArrowLeftOnRectangleIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />
+              }
               onClick={() => auth.logout()}
             />
           </>
@@ -60,7 +64,9 @@ const Buttons = () => {
         {!auth.isLoggedIn && (
           <Button
             title="Login"
-            icon={ArrowRightOnRectangleIcon}
+            icon={
+              <ArrowRightOnRectangleIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />
+            }
             onClick={() => navigate("/login")}
           />
         )}

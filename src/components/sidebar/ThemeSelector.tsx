@@ -31,9 +31,9 @@ const ThemeSelector = () => {
 
   const Icon = () => {
     if (isDarkMode) {
-      return <MoonIcon className="h-8 w-8" />;
+      return <MoonIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />;
     } else {
-      return <SunIcon className="h-8 w-8" />;
+      return <SunIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />;
     }
   };
 
@@ -49,7 +49,7 @@ const ThemeSelector = () => {
           <Listbox.Button
             className="w-full"
             title="Theme"
-            icon={Icon}
+            icon={<Icon />}
             as={Button}
           ></Listbox.Button>
 

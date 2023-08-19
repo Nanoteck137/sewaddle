@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import parse from "html-react-parser";
 import { forwardRef, Fragment, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
@@ -39,7 +40,7 @@ const Chapter = forwardRef<
 
       <div className="relative">
         <img
-          className="h-full"
+          className=""
           src={pb.getFileUrl(chapter, chapter.cover)}
           alt="Chapter Cover"
         />
@@ -129,44 +130,23 @@ const SeriesPage = () => {
   const { data: chapters } = mangaChaptersQuery;
 
   return (
-    <div className="flex flex-col gap-10 p-2">
+    <div className="flex flex-col gap-4 p-2">
       <p className="text-center text-2xl">{manga.englishTitle}</p>
-      <div className="grid grid-cols-1 place-items-center md:grid-cols-3">
-        <div className="flex h-full flex-col justify-start">
-          <img
-            className="shadow-xl"
-            src={pb.getFileUrl(manga, manga.coverExtraLarge)}
-            alt=""
-          />
-
-          {/* <a href={manga.malUrl} target="_blank">
-            MyAnimeList
-          </a> */}
-        </div>
-
-        <div className="col-span-2 flex h-full flex-col justify-between">
-          <div>
-            <p
-              className={`w-full md:hidden ${
-                collapsed
-                  ? "line-clamp-1 overflow-hidden"
-                  : "whitespace-pre-wrap"
-              }`}
-            >
-              {manga.description}
-            </p>
-            <button
-              className="rounded bg-red-400 px-6 py-2 md:hidden"
-              onClick={() => {
-                setCollapsed(!collapsed);
-              }}
-            >
-              Toggle
-            </button>
-            <div className="hidden px-2 md:block">
-              <p className="whitespace-pre-wrap">{manga.description}</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
+        <img
+          className="shadow-xl"
+          src={pb.getFileUrl(manga, manga.coverExtraLarge)}
+          alt=""
+        />
+        <div className="col-span-2 flex flex-col gap-2 p-2 md:items-start">
+          <p
+            className={`whitespace-pre-wrap ${collapsed ? "line-clamp-6" : ""}`}
+          >
+            {parse(manga.description)}
+          </p>
+          <button onClick={() => setCollapsed((prev) => !prev)}>
+            {collapsed ? "Show more" : "Show less"}
+          </button>
         </div>
       </div>
 

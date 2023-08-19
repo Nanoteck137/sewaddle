@@ -17,6 +17,7 @@
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.2.0",
     "@tanstack/react-query": "^4.32.6",
+    "html-react-parser": "^4.2.1",
     "pocketbase": "^0.16.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

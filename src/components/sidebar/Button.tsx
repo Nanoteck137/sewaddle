@@ -1,15 +1,15 @@
-import { ComponentProps, ComponentType, forwardRef } from "react";
+import { ComponentProps, forwardRef, ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 
 type ButtonProps = {
   title: string;
-  icon: ComponentType;
+  icon: ReactNode;
   selected?: boolean;
 } & ComponentProps<"button">;
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (props, ref) => {
-    const { title, icon: Icon, selected, className, ...buttonProps } = props;
+    const { title, icon, selected, className, ...buttonProps } = props;
 
     return (
       <button
@@ -22,9 +22,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...buttonProps}
       >
-        <div className="flex h-9 w-9 items-center justify-center lg:max-xl:h-8 lg:max-xl:w-8">
-          <Icon />
-        </div>
+        {icon}
         <div className="w-5" />
         <p className="text-base">{title}</p>
       </button>
