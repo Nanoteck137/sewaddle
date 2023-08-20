@@ -2,6 +2,8 @@ import {
   BookmarkIcon,
   BookmarkSlashIcon,
   BookOpenIcon,
+  CheckIcon,
+  EllipsisVerticalIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,20 +19,19 @@ import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
 import { Collection } from "../models/collection";
 
-const Chapter = forwardRef<
-  HTMLAnchorElement,
-  {
-    chapter: BasicChapter;
-    isContinue: boolean;
-    hasRead: boolean;
-    isGroup: boolean;
+type ChapterProps = {
+  chapter: BasicChapter;
+  isContinue: boolean;
+  hasRead: boolean;
+  isGroup: boolean;
 
-    select: (select: boolean, shift: boolean) => void;
-    showSelectMarker: boolean;
-    disableSelectMarker: boolean;
-    isSelected: boolean;
-  }
->((props, ref) => {
+  select: (select: boolean, shift: boolean) => void;
+  showSelectMarker: boolean;
+  disableSelectMarker: boolean;
+  isSelected: boolean;
+};
+
+const Chapter = forwardRef<HTMLAnchorElement, ChapterProps>((props, ref) => {
   const {
     chapter,
     isContinue,
@@ -103,6 +104,77 @@ const Chapter = forwardRef<
     </Link>
   );
 });
+
+const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
+  (props, ref) => {
+    const {
+      chapter,
+      hasRead,
+      isContinue,
+      showSelectMarker,
+      select,
+      isSelected,
+      disableSelectMarker,
+    } = props;
+
+    return (
+      <Link
+        className={`flex justify-between border-b-2 py-1 last:border-none ${
+          showSelectMarker ? "select-none" : ""
+        }`}
+        ref={ref}
+        to={`/view/${chapter.id}`}
+        draggable="false"
+        onClick={(e) => {
+          if (showSelectMarker) {
+            e.preventDefault();
+            select(!isSelected, e.shiftKey);
+          }
+        }}
+      >
+        <div className="flex gap-2">
+          <p className="w-12 text-right">{chapter.idx}.</p>
+          <img
+            className="w-12"
+            src={pb.getFileUrl(chapter, chapter.cover)}
+            alt=""
+          />
+          <div className="flex flex-col justify-between">
+            <p>{chapter.name}</p>
+            {!disableSelectMarker && (
+              <div className="flex gap-2">
+                <p>Read: {hasRead ? "Yes" : "No"}</p>
+                {isContinue && <p>Current</p>}
+              </div>
+            )}
+          </div>
+        </div>
+        {!disableSelectMarker && (
+          <div className="flex items-center gap-4 p-4">
+            {!showSelectMarker && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                <EllipsisVerticalIcon className="h-6 w-6" />
+              </button>
+            )}
+            <button
+              className="h-6 w-6 border-2"
+              onClick={(e) => {
+                e.preventDefault();
+                select(!isSelected, e.shiftKey);
+              }}
+            >
+              {isSelected && <CheckIcon className="" />}
+            </button>
+          </div>
+        )}
+      </Link>
+    );
+  },
+);
 
 const SeriesPage = () => {
   const { id } = useParams();
@@ -370,20 +442,13 @@ const SeriesPage = () => {
           </button>
         </div>
         <p>Chapters Available: {manga.chaptersAvailable}</p>
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
+        {/* <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
           {chapterItems.map((item, i) => {
             const isViewItem = i == chapterItems.length - 1;
 
-            let hasReadChapter = false;
-            if (chapterRead.data) {
-              const data = chapterRead.data.find(
-                (obj) => obj.chapter == item.id,
-              );
-
-              if (data) {
-                hasReadChapter = true;
-              }
-            }
+            let hasReadChapter = !!chapterRead.data?.find(
+              (obj) => obj.chapter == item.id,
+            );
 
             const isContinue = lastChapterRead.data?.chapter === item.id;
 
@@ -438,6 +503,82 @@ const SeriesPage = () => {
 
             return (
               <Chapter
+                ref={isViewItem ? ref : undefined}
+                key={item.id}
+                chapter={item}
+                isContinue={isContinue}
+                hasRead={hasReadChapter}
+                isGroup={manga.isGroup}
+                isSelected={selected}
+                showSelectMarker={showSelectMarker}
+                select={select}
+                disableSelectMarker={!auth.user}
+              />
+            );
+          })}
+        </div> */}
+
+        <div className="flex flex-col">
+          {chapterItems.map((item, i) => {
+            const isViewItem = i == chapterItems.length - 1;
+
+            let hasReadChapter = !!chapterRead.data?.find(
+              (obj) => obj.chapter == item.id,
+            );
+
+            const isContinue = lastChapterRead.data?.chapter === item.id;
+
+            const select = (select: boolean, shift: boolean) => {
+              if (!auth.user) {
+                return;
+              }
+
+              console.log("Select");
+              if (select) {
+                if (shift) {
+                  const firstSelected = selectedItems[0];
+
+                  let first = chapterItems.findIndex(
+                    (i) => i.id === firstSelected,
+                  );
+
+                  let last = i;
+
+                  if (first > last) {
+                    let tmp = last;
+                    last = first;
+                    first = tmp;
+                  }
+
+                  console.log("First last", first, last);
+
+                  let items = [];
+                  let numItems = last - first + 1;
+                  console.log("Num", numItems);
+
+                  for (let i = 0; i < numItems; i++) {
+                    items.push(first + i);
+                  }
+
+                  console.log(items);
+
+                  const ids = items.map((i) => chapterItems[i].id);
+                  setSelectedItems(ids);
+                } else {
+                  setSelectedItems((prev) => [...prev, item.id]);
+                }
+              } else {
+                setSelectedItems((prev) => [
+                  ...prev.filter((i) => i !== item.id),
+                ]);
+              }
+            };
+
+            const showSelectMarker = selectedItems.length > 0;
+            const selected = !!selectedItems.find((i) => i === item.id);
+
+            return (
+              <SmallChapterItem
                 ref={isViewItem ? ref : undefined}
                 key={item.id}
                 chapter={item}
