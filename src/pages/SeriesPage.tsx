@@ -6,7 +6,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import parse from "html-react-parser";
-import { forwardRef, Fragment, useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
@@ -25,7 +25,7 @@ const Chapter = forwardRef<
     hasRead: boolean;
     isGroup: boolean;
 
-    select: (select: boolean) => void;
+    select: (select: boolean, shift: boolean) => void;
     showSelectMarker: boolean;
     disableSelectMarker: boolean;
     isSelected: boolean;
@@ -46,12 +46,14 @@ const Chapter = forwardRef<
     <Link
       ref={ref}
       to={`/view/${chapter.id}`}
-      className="group relative flex flex-col items-center rounded border-2 shadow dark:border-gray-500 dark:bg-gray-600"
+      className={`group relative flex flex-col items-center rounded border-2 shadow dark:border-gray-500 dark:bg-gray-600 ${
+        showSelectMarker ? "select-none" : ""
+      }`}
       draggable="false"
       onClick={(e) => {
         if (showSelectMarker) {
           e.preventDefault();
-          select(!isSelected);
+          select(!isSelected, e.shiftKey);
         }
       }}
     >
@@ -79,7 +81,7 @@ const Chapter = forwardRef<
               console.log("HELLO?");
               e.stopPropagation();
               e.preventDefault();
-              select(!isSelected);
+              select(!isSelected, e.shiftKey);
             }}
           >
             {isSelected && <XMarkIcon />}
@@ -165,7 +167,6 @@ const SeriesPage = () => {
     },
     enabled: !!auth.user?.id && !!id,
   });
-  console.log(mangaSaved.data);
 
   const queryClient = useQueryClient();
   const saveManga = useMutation({
@@ -299,6 +300,8 @@ const SeriesPage = () => {
   const { data: manga } = mangaQuery;
   const { data: chapters } = mangaChaptersQuery;
 
+  const chapterItems = chapters.pages.map((i) => i.items).flat();
+
   return (
     <div className="flex flex-col gap-4 p-2">
       <p className="text-center text-2xl">{manga.englishTitle}</p>
@@ -368,75 +371,84 @@ const SeriesPage = () => {
         </div>
         <p>Chapters Available: {manga.chaptersAvailable}</p>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
-          {chapters.pages.map((page, i) => {
-            const isLastPage = i == chapters.pages.length - 1;
-            return (
-              <Fragment key={i}>
-                {page.items.map((item, i) => {
-                  const isLastItem = i == page.items.length - 1;
+          {chapterItems.map((item, i) => {
+            const isViewItem = i == chapterItems.length - 1;
 
-                  let hasReadChapter = false;
-                  if (chapterRead.data) {
-                    const data = chapterRead.data.find(
-                      (obj) => obj.chapter == item.id,
-                    );
+            let hasReadChapter = false;
+            if (chapterRead.data) {
+              const data = chapterRead.data.find(
+                (obj) => obj.chapter == item.id,
+              );
 
-                    if (data) {
-                      hasReadChapter = true;
-                    }
-                  }
+              if (data) {
+                hasReadChapter = true;
+              }
+            }
 
-                  const isContinue = lastChapterRead.data?.chapter === item.id;
+            const isContinue = lastChapterRead.data?.chapter === item.id;
 
-                  const select = (select: boolean) => {
-                    if (!auth.user) {
-                      return;
-                    }
+            const select = (select: boolean, shift: boolean) => {
+              if (!auth.user) {
+                return;
+              }
 
-                    console.log("Select");
-                    if (select) {
-                      setSelectedItems((prev) => [...prev, item.id]);
-                    } else {
-                      setSelectedItems((prev) => [
-                        ...prev.filter((i) => i !== item.id),
-                      ]);
-                    }
-                  };
+              console.log("Select");
+              if (select) {
+                if (shift) {
+                  const firstSelected = selectedItems[0];
 
-                  const showSelectMarker = selectedItems.length > 0;
-                  const selected = !!selectedItems.find((i) => i === item.id);
-
-                  if (isLastPage && isLastItem) {
-                    return (
-                      <Chapter
-                        ref={ref}
-                        key={item.id}
-                        chapter={item}
-                        isContinue={isContinue}
-                        hasRead={hasReadChapter}
-                        isGroup={manga.isGroup}
-                        isSelected={selected}
-                        showSelectMarker={showSelectMarker}
-                        select={select}
-                        disableSelectMarker={!auth.user}
-                      />
-                    );
-                  }
-                  return (
-                    <Chapter
-                      key={item.id}
-                      chapter={item}
-                      isContinue={isContinue}
-                      hasRead={hasReadChapter}
-                      isGroup={manga.isGroup}
-                      isSelected={selected}
-                      showSelectMarker={showSelectMarker}
-                      select={select}
-                      disableSelectMarker={!auth.user}
-                    />
+                  let first = chapterItems.findIndex(
+                    (i) => i.id === firstSelected,
                   );
-                })}
-              </Fragment>
+
+                  let last = i;
+
+                  if (first > last) {
+                    let tmp = last;
+                    last = first;
+                    first = tmp;
+                  }
+
+                  console.log("First last", first, last);
+
+                  let items = [];
+                  let numItems = last - first + 1;
+                  console.log("Num", numItems);
+
+                  for (let i = 0; i < numItems; i++) {
+                    items.push(first + i);
+                  }
+
+                  console.log(items);
+
+                  const ids = items.map((i) => chapterItems[i].id);
+                  setSelectedItems(ids);
+                } else {
+                  setSelectedItems((prev) => [...prev, item.id]);
+                }
+              } else {
+                setSelectedItems((prev) => [
+                  ...prev.filter((i) => i !== item.id),
+                ]);
+              }
+            };
+
+            const showSelectMarker = selectedItems.length > 0;
+            const selected = !!selectedItems.find((i) => i === item.id);
+
+            return (
+              <Chapter
+                ref={isViewItem ? ref : undefined}
+                key={item.id}
+                chapter={item}
+                isContinue={isContinue}
+                hasRead={hasReadChapter}
+                isGroup={manga.isGroup}
+                isSelected={selected}
+                showSelectMarker={showSelectMarker}
+                select={select}
+                disableSelectMarker={!auth.user}
+              />
             );
           })}
         </div>
