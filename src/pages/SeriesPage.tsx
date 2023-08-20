@@ -603,11 +603,13 @@ const SeriesPage = () => {
         </div>
 
         {selectedItems.length > 0 && (
-          <div className="fixed bottom-10 left-1/2 flex -translate-x-1/2 items-center rounded bg-red-300">
+          // TODO(patrik): Make the disable the buttons then doing
+          // the mutation
+          <div className="fixed bottom-10 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded border-2 bg-white px-6 py-3 shadow dark:border-gray-500 dark:bg-gray-600">
             <button onClick={() => setSelectedItems([])}>
               <XMarkIcon className="h-7 w-7" />
             </button>
-            <p>{selectedItems.length} item(s) selected</p>
+            <p className="px-4">{selectedItems.length} item(s) selected</p>
             {selectedItems.length === 1 && (
               <button
                 onClick={() => {
