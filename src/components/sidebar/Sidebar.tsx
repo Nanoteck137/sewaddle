@@ -14,7 +14,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "./Button";
 import ThemeSelector from "./ThemeSelector";
 
-const Buttons = () => {
+const Buttons = (props: { close?: () => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -31,13 +31,19 @@ const Buttons = () => {
           title="Home"
           icon={<HomeIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />}
           selected={isHome}
-          onClick={() => navigate("/")}
+          onClick={() => {
+            navigate("/");
+            props.close?.();
+          }}
         />
         <Button
           title="Saved"
           icon={<StarIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />}
           selected={isSaved}
-          onClick={() => navigate("/account/saved")}
+          onClick={() => {
+            navigate("/saved");
+            props.close?.();
+          }}
         />
       </div>
       <div className="flex w-full flex-col gap-2">
@@ -49,7 +55,10 @@ const Buttons = () => {
                 <UserIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />
               }
               selected={isAccount}
-              onClick={() => navigate("/account")}
+              onClick={() => {
+                navigate("/account");
+                props.close?.();
+              }}
             />
             <ThemeSelector />
             <Button
@@ -57,7 +66,10 @@ const Buttons = () => {
               icon={
                 <ArrowLeftOnRectangleIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />
               }
-              onClick={() => auth.logout()}
+              onClick={() => {
+                auth.logout();
+                props.close?.();
+              }}
             />
           </>
         )}
@@ -67,7 +79,10 @@ const Buttons = () => {
             icon={
               <ArrowRightOnRectangleIcon className="h-9 w-9 lg:max-xl:h-8 lg:max-xl:w-8" />
             }
-            onClick={() => navigate("/login")}
+            onClick={() => {
+              navigate("/login");
+              props.close?.();
+            }}
           />
         )}
       </div>
@@ -132,7 +147,7 @@ export const FloatingSidebar = () => {
                   </Link>
                 </div>
 
-                <Buttons />
+                <Buttons close={close} />
               </Popover.Panel>
             </Transition.Child>
           </Transition>
