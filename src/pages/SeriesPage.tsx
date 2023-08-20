@@ -1,5 +1,6 @@
 import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 import {
+  AdjustmentsVerticalIcon,
   BookmarkIcon,
   BookmarkSlashIcon,
   BookOpenIcon,
@@ -112,6 +113,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
     const {
       chapter,
       hasRead,
+      isGroup,
       isContinue,
       showSelectMarker,
       select,
@@ -142,10 +144,15 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
             alt=""
           />
           <div className="flex flex-col justify-between">
-            <p>{chapter.name}</p>
+            {!isGroup && <p>Ch. {chapter.name}</p>}
+            {isGroup && (
+              <p>
+                Ch. {chapter.group} - {chapter.name}
+              </p>
+            )}
             {!disableSelectMarker && (
               <div className="flex gap-2">
-                <p>Read: {hasRead ? "Yes" : "No"}</p>
+                {hasRead && <p>Read</p>}
                 {isContinue && <p>Current</p>}
               </div>
             )}
@@ -432,23 +439,28 @@ const SeriesPage = () => {
             {manga.chaptersAvailable} chapter(s) available
           </p>
 
-          <button
-            className="h-6 w-6 rounded border-2 border-black dark:border-white"
-            onClick={() => {
-              if (allChapterIds.data) {
-                if (selectedItems.length >= allChapterIds.data.length) {
-                  setSelectedItems([]);
-                } else {
-                  setSelectedItems(allChapterIds.data);
+          <div className="flex items-center gap-4">
+            <button className="h-6 w-6">
+              <AdjustmentsVerticalIcon />
+            </button>
+            <button
+              className="h-6 w-6 rounded border-2 border-black dark:border-white"
+              onClick={() => {
+                if (allChapterIds.data) {
+                  if (selectedItems.length >= allChapterIds.data.length) {
+                    setSelectedItems([]);
+                  } else {
+                    setSelectedItems(allChapterIds.data);
+                  }
                 }
-              }
-            }}
-          >
-            {allChapterIds.data &&
-              selectedItems.length >= allChapterIds.data.length && (
-                <CheckIcon />
-              )}
-          </button>
+              }}
+            >
+              {allChapterIds.data &&
+                selectedItems.length >= allChapterIds.data.length && (
+                  <CheckIcon />
+                )}
+            </button>
+          </div>
         </div>
         {/* <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
           {chapterItems.map((item, i) => {
