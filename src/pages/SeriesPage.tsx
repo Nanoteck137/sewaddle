@@ -239,6 +239,12 @@ const SeriesPage = () => {
           });
 
           await Promise.all(promises);
+        } else {
+          const promises = input.items.map((id) => {
+            return pb.collection("userChapterRead").delete(id);
+          });
+
+          await Promise.all(promises);
         }
       }
     },
@@ -250,6 +256,38 @@ const SeriesPage = () => {
     onSettled: () => {
       if (auth.user) {
         queryClient.invalidateQueries(["chapterRead", auth.user.id, id]);
+      }
+    },
+  });
+
+  const markItemCurrent = useMutation({
+    mutationFn: async (itemId: string) => {
+      try {
+        if (lastChapterRead.data) {
+          await pb
+            .collection("userLastReadChapter")
+            .update(lastChapterRead.data.id, {
+              chapter: itemId,
+              page: 0,
+            });
+        } else if (lastChapterRead.data === null && auth.user && id) {
+          await pb.collection("userLastReadChapter").create({
+            user: auth.user.id,
+            manga: id,
+            chapter: itemId,
+            page: 0,
+          });
+        }
+      } catch (e) {}
+    },
+
+    onSuccess: () => {
+      setSelectedItems([]);
+    },
+
+    onSettled: () => {
+      if (auth.user && id) {
+        queryClient.invalidateQueries(["lastChapterRead", auth.user?.id, id]);
       }
     },
   });
@@ -410,7 +448,11 @@ const SeriesPage = () => {
             </button>
             <p>{selectedItems.length} item(s) selected</p>
             {selectedItems.length === 1 && (
-              <button>
+              <button
+                onClick={() => {
+                  markItemCurrent.mutate(selectedItems[0]);
+                }}
+              >
                 <BookOpenIcon className="h-7 w-7" />
               </button>
             )}
@@ -431,7 +473,17 @@ const SeriesPage = () => {
             </button>
             <button
               onClick={() => {
-                markItems.mutate({ items: selectedItems, markAsRead: false });
+                if (!chapterRead.data) {
+                  return;
+                }
+
+                const items = chapterRead.data
+                  .filter((item) => {
+                    return selectedItems.find((i) => i === item.chapter);
+                  })
+                  .map((item) => item.id);
+
+                markItems.mutate({ items, markAsRead: false });
               }}
             >
               <BookmarkSlashIcon className="h-7 w-7" />
