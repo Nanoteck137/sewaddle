@@ -11,6 +11,7 @@ import AccountPage from "./pages/AccountPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import SavedPage from "./pages/SavedPage";
 import SeriesPage from "./pages/SeriesPage";
 import ViewPage from "./pages/ViewPage";
 
@@ -40,6 +41,7 @@ const App = () => {
                   <Route path="view/:id" element={<ViewPage />} />
 
                   <Route path="account" element={<AccountPage />} />
+                  <Route path="saved" element={<SavedPage />} />
                   <Route path="about" element={<AboutPage />} />
                 </Route>
 

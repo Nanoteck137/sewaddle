@@ -151,14 +151,17 @@ const SeriesPage = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        {lastChapterRead.data && (
-          <Link
-            className="w-fit rounded bg-red-300 px-4 py-2"
-            to={`/view/${lastChapterRead.data.chapter}?page=${lastChapterRead.data.page}`}
-          >
-            Continue
-          </Link>
-        )}
+        <div className="flex gap-2">
+          {lastChapterRead.data && (
+            <Link
+              className="w-fit rounded bg-red-300 px-4 py-2"
+              to={`/view/${lastChapterRead.data.chapter}?page=${lastChapterRead.data.page}`}
+            >
+              Continue
+            </Link>
+          )}
+          <button className="rounded bg-red-300 px-4 py-2">Save Manga</button>
+        </div>
         <p>Chapters Available: {manga.chaptersAvailable}</p>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
           {chapters.pages.map((page, i) => {
