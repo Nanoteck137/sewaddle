@@ -137,7 +137,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
         <div className="flex gap-2">
           <p className="w-12 text-right">{chapter.idx}.</p>
           <img
-            className="h-16 w-12 rounded object-cover"
+            className="h-16 w-12 rounded border object-cover dark:border-gray-500"
             src={pb.getFileUrl(chapter, chapter.cover)}
             alt=""
           />
@@ -382,7 +382,7 @@ const SeriesPage = () => {
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
         <div className="flex w-full flex-col items-center justify-center gap-2">
           <img
-            className="rounded shadow-xl"
+            className="rounded border shadow-xl dark:border-gray-500"
             src={pb.getFileUrl(manga, manga.coverExtraLarge)}
             alt=""
           />
