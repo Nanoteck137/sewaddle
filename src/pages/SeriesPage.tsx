@@ -137,7 +137,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
         <div className="flex gap-2">
           <p className="w-12 text-right">{chapter.idx}.</p>
           <img
-            className="h-20 w-14 rounded object-cover"
+            className="h-16 w-12 rounded object-cover"
             src={pb.getFileUrl(chapter, chapter.cover)}
             alt=""
           />
@@ -163,7 +163,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
               </button>
             )}
             <button
-              className="h-6 w-6 rounded border-2"
+              className="h-6 w-6 rounded border-2 border-black dark:border-white"
               onClick={(e) => {
                 e.preventDefault();
                 select(!isSelected, e.shiftKey);
@@ -433,7 +433,7 @@ const SeriesPage = () => {
           </p>
 
           <button
-            className="h-6 w-6 rounded border-2"
+            className="h-6 w-6 rounded border-2 border-black dark:border-white"
             onClick={() => {
               if (allChapterIds.data) {
                 if (selectedItems.length >= allChapterIds.data.length) {
