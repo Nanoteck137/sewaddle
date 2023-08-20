@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import parse from "html-react-parser";
 import { forwardRef, Fragment, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
@@ -110,6 +110,54 @@ const SeriesPage = () => {
     enabled: !!auth.user?.id && !!id,
   });
 
+  const mangaSaved = useQuery({
+    queryKey: ["mangaSaved", auth.user?.id, id],
+    queryFn: async () => {
+      try {
+        const rec = await pb
+          .collection("userMangaSaved")
+          .getFirstListItem(`user = "${auth.user?.id}" && manga = "${id}"`);
+        return rec.id;
+      } catch (e) {
+        return null;
+      }
+    },
+    enabled: !!auth.user?.id && !!id,
+  });
+  console.log(mangaSaved.data);
+
+  const queryClient = useQueryClient();
+  const saveManga = useMutation({
+    mutationFn: async () => {
+      if (auth.user && id) {
+        await pb.collection("userMangaSaved").create({
+          user: auth.user?.id,
+          manga: id,
+        });
+      }
+    },
+
+    onSettled: () => {
+      if (auth.user && id) {
+        queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
+      }
+    },
+  });
+
+  const removeManga = useMutation({
+    mutationFn: async () => {
+      if (mangaSaved.data) {
+        await pb.collection("userMangaSaved").delete(mangaSaved.data);
+      }
+    },
+
+    onSettled: () => {
+      if (auth.user && id) {
+        queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
+      }
+    },
+  });
+
   useEffect(() => {
     if (inView && mangaChaptersQuery.hasNextPage) {
       mangaChaptersQuery.fetchNextPage();
@@ -160,7 +208,28 @@ const SeriesPage = () => {
               Continue
             </Link>
           )}
-          <button className="rounded bg-red-300 px-4 py-2">Save Manga</button>
+          {!mangaSaved.data && (
+            <button
+              className="rounded bg-red-300 px-4 py-2 disabled:bg-green-300"
+              disabled={saveManga.isLoading}
+              onClick={() => {
+                saveManga.mutate();
+              }}
+            >
+              Save Manga
+            </button>
+          )}
+          {mangaSaved.data && (
+            <button
+              className="rounded bg-red-300 px-4 py-2 disabled:bg-green-300"
+              disabled={removeManga.isLoading}
+              onClick={() => {
+                removeManga.mutate();
+              }}
+            >
+              Remove Manga
+            </button>
+          )}
         </div>
         <p>Chapters Available: {manga.chaptersAvailable}</p>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
