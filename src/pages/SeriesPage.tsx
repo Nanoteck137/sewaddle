@@ -1,9 +1,11 @@
+import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 import {
   BookmarkIcon,
   BookmarkSlashIcon,
   BookOpenIcon,
   CheckIcon,
   EllipsisVerticalIcon,
+  StarIcon as StarSolidIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -119,7 +121,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
 
     return (
       <Link
-        className={`flex justify-between border-b-2 py-1 last:border-none ${
+        className={`flex justify-between border-b-2 py-1 last:border-none dark:border-gray-500 ${
           showSelectMarker ? "select-none" : ""
         }`}
         ref={ref}
@@ -135,7 +137,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
         <div className="flex gap-2">
           <p className="w-12 text-right">{chapter.idx}.</p>
           <img
-            className="w-12"
+            className="h-20 w-14 rounded object-cover"
             src={pb.getFileUrl(chapter, chapter.cover)}
             alt=""
           />
@@ -161,7 +163,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
               </button>
             )}
             <button
-              className="h-6 w-6 border-2"
+              className="h-6 w-6 rounded border-2"
               onClick={(e) => {
                 e.preventDefault();
                 select(!isSelected, e.shiftKey);
@@ -378,12 +380,36 @@ const SeriesPage = () => {
     <div className="flex flex-col gap-4 p-2">
       <p className="text-center text-2xl">{manga.englishTitle}</p>
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
-        <div className="flex w-full items-center justify-center">
+        <div className="flex w-full flex-col items-center justify-center gap-2">
           <img
-            className="shadow-xl"
+            className="rounded shadow-xl"
             src={pb.getFileUrl(manga, manga.coverExtraLarge)}
             alt=""
           />
+
+          {mangaSaved.data && (
+            <button
+              className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
+              onClick={() => {
+                removeManga.mutate();
+              }}
+            >
+              <StarSolidIcon className="h-6 w-6" />
+              <p>Saved</p>
+            </button>
+          )}
+
+          {!mangaSaved.data && (
+            <button
+              className="flex items-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
+              onClick={() => {
+                saveManga.mutate();
+              }}
+            >
+              <StarOutlineIcon className="h-6 w-6" />
+              <p>Save</p>
+            </button>
+          )}
         </div>
         <div className="col-span-2 flex flex-col gap-2 p-2 md:items-start">
           <p
@@ -400,8 +426,8 @@ const SeriesPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
+      <div className="flex flex-col">
+        {/* <div className="flex gap-2">
           {lastChapterRead.data && (
             <Link
               className="w-fit rounded bg-red-300 px-4 py-2"
@@ -440,8 +466,31 @@ const SeriesPage = () => {
           >
             Mark all chapters
           </button>
+        </div> */}
+        {/* <p>Chapters Available: {manga.chaptersAvailable}</p> */}
+        <div className="flex h-20 items-center justify-between border-b-2 px-4 dark:border-gray-500">
+          <p className="text-lg">
+            {manga.chaptersAvailable} chapter(s) available
+          </p>
+
+          <button
+            className="h-6 w-6 rounded border-2"
+            onClick={() => {
+              if (allChapterIds.data) {
+                if (selectedItems.length >= allChapterIds.data.length) {
+                  setSelectedItems([]);
+                } else {
+                  setSelectedItems(allChapterIds.data);
+                }
+              }
+            }}
+          >
+            {allChapterIds.data &&
+              selectedItems.length >= allChapterIds.data.length && (
+                <CheckIcon />
+              )}
+          </button>
         </div>
-        <p>Chapters Available: {manga.chaptersAvailable}</p>
         {/* <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
           {chapterItems.map((item, i) => {
             const isViewItem = i == chapterItems.length - 1;
