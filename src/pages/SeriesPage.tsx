@@ -427,47 +427,6 @@ const SeriesPage = () => {
       </div>
 
       <div className="flex flex-col">
-        {/* <div className="flex gap-2">
-          {lastChapterRead.data && (
-            <Link
-              className="w-fit rounded bg-red-300 px-4 py-2"
-              to={`/view/${lastChapterRead.data.chapter}?page=${lastChapterRead.data.page}`}
-            >
-              Continue
-            </Link>
-          )}
-          {!mangaSaved.data && (
-            <button
-              className="rounded bg-red-300 px-4 py-2 disabled:bg-green-300"
-              disabled={saveManga.isLoading}
-              onClick={() => {
-                saveManga.mutate();
-              }}
-            >
-              Save Manga
-            </button>
-          )}
-          {mangaSaved.data && (
-            <button
-              className="rounded bg-red-300 px-4 py-2 disabled:bg-green-300"
-              disabled={removeManga.isLoading}
-              onClick={() => {
-                removeManga.mutate();
-              }}
-            >
-              Remove Manga
-            </button>
-          )}
-          <button
-            className="rounded bg-red-300 px-4 py-2 disabled:bg-green-300"
-            onClick={() => {
-              if (allChapterIds.data) setSelectedItems(allChapterIds.data);
-            }}
-          >
-            Mark all chapters
-          </button>
-        </div> */}
-        {/* <p>Chapters Available: {manga.chaptersAvailable}</p> */}
         <div className="flex h-20 items-center justify-between border-b-2 px-4 dark:border-gray-500">
           <p className="text-lg">
             {manga.chaptersAvailable} chapter(s) available
