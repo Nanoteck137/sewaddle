@@ -16,7 +16,13 @@ import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
 
-import { useAllMangaChapterIds, useManga, useMangaChapterViews } from "../api";
+import {
+  useAllMangaChapterIds,
+  useManga,
+  useMangaChapterViews,
+  useUserBookmark,
+  useUserMarkedChapters,
+} from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
@@ -200,11 +206,11 @@ const SeriesPage = () => {
 
   const chapterIds = useAllMangaChapterIds({ mangaId: id });
 
-  // const lastChapterRead = useQuery({
-  //   queryKey: ["lastChapterRead", auth.user?.id, id],
-  //   queryFn: async () => fetchUserLastReadChapter(auth.user!.id, id!),
-  //   enabled: !!auth.user?.id && !!id,
-  // });
+  const userBookmark = useUserBookmark({ mangaId: id });
+  const userMarkedChapters = useUserMarkedChapters({
+    userId: auth.user?.id,
+    mangaId: id,
+  });
 
   // const chapterRead = useQuery({
   //   queryKey: ["chapterRead", auth.user?.id, id],
@@ -480,13 +486,10 @@ const SeriesPage = () => {
           {chapterItems.map((item, i) => {
             const isViewItem = i == chapterItems.length - 1;
 
-            const hasReadChapter = false;
-            const isContinue = false;
-
-            // let hasReadChapter = !!chapterRead.data?.find(
-            //   (obj) => obj.chapter == item.id,
-            // );
-            // const isContinue = lastChapterRead.data?.chapter === item.id;
+            let hasReadChapter = !!userMarkedChapters.data?.find(
+              (obj) => obj.chapter == item.id,
+            );
+            const isContinue = userBookmark.data?.chapter === item.id;
             const select = (select: boolean, shift: boolean) => {
               if (!auth.user) {
                 return;
