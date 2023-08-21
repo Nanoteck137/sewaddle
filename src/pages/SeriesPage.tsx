@@ -208,7 +208,7 @@ const SeriesPage = () => {
 
   const chapterIds = useAllMangaChapterIds({ mangaId: id });
 
-  const userBookmark = useUserBookmark({ mangaId: id });
+  const userBookmark = useUserBookmark({ userId: auth.user?.id, mangaId: id });
   const userMarkedChapters = useUserMarkedChapters({
     userId: auth.user?.id,
     mangaId: id,

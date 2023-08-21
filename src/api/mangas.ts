@@ -30,11 +30,21 @@ export async function fetchSingleManga(mangaId: string) {
   return await Manga.parseAsync(rec);
 }
 
-export async function fetchUserBookmark(mangaId: string) {
-  const result = await pb
-    .collection("userBookmarks")
-    .getFirstListItem(`manga = "${mangaId}"`);
-  return await UserBookmark.parseAsync(result);
+export async function fetchUserBookmark(userId: string, mangaId: string) {
+  try {
+    const result = await pb
+      .collection("userBookmarks")
+      .getFirstListItem(`user = "${userId}" && manga = "${mangaId}"`);
+    return await UserBookmark.parseAsync(result);
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      if (e.status === 404) {
+        return null;
+      }
+    }
+
+    throw e;
+  }
 }
 
 export async function fetchUserSavedManga(userId: string, mangaId: string) {
@@ -64,6 +74,10 @@ export async function createUserSavedManga(userId: string, mangaId: string) {
 
 export async function removeUserSavedManga(userId: string, mangaId: string) {
   const savedManga = await fetchUserSavedManga(userId, mangaId);
+  if (!savedManga) {
+    return null;
+  }
+
   const result = await pb.collection("userSavedMangas").delete(savedManga.id);
   return result;
 }

@@ -1,8 +1,10 @@
 import { ClientResponseError } from "pocketbase";
 
+import { fetchUserBookmark } from "./mangas";
 import { OnlyIdFullList } from "./models/base";
 import { Chapter } from "./models/chapters";
 import { ChapterViewPagedList } from "./models/chapterViews";
+import { UserBookmark } from "./models/userBookmarks";
 import { UserMarkedChapterFullList } from "./models/userMarkedChapters";
 import { pb } from "./pocketbase";
 
@@ -38,8 +40,18 @@ export async function markUserChapters(userId: string, chapterIds: string[]) {
     );
   });
 
-  const result = await Promise.all(promises);
-  return await UserMarkedChapterFullList.parseAsync(result);
+  try {
+    const result = await Promise.all(promises);
+    return await UserMarkedChapterFullList.parseAsync(result);
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      if (e.status === 400) {
+        return null;
+      }
+    }
+
+    throw e;
+  }
 }
 
 export async function unmarkUserChapters(ids: string[]) {
@@ -100,6 +112,34 @@ export async function fetchChapterNeighbours(mangaId: string, index: number) {
     next,
     prev,
   };
+}
+
+export async function updateUserBookmark(
+  userId: string,
+  mangaId: string,
+  chapterId: string,
+  page: number,
+) {
+  try {
+    const bookmark = await fetchUserBookmark(userId, mangaId);
+    if (bookmark) {
+      const rec = await pb.collection("userBookmarks").update(bookmark.id, {
+        chapter: chapterId,
+        page,
+      });
+      return await UserBookmark.parseAsync(rec);
+    } else {
+      const rec = await pb.collection("userBookmarks").create({
+        user: userId,
+        manga: mangaId,
+        chapter: chapterId,
+        page,
+      });
+      return await UserBookmark.parseAsync(rec);
+    }
+  } catch (e) {
+    return null;
+  }
 }
 
 // async function getMangaChaptersBasic(id: string, page: number) {

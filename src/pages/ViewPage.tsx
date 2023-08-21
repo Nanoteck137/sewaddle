@@ -3,7 +3,12 @@ import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { useChapter, useChapterNeighbours, useMarkUserChapters } from "../api";
+import {
+  useChapter,
+  useChapterNeighbours,
+  useMarkUserChapters,
+  useUpdateUserBookmark,
+} from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -49,6 +54,8 @@ const ViewPage = () => {
   //     return res;
   //   },
   // });
+
+  const updateUserBookmark = useUpdateUserBookmark();
 
   // const updateUserLastRead = useMutation({
   //   mutationFn: async (page: number) => {
@@ -116,27 +123,26 @@ const ViewPage = () => {
     }
   };
 
-  // useEffect(() => {
-  //   console.log("UPDATE");
-  //   const page = search.get("page");
-  //   if (page !== null && chapterQuery.data) {
-  //     if (page === "") {
-  //       const page = chapterQuery.data.pages.length - 1;
-  //       setState((prev) => ({
-  //         ...prev,
-  //         currentPage: page,
-  //       }));
-  //     } else {
-  //       const n = parseInt(page);
-  //       if (n >= 0 && n < chapterQuery.data.pages.length) {
-  //         setState((prev) => ({
-  //           ...prev,
-  //           currentPage: n,
-  //         }));
-  //       }
-  //     }
-  //   }
-  // }, [chapterQuery.data, search]);
+  useEffect(() => {
+    const page = search.get("page");
+    if (page !== null && chapterQuery.data) {
+      if (page === "") {
+        const page = chapterQuery.data.pages.length - 1;
+        setState((prev) => ({
+          ...prev,
+          currentPage: page,
+        }));
+      } else {
+        const n = parseInt(page);
+        if (n >= 0 && n < chapterQuery.data.pages.length) {
+          setState((prev) => ({
+            ...prev,
+            currentPage: n,
+          }));
+        }
+      }
+    }
+  }, [chapterQuery.data, search]);
 
   useEffect(() => {
     // NOTE(patrik): Need to reset the state when we navigate to
@@ -147,9 +153,16 @@ const ViewPage = () => {
     });
   }, [id]);
 
-  // useEffect(() => {
-  //   updateUserLastRead.mutate(state.currentPage);
-  // }, [userLastRead.data, state.currentPage]);
+  useEffect(() => {
+    if (auth.user && chapterQuery.data) {
+      updateUserBookmark.mutate({
+        userId: auth.user.id,
+        mangaId: chapterQuery.data.manga,
+        chapterId: chapterQuery.data.id,
+        page: state.currentPage,
+      });
+    }
+  }, [auth.user, chapterQuery.data, state.currentPage]);
 
   if (chapterQuery.isError) return <p>Error</p>;
   if (chapterQuery.isLoading) return <p>Loading...</p>;

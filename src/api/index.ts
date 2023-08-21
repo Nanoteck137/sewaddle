@@ -6,6 +6,7 @@ export { useUserSavedManga } from "./hooks/useUserSavedManga";
 export { useMarkUserChapters } from "./hooks/useMarkUserChapters";
 export { useMangaChapterViews } from "./hooks/useMangaChapterViews";
 export { useChapterNeighbours } from "./hooks/useChapterNeighbours";
+export { useUpdateUserBookmark } from "./hooks/useUpdateUserBookmark";
 export { useUnmarkUserChapters } from "./hooks/useUnmarkUserChapters";
 export { useAllMangaChapterIds } from "./hooks/useAllMangaChapterIds";
 export { useUserMarkedChapters } from "./hooks/useUserMarkedChapters";
