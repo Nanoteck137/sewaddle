@@ -14,7 +14,7 @@ const Item = (props: { manga: MangaView }) => {
         <p>{manga.chaptersAvailable}</p>
       </div>
       <img
-        className="h-full w-full overflow-clip object-cover"
+        className="h-full w-full overflow-clip border-b object-cover dark:border-gray-500"
         src={pb.getFileUrl(manga, manga.coverExtraLarge)}
         alt=""
       />
