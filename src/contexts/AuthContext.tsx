@@ -21,7 +21,7 @@ type AuthContext = {
     passwordConfirm: string;
   }) => Promise<void>;
 
-  login: (data: { username: string; password: string }) => {};
+  login: (data: { username: string; password: string }) => Promise<void>;
   logout: () => void;
   changePassword: (data: {
     oldPassword: string;
