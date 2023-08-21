@@ -11,7 +11,10 @@ import { Admin, Record } from "pocketbase";
 import { pb } from "../api/pocketbase";
 import { User } from "../models/user";
 
-type AuthContextFunctions = {
+type AuthContext = {
+  isLoggedIn: boolean;
+  user: User | null;
+
   register: (data: {
     username: string;
     password: string;
@@ -27,19 +30,7 @@ type AuthContextFunctions = {
   }) => Promise<void>;
 };
 
-type AuthContextTypeLoggedOut = {
-  isLoggedIn: false;
-  user: null;
-} & AuthContextFunctions;
-
-type AuthContextTypeLoggedIn = {
-  isLoggedIn: true;
-  user: User;
-} & AuthContextFunctions;
-
-const AuthContext = createContext<
-  AuthContextTypeLoggedOut | AuthContextTypeLoggedIn
->({
+const AuthContext = createContext<AuthContext>({
   isLoggedIn: false,
   user: null,
 
@@ -59,6 +50,7 @@ type AuthProviderProps = {
 
 export const AuthProvider = (props: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoggedIn, setLoggedIn] = useState(pb.authStore.isValid);
 
   const register = useCallback(
     async (data: {
@@ -85,6 +77,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     console.log("LOGOUT");
     pb.authStore.clear();
     setUser(null);
+    setLoggedIn(false);
   }, []);
 
   const changePassword = useCallback(
@@ -106,8 +99,10 @@ export const AuthProvider = (props: AuthProviderProps) => {
       if (model && model instanceof Record) {
         const user = User.parse(model);
         setUser(user);
+        setLoggedIn(true);
       } else {
         setUser(null);
+        setLoggedIn(false);
       }
     };
 
@@ -126,28 +121,16 @@ export const AuthProvider = (props: AuthProviderProps) => {
     };
   }, []);
 
-  const base = {
-    register,
-    login,
-    logout,
-    changePassword,
-  };
-
   return (
     <AuthContext.Provider
-      value={
-        user !== null
-          ? {
-              isLoggedIn: true,
-              user,
-              ...base,
-            }
-          : {
-              isLoggedIn: false,
-              user: null,
-              ...base,
-            }
-      }
+      value={{
+        isLoggedIn,
+        user,
+        register,
+        login,
+        logout,
+        changePassword,
+      }}
     >
       {props.children}
     </AuthContext.Provider>
