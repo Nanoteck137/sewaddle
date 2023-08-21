@@ -24,3 +24,20 @@ export type GetChapterList = z.infer<typeof GetChapterList>;
 
 export const GetBasicChapterList = createGetListSchema(BasicChapter);
 export type GetBasicChapterList = z.infer<typeof GetBasicChapterList>;
+
+export const UserLastReadChapter = Collection.extend({
+  user: z.string(),
+  manga: z.string(),
+  chapter: z.string(),
+  page: z.number(),
+});
+export type UserLastReadChapter = z.infer<typeof UserLastReadChapter>;
+
+export const UserChapterRead = Collection.extend({
+  user: z.string(),
+  chapter: z.string(),
+});
+export type UserChapterRead = z.infer<typeof UserChapterRead>;
+
+export const UserChapterReadList = z.array(UserChapterRead);
+export type UserChapterReadList = z.infer<typeof UserChapterReadList>;

@@ -30,3 +30,9 @@ export function createGetListSchema<ItemType extends z.AnyZodObject>(
     totalPages: z.number(),
   });
 }
+
+export const OnlyId = Collection.pick({ id: true });
+export type OnlyId = z.infer<typeof OnlyId>;
+
+export const OnlyIdList = z.array(OnlyId);
+export type OnlyIdList = z.infer<typeof OnlyIdList>;

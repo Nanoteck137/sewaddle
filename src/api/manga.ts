@@ -5,7 +5,10 @@ import {
   BASIC_CHAPTER_INFO_COLLECTION,
   Chapter,
   GetBasicChapterList,
+  UserChapterReadList,
+  UserLastReadChapter,
 } from "../models/chapters";
+import { OnlyIdList } from "../models/collection";
 import {
   GetMangaViewRequest,
   MANGA_DISPLAY_COLLECTION_NAME,
@@ -72,6 +75,67 @@ async function getPrevChapter(chapter: Chapter) {
     throw e;
   }
 }
+
+export async function fetchUserLastReadChapter(
+  userId: string,
+  mangaId: string,
+) {
+  try {
+    const rec = await pb
+      .collection("userLastReadChapter")
+      .getFirstListItem(`(user = "${userId}" && manga = "${mangaId}")`);
+    return await UserLastReadChapter.parseAsync(rec);
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      // TODO(patrik): Is there anything we need to check here?
+      return null;
+    }
+
+    throw e;
+  }
+}
+
+export async function fetchUserChapterRead(userId: string, mangaId: string) {
+  try {
+    const list = await pb.collection("userChapterRead").getFullList({
+      filter: `user = "${userId}" && chapter.manga = "${mangaId}"`,
+    });
+    return await UserChapterReadList.parseAsync(list);
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      // TODO(patrik): Is there anything we need to check here?
+      return null;
+    }
+
+    throw e;
+  }
+}
+
+export async function fetchMangaSaved(userId: string, mangaId: string) {
+  try {
+    const rec = await pb
+      .collection("userMangaSaved")
+      .getFirstListItem(`user = "${userId}" && manga = "${mangaId}"`);
+    // TODO(patrik): Parse?
+    return rec.id;
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      // TODO(patrik): Is there anything we need to check here?
+      return null;
+    }
+
+    throw e;
+  }
+}
+
+export async function fetchAllChapterIds(mangaId: string) {
+  const recs = await pb
+    .collection("chapters")
+    .getFullList({ filter: `manga = "${mangaId}"`, fields: "id" });
+  return await OnlyIdList.parseAsync(recs);
+}
+
+// TODO(patrik): Move to hooks/
 
 export function useMangas() {
   return useQuery({

@@ -16,7 +16,14 @@ import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
 
-import { useManga, useMangaChaptersBasic } from "../api/manga";
+import {
+  fetchAllChapterIds,
+  fetchMangaSaved,
+  fetchUserChapterRead,
+  fetchUserLastReadChapter,
+  useManga,
+  useMangaChaptersBasic,
+} from "../api/manga";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
@@ -186,6 +193,8 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
 
 const SeriesPage = () => {
   const { id } = useParams();
+  const queryClient = useQueryClient();
+
   const mangaQuery = useManga({ id });
   const mangaChaptersQuery = useMangaChaptersBasic({ id });
 
@@ -193,62 +202,24 @@ const SeriesPage = () => {
 
   const auth = useAuth();
 
-  const Schema = Collection.extend({
-    user: z.string(),
-    manga: z.string(),
-    chapter: z.string(),
-    page: z.number(),
-  });
-
   const lastChapterRead = useQuery({
     queryKey: ["lastChapterRead", auth.user?.id, id],
-    queryFn: async () => {
-      try {
-        const rec = await pb
-          .collection("userLastReadChapter")
-          .getFirstListItem(`(user = "${auth.user?.id}" && manga = "${id}")`);
-        return await Schema.parseAsync(rec);
-      } catch (e) {
-        return null;
-      }
-    },
+    queryFn: async () => fetchUserLastReadChapter(auth.user!.id, id!),
     enabled: !!auth.user?.id && !!id,
   });
 
-  const TestSchema = z.array(
-    Collection.extend({
-      user: z.string(),
-      chapter: z.string(),
-    }),
-  );
-
   const chapterRead = useQuery({
     queryKey: ["chapterRead", auth.user?.id, id],
-    queryFn: async () => {
-      const list = await pb.collection("userChapterRead").getFullList({
-        filter: `user = "${auth.user?.id}" && chapter.manga = "${id}"`,
-      });
-      return await TestSchema.parseAsync(list);
-    },
+    queryFn: async () => fetchUserChapterRead(auth.user!.id, id!),
     enabled: !!auth.user?.id && !!id,
   });
 
   const mangaSaved = useQuery({
     queryKey: ["mangaSaved", auth.user?.id, id],
-    queryFn: async () => {
-      try {
-        const rec = await pb
-          .collection("userMangaSaved")
-          .getFirstListItem(`user = "${auth.user?.id}" && manga = "${id}"`);
-        return rec.id;
-      } catch (e) {
-        return null;
-      }
-    },
+    queryFn: async () => fetchMangaSaved(auth.user!.id, id!),
     enabled: !!auth.user?.id && !!id,
   });
 
-  const queryClient = useQueryClient();
   const saveManga = useMutation({
     mutationFn: async () => {
       if (auth.user && id) {
@@ -295,12 +266,7 @@ const SeriesPage = () => {
 
   const allChapterIds = useQuery({
     queryKey: ["allChapterIds", id],
-    queryFn: async () => {
-      const recs = await pb
-        .collection("chapters")
-        .getFullList({ filter: `manga = "${id}"` });
-      return await z.array(Collection.pick({ id: true })).parseAsync(recs);
-    },
+    queryFn: async () => fetchAllChapterIds(id!),
     select: (data) => data.map((i) => i.id),
     enabled: !!id,
   });
