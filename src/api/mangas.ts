@@ -17,6 +17,7 @@ import {
 import { Manga } from "./models/mangas";
 import { MangaViewFullList } from "./models/mangaViews";
 import { UserBookmark } from "./models/userBookmarks";
+import { UserSavedManga } from "./models/userSavedMangas";
 import { pb } from "./pocketbase";
 
 export async function fetchMangaViews() {
@@ -34,6 +35,13 @@ export async function fetchUserBookmark(mangaId: string) {
     .collection("userBookmarks")
     .getFirstListItem(`manga = "${mangaId}"`);
   return await UserBookmark.parseAsync(result);
+}
+
+export async function fetchUserSavedManga(userId: string, mangaId: string) {
+  const result = await pb
+    .collection("userSavedMangas")
+    .getFirstListItem(`user = "${userId}" && manga = "${mangaId}"`);
+  return await UserSavedManga.parseAsync(result);
 }
 
 async function getMangaViews() {

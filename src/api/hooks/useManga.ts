@@ -4,7 +4,7 @@ import { fetchSingleManga } from "../mangas";
 
 export function useManga(input: { mangaId?: string }) {
   return useQuery({
-    queryKey: ["manga", input.mangaId],
+    queryKey: ["mangas", input.mangaId],
     queryFn: async () => fetchSingleManga(input.mangaId!),
     enabled: !!input.mangaId,
   });

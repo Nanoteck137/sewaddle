@@ -22,6 +22,7 @@ import {
   useMangaChapterViews,
   useUserBookmark,
   useUserMarkedChapters,
+  useUserSavedManga,
 } from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
@@ -212,17 +213,10 @@ const SeriesPage = () => {
     mangaId: id,
   });
 
-  // const chapterRead = useQuery({
-  //   queryKey: ["chapterRead", auth.user?.id, id],
-  //   queryFn: async () => fetchUserChapterRead(auth.user!.id, id!),
-  //   enabled: !!auth.user?.id && !!id,
-  // });
-
-  // const mangaSaved = useQuery({
-  //   queryKey: ["mangaSaved", auth.user?.id, id],
-  //   queryFn: async () => fetchMangaSaved(auth.user!.id, id!),
-  //   enabled: !!auth.user?.id && !!id,
-  // });
+  const userSavedManga = useUserSavedManga({
+    userId: auth.user?.id,
+    mangaId: id,
+  });
 
   // const saveManga = useMutation({
   //   mutationFn: async () => {
@@ -352,28 +346,28 @@ const SeriesPage = () => {
               >
                 Anilist
               </Link>
-              {/* {mangaSaved.data && (
+              {userSavedManga.data && (
                 <button
                   className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
                   onClick={() => {
-                    removeManga.mutate();
+                    // removeManga.mutate();
                   }}
                 >
                   <StarSolidIcon className="h-6 w-6" />
                   <p>Saved</p>
                 </button>
               )}
-              {!mangaSaved.data && (
+              {!userSavedManga.data && (
                 <button
                   className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
                   onClick={() => {
-                    saveManga.mutate();
+                    // saveManga.mutate();
                   }}
                 >
                   <StarOutlineIcon className="h-6 w-6" />
                   <p>Save</p>
                 </button>
-              )} */}
+              )}
             </div>
           </div>
         </div>

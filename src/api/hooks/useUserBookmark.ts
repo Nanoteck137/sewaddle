@@ -4,7 +4,7 @@ import { fetchUserBookmark } from "../mangas";
 
 export function useUserBookmark(input: { mangaId?: string }) {
   return useQuery({
-    queryKey: ["userBookmark", input.mangaId],
+    queryKey: ["userBookmarks", input.mangaId],
     queryFn: async () => await fetchUserBookmark(input.mangaId!),
     enabled: !!input.mangaId,
   });
