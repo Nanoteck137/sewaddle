@@ -1,5 +1,3 @@
-import { ClientResponseError } from "pocketbase";
-
 import { OnlyIdFullList } from "./models/base";
 import { ChapterViewPagedList } from "./models/chapterViews";
 import { UserMarkedChapterFullList } from "./models/userMarkedChapters";
@@ -41,7 +39,7 @@ export async function markUserChapters(userId: string, chapterIds: string[]) {
   return await UserMarkedChapterFullList.parseAsync(result);
 }
 
-export async function unmarkUserChapters(userId: string, ids: string[]) {
+export async function unmarkUserChapters(ids: string[]) {
   const promises = ids.map((id) => {
     return pb.collection("userMarkedChapters").delete(id);
   });

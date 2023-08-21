@@ -9,12 +9,10 @@ import {
   StarIcon as StarSolidIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import parse from "html-react-parser";
 import { forwardRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
-import { z } from "zod";
 
 import {
   useAddUserSavedManga,
@@ -31,7 +29,6 @@ import {
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
-import { Collection } from "../models/collection";
 
 type ChapterProps = {
   chapter: BasicChapter;
@@ -200,8 +197,6 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
 const SeriesPage = () => {
   const { id } = useParams();
 
-  const queryClient = useQueryClient();
-
   const mangaQuery = useManga({ mangaId: id });
   const mangaChaptersQuery = useMangaChapterViews({ mangaId: id });
 
@@ -245,56 +240,6 @@ const SeriesPage = () => {
       setSelectedItems([]);
     }
   }, [markItems.isSuccess, unmarkItems.isSuccess]);
-
-  // const markItems = useMutation({
-  //   mutationFn: async (input: { items: string[]; markAsRead: boolean }) => {
-  //     if (auth.user) {
-  //       if (input.markAsRead) {
-  //         const promises = input.items.map((id) => {
-  //           return createUserChapterRead(auth.user.id, id);
-  //         });
-  //         await Promise.all(promises);
-  //       } else {
-  //         const promises = input.items.map((id) => {
-  //           return deleteUserMangaSaved(id);
-  //         });
-  //         await Promise.all(promises);
-  //       }
-  //     }
-  //   },
-
-  //   onSuccess: () => {
-  //     setSelectedItems([]);
-  //   },
-
-  //   onSettled: () => {
-  //     if (auth.user) {
-  //       queryClient.invalidateQueries(["chapterRead", auth.user.id, id]);
-  //     }
-  //   },
-  // });
-
-  // const markItemCurrent = useMutation({
-  //   mutationFn: async (itemId: string) => {
-  //     try {
-  //       if (lastChapterRead.data) {
-  //         await updateUserLastReadChapter(lastChapterRead.data.id, itemId, 0);
-  //       } else if (lastChapterRead.data === null && auth.user && id) {
-  //         await createUserLastReadChapter(auth.user.id, id, itemId, 0);
-  //       }
-  //     } catch (e) {}
-  //   },
-
-  //   onSuccess: () => {
-  //     setSelectedItems([]);
-  //   },
-
-  //   onSettled: () => {
-  //     if (auth.user && id) {
-  //       queryClient.invalidateQueries(["lastChapterRead", auth.user?.id, id]);
-  //     }
-  //   },
-  // });
 
   if (mangaQuery.isError || mangaChaptersQuery.isError) return <p>Error</p>;
   if (mangaQuery.isLoading || mangaChaptersQuery.isLoading)
