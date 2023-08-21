@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
+import { MangaView } from "../api";
 import { pb } from "../api/pocketbase";
-import { MangaView } from "../models/manga";
 
 const Item = (props: { manga: MangaView }) => {
   const { manga } = props;
@@ -15,7 +15,7 @@ const Item = (props: { manga: MangaView }) => {
       </div>
       <img
         className="h-full w-full overflow-clip border-b object-cover dark:border-gray-500"
-        src={pb.getFileUrl(manga, manga.coverExtraLarge)}
+        src={pb.getFileUrl(manga, manga.cover)}
         alt=""
       />
       <p className="p-4 text-center">{manga.englishTitle}</p>

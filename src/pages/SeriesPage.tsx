@@ -16,19 +16,7 @@ import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
 
-import {
-  createUserChapterRead,
-  createUserLastReadChapter,
-  createUserMangaSaved,
-  deleteUserMangaSaved,
-  fetchAllChapterIds,
-  fetchMangaSaved,
-  fetchUserChapterRead,
-  fetchUserLastReadChapter,
-  updateUserLastReadChapter,
-  useManga,
-  useMangaChaptersBasic,
-} from "../api/manga";
+import { useManga, useMangaChapterViews } from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
@@ -198,60 +186,61 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
 
 const SeriesPage = () => {
   const { id } = useParams();
+
   const queryClient = useQueryClient();
 
-  const mangaQuery = useManga({ id });
-  const mangaChaptersQuery = useMangaChaptersBasic({ id });
+  const mangaQuery = useManga({ mangaId: id });
+  const mangaChaptersQuery = useMangaChapterViews({ mangaId: id });
 
   const [ref, inView] = useInView();
-
   const auth = useAuth();
 
-  const lastChapterRead = useQuery({
-    queryKey: ["lastChapterRead", auth.user?.id, id],
-    queryFn: async () => fetchUserLastReadChapter(auth.user!.id, id!),
-    enabled: !!auth.user?.id && !!id,
-  });
+  const [collapsed, setCollapsed] = useState(true);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
-  const chapterRead = useQuery({
-    queryKey: ["chapterRead", auth.user?.id, id],
-    queryFn: async () => fetchUserChapterRead(auth.user!.id, id!),
-    enabled: !!auth.user?.id && !!id,
-  });
+  // const lastChapterRead = useQuery({
+  //   queryKey: ["lastChapterRead", auth.user?.id, id],
+  //   queryFn: async () => fetchUserLastReadChapter(auth.user!.id, id!),
+  //   enabled: !!auth.user?.id && !!id,
+  // });
 
-  const mangaSaved = useQuery({
-    queryKey: ["mangaSaved", auth.user?.id, id],
-    queryFn: async () => fetchMangaSaved(auth.user!.id, id!),
-    enabled: !!auth.user?.id && !!id,
-  });
+  // const chapterRead = useQuery({
+  //   queryKey: ["chapterRead", auth.user?.id, id],
+  //   queryFn: async () => fetchUserChapterRead(auth.user!.id, id!),
+  //   enabled: !!auth.user?.id && !!id,
+  // });
 
-  const saveManga = useMutation({
-    mutationFn: async () => {
-      if (auth.user && id) {
-        await createUserMangaSaved(auth.user.id, id);
-      }
-    },
+  // const mangaSaved = useQuery({
+  //   queryKey: ["mangaSaved", auth.user?.id, id],
+  //   queryFn: async () => fetchMangaSaved(auth.user!.id, id!),
+  //   enabled: !!auth.user?.id && !!id,
+  // });
 
-    onSettled: () => {
-      if (auth.user && id) {
-        queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
-      }
-    },
-  });
+  // const saveManga = useMutation({
+  //   mutationFn: async () => {
+  //     if (auth.user && id) {
+  //       await createUserMangaSaved(auth.user.id, id);
+  //     }
+  //   },
+  //   onSettled: () => {
+  //     if (auth.user && id) {
+  //       queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
+  //     }
+  //   },
+  // });
 
-  const removeManga = useMutation({
-    mutationFn: async () => {
-      if (mangaSaved.data) {
-        await deleteUserMangaSaved(mangaSaved.data);
-      }
-    },
-
-    onSettled: () => {
-      if (auth.user && id) {
-        queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
-      }
-    },
-  });
+  // const removeManga = useMutation({
+  //   mutationFn: async () => {
+  //     if (mangaSaved.data) {
+  //       await deleteUserMangaSaved(mangaSaved.data);
+  //     }
+  //   },
+  //   onSettled: () => {
+  //     if (auth.user && id) {
+  //       queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
+  //     }
+  //   },
+  // });
 
   useEffect(() => {
     if (inView && mangaChaptersQuery.hasNextPage) {
@@ -263,67 +252,62 @@ const SeriesPage = () => {
     mangaChaptersQuery.fetchNextPage,
   ]);
 
-  const [collapsed, setCollapsed] = useState(true);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  // const allChapterIds = useQuery({
+  //   queryKey: ["allChapterIds", id],
+  //   queryFn: async () => fetchAllChapterIds(id!),
+  //   select: (data) => data.map((i) => i.id),
+  //   enabled: !!id,
+  // });
 
-  const allChapterIds = useQuery({
-    queryKey: ["allChapterIds", id],
-    queryFn: async () => fetchAllChapterIds(id!),
-    select: (data) => data.map((i) => i.id),
-    enabled: !!id,
-  });
+  // const markItems = useMutation({
+  //   mutationFn: async (input: { items: string[]; markAsRead: boolean }) => {
+  //     if (auth.user) {
+  //       if (input.markAsRead) {
+  //         const promises = input.items.map((id) => {
+  //           return createUserChapterRead(auth.user.id, id);
+  //         });
+  //         await Promise.all(promises);
+  //       } else {
+  //         const promises = input.items.map((id) => {
+  //           return deleteUserMangaSaved(id);
+  //         });
+  //         await Promise.all(promises);
+  //       }
+  //     }
+  //   },
 
-  const markItems = useMutation({
-    mutationFn: async (input: { items: string[]; markAsRead: boolean }) => {
-      if (auth.user) {
-        if (input.markAsRead) {
-          const promises = input.items.map((id) => {
-            return createUserChapterRead(auth.user.id, id);
-          });
+  //   onSuccess: () => {
+  //     setSelectedItems([]);
+  //   },
 
-          await Promise.all(promises);
-        } else {
-          const promises = input.items.map((id) => {
-            return deleteUserMangaSaved(id);
-          });
+  //   onSettled: () => {
+  //     if (auth.user) {
+  //       queryClient.invalidateQueries(["chapterRead", auth.user.id, id]);
+  //     }
+  //   },
+  // });
 
-          await Promise.all(promises);
-        }
-      }
-    },
+  // const markItemCurrent = useMutation({
+  //   mutationFn: async (itemId: string) => {
+  //     try {
+  //       if (lastChapterRead.data) {
+  //         await updateUserLastReadChapter(lastChapterRead.data.id, itemId, 0);
+  //       } else if (lastChapterRead.data === null && auth.user && id) {
+  //         await createUserLastReadChapter(auth.user.id, id, itemId, 0);
+  //       }
+  //     } catch (e) {}
+  //   },
 
-    onSuccess: () => {
-      setSelectedItems([]);
-    },
+  //   onSuccess: () => {
+  //     setSelectedItems([]);
+  //   },
 
-    onSettled: () => {
-      if (auth.user) {
-        queryClient.invalidateQueries(["chapterRead", auth.user.id, id]);
-      }
-    },
-  });
-
-  const markItemCurrent = useMutation({
-    mutationFn: async (itemId: string) => {
-      try {
-        if (lastChapterRead.data) {
-          await updateUserLastReadChapter(lastChapterRead.data.id, itemId, 0);
-        } else if (lastChapterRead.data === null && auth.user && id) {
-          await createUserLastReadChapter(auth.user.id, id, itemId, 0);
-        }
-      } catch (e) {}
-    },
-
-    onSuccess: () => {
-      setSelectedItems([]);
-    },
-
-    onSettled: () => {
-      if (auth.user && id) {
-        queryClient.invalidateQueries(["lastChapterRead", auth.user?.id, id]);
-      }
-    },
-  });
+  //   onSettled: () => {
+  //     if (auth.user && id) {
+  //       queryClient.invalidateQueries(["lastChapterRead", auth.user?.id, id]);
+  //     }
+  //   },
+  // });
 
   if (mangaQuery.isError || mangaChaptersQuery.isError) return <p>Error</p>;
   if (mangaQuery.isLoading || mangaChaptersQuery.isLoading)
@@ -345,7 +329,6 @@ const SeriesPage = () => {
               src={pb.getFileUrl(manga, manga.coverExtraLarge)}
               alt=""
             />
-
             <div className="grid grid-cols-2 gap-2">
               <Link
                 className="rounded bg-[#3577ff] px-4 py-2 text-center text-white"
@@ -354,7 +337,6 @@ const SeriesPage = () => {
               >
                 MAL
               </Link>
-
               <Link
                 className="rounded bg-[#3577ff] px-4 py-2 text-center text-white"
                 to={manga.anilistUrl}
@@ -362,8 +344,7 @@ const SeriesPage = () => {
               >
                 Anilist
               </Link>
-
-              {mangaSaved.data && (
+              {/* {mangaSaved.data && (
                 <button
                   className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
                   onClick={() => {
@@ -374,7 +355,6 @@ const SeriesPage = () => {
                   <p>Saved</p>
                 </button>
               )}
-
               {!mangaSaved.data && (
                 <button
                   className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
@@ -385,7 +365,7 @@ const SeriesPage = () => {
                   <StarOutlineIcon className="h-6 w-6" />
                   <p>Save</p>
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -403,13 +383,11 @@ const SeriesPage = () => {
           </button>
         </div>
       </div>
-
       <div className="flex flex-col">
         <div className="flex h-20 items-center justify-between border-b-2 px-4 dark:border-gray-500">
           <p className="text-lg">
             {manga.chaptersAvailable} chapter(s) available
           </p>
-
           <div className="flex items-center gap-4">
             <button className="h-6 w-6">
               <AdjustmentsVerticalIcon />
@@ -417,66 +395,54 @@ const SeriesPage = () => {
             <button
               className="h-6 w-6 rounded border-2 border-black dark:border-white"
               onClick={() => {
-                if (allChapterIds.data) {
-                  if (selectedItems.length >= allChapterIds.data.length) {
-                    setSelectedItems([]);
-                  } else {
-                    setSelectedItems(allChapterIds.data);
-                  }
-                }
+                // if (allChapterIds.data) {
+                //   if (selectedItems.length >= allChapterIds.data.length) {
+                //     setSelectedItems([]);
+                //   } else {
+                //     setSelectedItems(allChapterIds.data);
+                //   }
+                // }
               }}
             >
-              {allChapterIds.data &&
+              {/* {allChapterIds.data &&
                 selectedItems.length >= allChapterIds.data.length && (
                   <CheckIcon />
-                )}
+                )} */}
             </button>
           </div>
         </div>
         {/* <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
           {chapterItems.map((item, i) => {
             const isViewItem = i == chapterItems.length - 1;
-
             let hasReadChapter = !!chapterRead.data?.find(
               (obj) => obj.chapter == item.id,
             );
-
             const isContinue = lastChapterRead.data?.chapter === item.id;
-
             const select = (select: boolean, shift: boolean) => {
               if (!auth.user) {
                 return;
               }
-
               console.log("Select");
               if (select) {
                 if (shift) {
                   const firstSelected = selectedItems[0];
-
                   let first = chapterItems.findIndex(
                     (i) => i.id === firstSelected,
                   );
-
                   let last = i;
-
                   if (first > last) {
                     let tmp = last;
                     last = first;
                     first = tmp;
                   }
-
                   console.log("First last", first, last);
-
                   let items = [];
                   let numItems = last - first + 1;
                   console.log("Num", numItems);
-
                   for (let i = 0; i < numItems; i++) {
                     items.push(first + i);
                   }
-
                   console.log(items);
-
                   const ids = items.map((i) => chapterItems[i].id);
                   setSelectedItems(ids);
                 } else {
@@ -488,10 +454,8 @@ const SeriesPage = () => {
                 ]);
               }
             };
-
             const showSelectMarker = selectedItems.length > 0;
             const selected = !!selectedItems.find((i) => i === item.id);
-
             return (
               <Chapter
                 ref={isViewItem ? ref : undefined}
@@ -508,45 +472,34 @@ const SeriesPage = () => {
             );
           })}
         </div> */}
-
         <div className="flex flex-col">
-          {chapterItems.map((item, i) => {
+          {/* {chapterItems.map((item, i) => {
             const isViewItem = i == chapterItems.length - 1;
-
             let hasReadChapter = !!chapterRead.data?.find(
               (obj) => obj.chapter == item.id,
             );
-
             const isContinue = lastChapterRead.data?.chapter === item.id;
-
             const select = (select: boolean, shift: boolean) => {
               if (!auth.user) {
                 return;
               }
-
               if (select) {
                 if (shift) {
                   const firstSelected = selectedItems[0];
-
                   let first = chapterItems.findIndex(
                     (i) => i.id === firstSelected,
                   );
-
                   let last = i;
-
                   if (first > last) {
                     let tmp = last;
                     last = first;
                     first = tmp;
                   }
-
                   let items = [];
                   let numItems = last - first + 1;
-
                   for (let i = 0; i < numItems; i++) {
                     items.push(first + i);
                   }
-
                   const ids = items.map((i) => chapterItems[i].id);
                   setSelectedItems(ids);
                 } else {
@@ -558,10 +511,8 @@ const SeriesPage = () => {
                 ]);
               }
             };
-
             const showSelectMarker = selectedItems.length > 0;
             const selected = !!selectedItems.find((i) => i === item.id);
-
             return (
               <SmallChapterItem
                 ref={isViewItem ? ref : undefined}
@@ -576,9 +527,8 @@ const SeriesPage = () => {
                 disableSelectMarker={!auth.user}
               />
             );
-          })}
+          })} */}
         </div>
-
         {selectedItems.length > 0 && (
           // TODO(patrik): Make the disable the buttons then doing
           // the mutation
@@ -591,7 +541,7 @@ const SeriesPage = () => {
               {selectedItems.length === 1 && (
                 <button
                   onClick={() => {
-                    markItemCurrent.mutate(selectedItems[0]);
+                    // markItemCurrent.mutate(selectedItems[0]);
                   }}
                 >
                   <BookOpenIcon className="h-7 w-7" />
@@ -599,32 +549,29 @@ const SeriesPage = () => {
               )}
               <button
                 onClick={() => {
-                  const items = selectedItems.filter((id) => {
-                    if (chapterRead.data) {
-                      return !chapterRead.data.find((i) => i.chapter === id);
-                    } else {
-                      return false;
-                    }
-                  });
-
-                  markItems.mutate({ items, markAsRead: true });
+                  // const items = selectedItems.filter((id) => {
+                  //   if (chapterRead.data) {
+                  //     return !chapterRead.data.find((i) => i.chapter === id);
+                  //   } else {
+                  //     return false;
+                  //   }
+                  // });
+                  // markItems.mutate({ items, markAsRead: true });
                 }}
               >
                 <BookmarkIcon className="h-7 w-7" />
               </button>
               <button
                 onClick={() => {
-                  if (!chapterRead.data) {
-                    return;
-                  }
-
-                  const items = chapterRead.data
-                    .filter((item) => {
-                      return selectedItems.find((i) => i === item.chapter);
-                    })
-                    .map((item) => item.id);
-
-                  markItems.mutate({ items, markAsRead: false });
+                  // if (!chapterRead.data) {
+                  //   return;
+                  // }
+                  // const items = chapterRead.data
+                  //   .filter((item) => {
+                  //     return selectedItems.find((i) => i === item.chapter);
+                  //   })
+                  //   .map((item) => item.id);
+                  // markItems.mutate({ items, markAsRead: false });
                 }}
               >
                 <BookmarkSlashIcon className="h-7 w-7" />
