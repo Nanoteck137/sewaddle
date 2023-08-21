@@ -135,6 +135,56 @@ export async function fetchAllChapterIds(mangaId: string) {
   return await OnlyIdList.parseAsync(recs);
 }
 
+export async function createUserMangaSaved(userId: string, mangaId: string) {
+  return await pb.collection("userMangaSaved").create({
+    user: userId,
+    manga: mangaId,
+  });
+}
+
+export async function deleteUserMangaSaved(id: string) {
+  return await pb.collection("userMangaSaved").delete(id);
+}
+
+export async function createUserChapterRead(userId: string, chapterId: string) {
+  return await pb.collection("userChapterRead").create(
+    {
+      user: userId,
+      chapter: chapterId,
+    },
+    { $autoCancel: false },
+  );
+}
+
+export async function deleteUserChapterRead(id: string) {
+  return await pb.collection("userChapterRead").delete(id);
+}
+
+export async function createUserLastReadChapter(
+  userId: string,
+  mangaId: string,
+  chapterId: string,
+  page: number,
+) {
+  return await pb.collection("userLastReadChapter").create({
+    user: userId,
+    manga: mangaId,
+    chapter: chapterId,
+    page,
+  });
+}
+
+export async function updateUserLastReadChapter(
+  id: string,
+  chapterId: string,
+  page: number,
+) {
+  return await pb.collection("userLastReadChapter").update(id, {
+    chapter: chapterId,
+    page,
+  });
+}
+
 // TODO(patrik): Move to hooks/
 
 export function useMangas() {

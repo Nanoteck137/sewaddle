@@ -17,10 +17,15 @@ import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
 
 import {
+  createUserChapterRead,
+  createUserLastReadChapter,
+  createUserMangaSaved,
+  deleteUserMangaSaved,
   fetchAllChapterIds,
   fetchMangaSaved,
   fetchUserChapterRead,
   fetchUserLastReadChapter,
+  updateUserLastReadChapter,
   useManga,
   useMangaChaptersBasic,
 } from "../api/manga";
@@ -223,10 +228,7 @@ const SeriesPage = () => {
   const saveManga = useMutation({
     mutationFn: async () => {
       if (auth.user && id) {
-        await pb.collection("userMangaSaved").create({
-          user: auth.user?.id,
-          manga: id,
-        });
+        await createUserMangaSaved(auth.user.id, id);
       }
     },
 
@@ -240,7 +242,7 @@ const SeriesPage = () => {
   const removeManga = useMutation({
     mutationFn: async () => {
       if (mangaSaved.data) {
-        await pb.collection("userMangaSaved").delete(mangaSaved.data);
+        await deleteUserMangaSaved(mangaSaved.data);
       }
     },
 
@@ -276,19 +278,13 @@ const SeriesPage = () => {
       if (auth.user) {
         if (input.markAsRead) {
           const promises = input.items.map((id) => {
-            return pb.collection("userChapterRead").create(
-              {
-                user: auth.user.id,
-                chapter: id,
-              },
-              { $autoCancel: false },
-            );
+            return createUserChapterRead(auth.user.id, id);
           });
 
           await Promise.all(promises);
         } else {
           const promises = input.items.map((id) => {
-            return pb.collection("userChapterRead").delete(id);
+            return deleteUserMangaSaved(id);
           });
 
           await Promise.all(promises);
@@ -311,19 +307,9 @@ const SeriesPage = () => {
     mutationFn: async (itemId: string) => {
       try {
         if (lastChapterRead.data) {
-          await pb
-            .collection("userLastReadChapter")
-            .update(lastChapterRead.data.id, {
-              chapter: itemId,
-              page: 0,
-            });
+          await updateUserLastReadChapter(lastChapterRead.data.id, itemId, 0);
         } else if (lastChapterRead.data === null && auth.user && id) {
-          await pb.collection("userLastReadChapter").create({
-            user: auth.user.id,
-            manga: id,
-            chapter: itemId,
-            page: 0,
-          });
+          await createUserLastReadChapter(auth.user.id, id, itemId, 0);
         }
       } catch (e) {}
     },
