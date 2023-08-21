@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { useChapter, useChapterNeighbours } from "../api";
+import { useChapter, useChapterNeighbours, useMarkUserChapters } from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -77,18 +77,7 @@ const ViewPage = () => {
   //   },
   // });
 
-  // const setChapterRead = useMutation({
-  //   mutationFn: async () => {
-  //     if (auth.user && id) {
-  //       try {
-  //         await pb.collection("userChapterRead").create({
-  //           user: auth.user.id,
-  //           chapter: id,
-  //         });
-  //       } catch (e) {}
-  //     }
-  //   },
-  // });
+  const markUserChapters = useMarkUserChapters();
 
   useHotkeys(["j", "left"], () => nextPage());
   useHotkeys(["k", "right"], () => prevPage());
@@ -104,7 +93,9 @@ const ViewPage = () => {
           navigate(`/view/${chapterNeighbours.data.next}?page=0`);
         } else {
           setState((prev) => ({ ...prev, isLastPage: true }));
-          // setChapterRead.mutate();
+          if (auth.user && id) {
+            markUserChapters.mutate({ userId: auth.user.id, chapterIds: [id] });
+          }
         }
       }
     }
