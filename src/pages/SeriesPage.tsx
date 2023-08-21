@@ -387,53 +387,55 @@ const SeriesPage = () => {
     <div className="flex flex-col gap-4 p-2">
       <p className="text-center text-2xl">{manga.englishTitle}</p>
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
-        <div className="flex w-full flex-col items-center justify-center gap-2">
-          <img
-            className="rounded border shadow-xl dark:border-gray-500"
-            src={pb.getFileUrl(manga, manga.coverExtraLarge)}
-            alt=""
-          />
+        <div className="flex w-full justify-center">
+          <div className="flex w-max flex-col gap-2">
+            <img
+              className="w-max rounded border shadow-xl dark:border-gray-500"
+              src={pb.getFileUrl(manga, manga.coverExtraLarge)}
+              alt=""
+            />
 
-          <div className="grid w-full grid-cols-2 gap-2">
-            <Link
-              className="rounded bg-[#3577ff] px-4 py-2 text-center"
-              to={manga.malUrl}
-              target="_blank"
-            >
-              MAL
-            </Link>
-
-            <Link
-              className="rounded bg-[#3577ff] px-4 py-2 text-center"
-              to={manga.anilistUrl}
-              target="_blank"
-            >
-              Anilist
-            </Link>
-
-            {mangaSaved.data && (
-              <button
-                className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
-                onClick={() => {
-                  removeManga.mutate();
-                }}
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                className="rounded bg-[#3577ff] px-4 py-2 text-center text-white"
+                to={manga.malUrl}
+                target="_blank"
               >
-                <StarSolidIcon className="h-6 w-6" />
-                <p>Saved</p>
-              </button>
-            )}
+                MAL
+              </Link>
 
-            {!mangaSaved.data && (
-              <button
-                className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
-                onClick={() => {
-                  saveManga.mutate();
-                }}
+              <Link
+                className="rounded bg-[#3577ff] px-4 py-2 text-center text-white"
+                to={manga.anilistUrl}
+                target="_blank"
               >
-                <StarOutlineIcon className="h-6 w-6" />
-                <p>Save</p>
-              </button>
-            )}
+                Anilist
+              </Link>
+
+              {mangaSaved.data && (
+                <button
+                  className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
+                  onClick={() => {
+                    removeManga.mutate();
+                  }}
+                >
+                  <StarSolidIcon className="h-6 w-6" />
+                  <p>Saved</p>
+                </button>
+              )}
+
+              {!mangaSaved.data && (
+                <button
+                  className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
+                  onClick={() => {
+                    saveManga.mutate();
+                  }}
+                >
+                  <StarOutlineIcon className="h-6 w-6" />
+                  <p>Save</p>
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <div className="col-span-2 flex flex-col gap-2 p-2 md:items-start">
@@ -635,52 +637,54 @@ const SeriesPage = () => {
         {selectedItems.length > 0 && (
           // TODO(patrik): Make the disable the buttons then doing
           // the mutation
-          <div className="fixed bottom-10 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded border-2 bg-white px-6 py-3 shadow dark:border-gray-500 dark:bg-gray-600">
+          <div className="fixed bottom-14 left-2 right-2 flex items-center justify-around gap-2 rounded border-2 bg-white px-6 py-3 shadow dark:border-gray-500 dark:bg-gray-600 md:left-1/2 md:right-0 md:-translate-x-1/2">
             <button onClick={() => setSelectedItems([])}>
               <XMarkIcon className="h-7 w-7" />
             </button>
             <p className="px-4">{selectedItems.length} item(s) selected</p>
-            {selectedItems.length === 1 && (
+            <div className="flex gap-2">
+              {selectedItems.length === 1 && (
+                <button
+                  onClick={() => {
+                    markItemCurrent.mutate(selectedItems[0]);
+                  }}
+                >
+                  <BookOpenIcon className="h-7 w-7" />
+                </button>
+              )}
               <button
                 onClick={() => {
-                  markItemCurrent.mutate(selectedItems[0]);
+                  const items = selectedItems.filter((id) => {
+                    if (chapterRead.data) {
+                      return !chapterRead.data.find((i) => i.chapter === id);
+                    } else {
+                      return false;
+                    }
+                  });
+
+                  markItems.mutate({ items, markAsRead: true });
                 }}
               >
-                <BookOpenIcon className="h-7 w-7" />
+                <BookmarkIcon className="h-7 w-7" />
               </button>
-            )}
-            <button
-              onClick={() => {
-                const items = selectedItems.filter((id) => {
-                  if (chapterRead.data) {
-                    return !chapterRead.data.find((i) => i.chapter === id);
-                  } else {
-                    return false;
+              <button
+                onClick={() => {
+                  if (!chapterRead.data) {
+                    return;
                   }
-                });
 
-                markItems.mutate({ items, markAsRead: true });
-              }}
-            >
-              <BookmarkIcon className="h-7 w-7" />
-            </button>
-            <button
-              onClick={() => {
-                if (!chapterRead.data) {
-                  return;
-                }
+                  const items = chapterRead.data
+                    .filter((item) => {
+                      return selectedItems.find((i) => i === item.chapter);
+                    })
+                    .map((item) => item.id);
 
-                const items = chapterRead.data
-                  .filter((item) => {
-                    return selectedItems.find((i) => i === item.chapter);
-                  })
-                  .map((item) => item.id);
-
-                markItems.mutate({ items, markAsRead: false });
-              }}
-            >
-              <BookmarkSlashIcon className="h-7 w-7" />
-            </button>
+                  markItems.mutate({ items, markAsRead: false });
+                }}
+              >
+                <BookmarkSlashIcon className="h-7 w-7" />
+              </button>
+            </div>
           </div>
         )}
       </div>
