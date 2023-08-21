@@ -394,29 +394,47 @@ const SeriesPage = () => {
             alt=""
           />
 
-          {mangaSaved.data && (
-            <button
-              className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
-              onClick={() => {
-                removeManga.mutate();
-              }}
+          <div className="grid w-full grid-cols-2 gap-2">
+            <Link
+              className="rounded bg-[#3577ff] px-4 py-2 text-center"
+              to={manga.malUrl}
+              target="_blank"
             >
-              <StarSolidIcon className="h-6 w-6" />
-              <p>Saved</p>
-            </button>
-          )}
+              MAL
+            </Link>
 
-          {!mangaSaved.data && (
-            <button
-              className="flex items-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
-              onClick={() => {
-                saveManga.mutate();
-              }}
+            <Link
+              className="rounded bg-[#3577ff] px-4 py-2 text-center"
+              to={manga.anilistUrl}
+              target="_blank"
             >
-              <StarOutlineIcon className="h-6 w-6" />
-              <p>Save</p>
-            </button>
-          )}
+              Anilist
+            </Link>
+
+            {mangaSaved.data && (
+              <button
+                className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
+                onClick={() => {
+                  removeManga.mutate();
+                }}
+              >
+                <StarSolidIcon className="h-6 w-6" />
+                <p>Saved</p>
+              </button>
+            )}
+
+            {!mangaSaved.data && (
+              <button
+                className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
+                onClick={() => {
+                  saveManga.mutate();
+                }}
+              >
+                <StarOutlineIcon className="h-6 w-6" />
+                <p>Save</p>
+              </button>
+            )}
+          </div>
         </div>
         <div className="col-span-2 flex flex-col gap-2 p-2 md:items-start">
           <p
