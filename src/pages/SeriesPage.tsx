@@ -82,7 +82,6 @@ const Chapter = forwardRef<HTMLAnchorElement, ChapterProps>((props, ref) => {
               showSelectMarker ? "" : "hidden group-hover:block"
             }`}
             onClick={(e) => {
-              console.log("HELLO?");
               e.stopPropagation();
               e.preventDefault();
               select(!isSelected, e.shiftKey);
@@ -573,7 +572,6 @@ const SeriesPage = () => {
                 return;
               }
 
-              console.log("Select");
               if (select) {
                 if (shift) {
                   const firstSelected = selectedItems[0];
@@ -590,17 +588,12 @@ const SeriesPage = () => {
                     first = tmp;
                   }
 
-                  console.log("First last", first, last);
-
                   let items = [];
                   let numItems = last - first + 1;
-                  console.log("Num", numItems);
 
                   for (let i = 0; i < numItems; i++) {
                     items.push(first + i);
                   }
-
-                  console.log(items);
 
                   const ids = items.map((i) => chapterItems[i].id);
                   setSelectedItems(ids);
