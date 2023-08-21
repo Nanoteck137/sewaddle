@@ -1,4 +1,3 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -31,58 +30,7 @@ const ViewPage = () => {
     chapter: chapterQuery.data,
   });
 
-  // const userLastRead = useQuery({
-  //   queryKey: ["userLastRead", auth.user?.id, id],
-  //   enabled: !!auth.user?.id && !!chapterQuery.data,
-  //   queryFn: async () => {
-  //     const fetch = async (userId: string, mangaId: string) => {
-  //       try {
-  //         const record = await pb
-  //           .collection("userLastReadChapter")
-  //           .getFirstListItem(`(user="${userId}" && manga="${mangaId}")`);
-  //         return record;
-  //       } catch (e) {
-  //         return null;
-  //       }
-  //     };
-
-  //     const userId = auth.user?.id || "";
-  //     const mangaId = chapterQuery.data?.manga || "";
-
-  //     let res = await fetch(userId, mangaId);
-
-  //     return res;
-  //   },
-  // });
-
   const updateUserBookmark = useUpdateUserBookmark();
-
-  // const updateUserLastRead = useMutation({
-  //   mutationFn: async (page: number) => {
-  //     try {
-  //       if (userLastRead.data) {
-  //         await pb
-  //           .collection("userLastReadChapter")
-  //           .update(userLastRead.data.id, {
-  //             chapter: id,
-  //             page,
-  //           });
-  //       } else if (
-  //         userLastRead.data === null &&
-  //         auth.user &&
-  //         id &&
-  //         chapterQuery.data
-  //       ) {
-  //         await pb.collection("userLastReadChapter").create({
-  //           user: auth.user.id,
-  //           manga: chapterQuery.data.manga,
-  //           chapter: id,
-  //           page,
-  //         });
-  //       }
-  //     } catch (e) {}
-  //   },
-  // });
 
   const markUserChapters = useMarkUserChapters();
 
