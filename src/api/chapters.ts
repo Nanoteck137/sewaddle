@@ -1,3 +1,5 @@
+import { ClientResponseError } from "pocketbase";
+
 import { OnlyIdFullList } from "./models/base";
 import { Chapter } from "./models/chapters";
 import { ChapterViewPagedList } from "./models/chapterViews";
@@ -52,6 +54,52 @@ export async function unmarkUserChapters(ids: string[]) {
 export async function fetchSingleChapter(chapterId: string) {
   const result = await pb.collection("chapters").getOne(chapterId);
   return await Chapter.parseAsync(result);
+}
+
+async function fetchNextChapter(mangaId: string, index: number) {
+  try {
+    const rec = await pb
+      .collection("chapters")
+      .getFirstListItem(`manga = "${mangaId}" && idx > ${index}`, {
+        fields: "id",
+      });
+    return rec.id;
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      if (e.status === 404) {
+        return null;
+      }
+    }
+    throw e;
+  }
+}
+
+async function fetchPrevChapter(mangaId: string, index: number) {
+  try {
+    const rec = await pb
+      .collection("chapters")
+      .getFirstListItem(`manga = "${mangaId}" && idx < ${index}`, {
+        fields: "id",
+      });
+    return rec.id;
+  } catch (e) {
+    if (e instanceof ClientResponseError) {
+      if (e.status === 404) {
+        return null;
+      }
+    }
+    throw e;
+  }
+}
+
+export async function fetchChapterNeighbours(mangaId: string, index: number) {
+  const next = await fetchNextChapter(mangaId, index);
+  const prev = await fetchPrevChapter(mangaId, index);
+
+  return {
+    next,
+    prev,
+  };
 }
 
 // async function getMangaChaptersBasic(id: string, page: number) {

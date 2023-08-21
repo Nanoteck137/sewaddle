@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { useChapter } from "../api";
+import { useChapter, useChapterNeighbours } from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -22,9 +22,9 @@ const ViewPage = () => {
 
   const chapterQuery = useChapter({ chapterId: id });
 
-  // TODO(patrik): Combine to one query
-  // const nextChapterQuery = useNextChapter({ chapter: chapterQuery.data });
-  // const prevChapterQuery = usePrevChapter({ chapter: chapterQuery.data });
+  const chapterNeighbours = useChapterNeighbours({
+    chapter: chapterQuery.data,
+  });
 
   // const userLastRead = useQuery({
   //   queryKey: ["userLastRead", auth.user?.id, id],
@@ -99,14 +99,14 @@ const ViewPage = () => {
       setState((prev) => ({ ...prev, currentPage: page }));
       setSearch({ page: page.toString() });
     } else {
-      // if (nextChapter) {
-      //   if (state.isLastPage) {
-      //     navigate(`/view/${nextChapter}?page=0`);
-      //   } else {
-      //     setState((prev) => ({ ...prev, isLastPage: true }));
-      //     // setChapterRead.mutate();
-      //   }
-      // }
+      if (chapterNeighbours.data && chapterNeighbours.data.next) {
+        if (state.isLastPage) {
+          navigate(`/view/${chapterNeighbours.data.next}?page=0`);
+        } else {
+          setState((prev) => ({ ...prev, isLastPage: true }));
+          // setChapterRead.mutate();
+        }
+      }
     }
   };
 
@@ -119,9 +119,9 @@ const ViewPage = () => {
         setState((prev) => ({ ...prev, isLastPage: false }));
       }
     } else {
-      // if (prevChapter) {
-      //   navigate(`/view/${prevChapter}?page=`);
-      // }
+      if (chapterNeighbours.data && chapterNeighbours.data.prev) {
+        navigate(`/view/${chapterNeighbours.data.prev}?page=`);
+      }
     }
   };
 
@@ -164,8 +164,6 @@ const ViewPage = () => {
   if (chapterQuery.isLoading) return <p>Loading...</p>;
 
   const { data } = chapterQuery;
-  // const { data: nextChapter } = nextChapterQuery;
-  // const { data: prevChapter } = prevChapterQuery;
 
   const getCurrentPageUrl = () => {
     // TODO(patrik): If currentPage > page length just clamp it
