@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
 import { z } from "zod";
 
+import { useUserSavedMangas } from "../api";
 import { pb } from "../api/pocketbase";
 import MangaList from "../components/MangaList";
 import { useAuth } from "../contexts/AuthContext";
@@ -20,28 +21,19 @@ const Schema = z.array(
 
 const SavedPage = () => {
   const auth = useAuth();
-  const savedMangas = useQuery({
-    queryKey: ["savedManga", auth.user?.id],
-    queryFn: async () => {
-      const list = await pb
-        .collection("userMangaSaved")
-        .getFullList({ expand: "manga" });
-      return await Schema.parseAsync(list);
-    },
-    select: (data) => data.map((i) => i.expand.manga),
-    enabled: !!auth.user,
-  });
 
-  console.log(savedMangas.data);
+  const userSavedMangas = useUserSavedMangas({ userId: auth.user?.id });
 
-  if (savedMangas.isError) return <p>Error</p>;
-  if (savedMangas.isLoading) return <p>Loading...</p>;
+  if (userSavedMangas.isError) return <p>Error</p>;
+  if (userSavedMangas.isLoading) return <p>Loading...</p>;
 
   // if (!auth.isLoggedIn) return <Navigate to="/" />;
 
+  const mangaList = userSavedMangas.data.items.map((i) => i.expand.manga);
+
   return (
     <div>
-      <MangaList list={savedMangas.data} />
+      <MangaList list={mangaList} />
     </div>
   );
 };

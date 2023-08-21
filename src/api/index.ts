@@ -3,6 +3,7 @@ export { useChapter } from "./hooks/useChapter";
 export { useMangaViews } from "./hooks/useMangaViews";
 export { useUserBookmark } from "./hooks/useUserBookmark";
 export { useUserSavedManga } from "./hooks/useUserSavedManga";
+export { useUserSavedMangas } from "./hooks/useUserSavedMangas";
 export { useMarkUserChapters } from "./hooks/useMarkUserChapters";
 export { useMangaChapterViews } from "./hooks/useMangaChapterViews";
 export { useChapterNeighbours } from "./hooks/useChapterNeighbours";

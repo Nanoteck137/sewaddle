@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ClientResponseError } from "pocketbase";
+import { z } from "zod";
 
 import {
   BASIC_CHAPTER_INFO_COLLECTION,
@@ -12,12 +13,16 @@ import { OnlyIdList } from "../models/collection";
 import {
   GetMangaViewRequest,
   MANGA_DISPLAY_COLLECTION_NAME,
-  MangaView,
 } from "../models/manga";
 import { Manga } from "./models/mangas";
-import { MangaViewFullList } from "./models/mangaViews";
+import { MangaView, MangaViewFullList } from "./models/mangaViews";
 import { UserBookmark } from "./models/userBookmarks";
-import { UserSavedManga } from "./models/userSavedMangas";
+import {
+  UserSavedManga,
+  UserSavedMangaExpanded,
+  UserSavedMangaExpandedPagedList,
+  UserSavedMangaPagedList,
+} from "./models/userSavedMangas";
 import { pb } from "./pocketbase";
 
 export async function fetchMangaViews() {
@@ -80,6 +85,17 @@ export async function removeUserSavedManga(userId: string, mangaId: string) {
 
   const result = await pb.collection("userSavedMangas").delete(savedManga.id);
   return result;
+}
+
+export async function fetchUserSavedMangas(userId: string, page: number) {
+  const result = await pb
+    .collection("userSavedMangas")
+    .getList(page, undefined, {
+      filter: `user = "${userId}"`,
+      expand: "manga",
+    });
+
+  return await UserSavedMangaExpandedPagedList.parseAsync(result);
 }
 
 async function getMangaViews() {
