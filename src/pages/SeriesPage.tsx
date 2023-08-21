@@ -21,7 +21,9 @@ import {
   useAllMangaChapterIds,
   useManga,
   useMangaChapterViews,
+  useMarkUserChapters,
   useRemoveUserSavedManga,
+  useUnmarkUserChapters,
   useUserBookmark,
   useUserMarkedChapters,
   useUserSavedManga,
@@ -172,6 +174,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
               <button
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                 }}
               >
                 <EllipsisVerticalIcon className="h-6 w-6" />
@@ -181,6 +184,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
               className="h-6 w-6 rounded border-2 border-black dark:border-white"
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 select(!isSelected, e.shiftKey);
               }}
             >
@@ -232,6 +236,15 @@ const SeriesPage = () => {
     mangaChaptersQuery.hasNextPage,
     mangaChaptersQuery.fetchNextPage,
   ]);
+
+  const markItems = useMarkUserChapters();
+  const unmarkItems = useUnmarkUserChapters();
+
+  useEffect(() => {
+    if (markItems.isSuccess || unmarkItems.isSuccess) {
+      setSelectedItems([]);
+    }
+  }, [markItems.isSuccess, unmarkItems.isSuccess]);
 
   // const markItems = useMutation({
   //   mutationFn: async (input: { items: string[]; markAsRead: boolean }) => {
@@ -538,29 +551,35 @@ const SeriesPage = () => {
               )}
               <button
                 onClick={() => {
-                  // const items = selectedItems.filter((id) => {
-                  //   if (chapterRead.data) {
-                  //     return !chapterRead.data.find((i) => i.chapter === id);
-                  //   } else {
-                  //     return false;
-                  //   }
-                  // });
-                  // markItems.mutate({ items, markAsRead: true });
+                  if (auth.user) {
+                    const items = selectedItems.filter((id) => {
+                      if (userMarkedChapters.data) {
+                        return !userMarkedChapters.data.find(
+                          (i) => i.chapter === id,
+                        );
+                      } else {
+                        return false;
+                      }
+                    });
+                    markItems.mutate({
+                      userId: auth.user.id,
+                      chapterIds: items,
+                    });
+                  }
                 }}
               >
                 <BookmarkIcon className="h-7 w-7" />
               </button>
               <button
                 onClick={() => {
-                  // if (!chapterRead.data) {
-                  //   return;
-                  // }
-                  // const items = chapterRead.data
-                  //   .filter((item) => {
-                  //     return selectedItems.find((i) => i === item.chapter);
-                  //   })
-                  //   .map((item) => item.id);
-                  // markItems.mutate({ items, markAsRead: false });
+                  if (auth.user && userMarkedChapters.data) {
+                    const items = userMarkedChapters.data
+                      .filter((item) => {
+                        return selectedItems.find((i) => i === item.chapter);
+                      })
+                      .map((item) => item.id);
+                    unmarkItems.mutate({ userId: auth.user.id, ids: items });
+                  }
                 }}
               >
                 <BookmarkSlashIcon className="h-7 w-7" />

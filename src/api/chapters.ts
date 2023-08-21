@@ -20,12 +20,34 @@ export async function fetchAllMangaChapterIds(mangaId: string) {
 }
 
 export async function fetchUserMarkedChapters(userId: string, mangaId: string) {
-  const result = await pb
-    .collection("userMarkedChapters")
-    .getFullList({
-      filter: `user = "${userId}" && chapter.manga = "${mangaId}"`,
-    });
+  const result = await pb.collection("userMarkedChapters").getFullList({
+    filter: `user = "${userId}" && chapter.manga = "${mangaId}"`,
+  });
   return await UserMarkedChapterFullList.parseAsync(result);
+}
+
+export async function markUserChapters(userId: string, chapterIds: string[]) {
+  const promises = chapterIds.map((chapterId) => {
+    return pb.collection("userMarkedChapters").create(
+      {
+        user: userId,
+        chapter: chapterId,
+      },
+      { $autoCancel: false },
+    );
+  });
+
+  const result = await Promise.all(promises);
+  return await UserMarkedChapterFullList.parseAsync(result);
+}
+
+export async function unmarkUserChapters(userId: string, ids: string[]) {
+  const promises = ids.map((id) => {
+    return pb.collection("userMarkedChapters").delete(id);
+  });
+
+  const result = await Promise.all(promises);
+  return result;
 }
 
 // async function getMangaChaptersBasic(id: string, page: number) {
