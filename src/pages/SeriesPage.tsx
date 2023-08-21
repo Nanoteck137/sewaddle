@@ -17,9 +17,11 @@ import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
 
 import {
+  useAddUserSavedManga,
   useAllMangaChapterIds,
   useManga,
   useMangaChapterViews,
+  useRemoveUserSavedManga,
   useUserBookmark,
   useUserMarkedChapters,
   useUserSavedManga,
@@ -218,31 +220,8 @@ const SeriesPage = () => {
     mangaId: id,
   });
 
-  // const saveManga = useMutation({
-  //   mutationFn: async () => {
-  //     if (auth.user && id) {
-  //       await createUserMangaSaved(auth.user.id, id);
-  //     }
-  //   },
-  //   onSettled: () => {
-  //     if (auth.user && id) {
-  //       queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
-  //     }
-  //   },
-  // });
-
-  // const removeManga = useMutation({
-  //   mutationFn: async () => {
-  //     if (mangaSaved.data) {
-  //       await deleteUserMangaSaved(mangaSaved.data);
-  //     }
-  //   },
-  //   onSettled: () => {
-  //     if (auth.user && id) {
-  //       queryClient.invalidateQueries(["mangaSaved", auth.user.id, id]);
-  //     }
-  //   },
-  // });
+  const addUserSavedManga = useAddUserSavedManga();
+  const removeUserSavedManga = useRemoveUserSavedManga();
 
   useEffect(() => {
     if (inView && mangaChaptersQuery.hasNextPage) {
@@ -253,13 +232,6 @@ const SeriesPage = () => {
     mangaChaptersQuery.hasNextPage,
     mangaChaptersQuery.fetchNextPage,
   ]);
-
-  // const allChapterIds = useQuery({
-  //   queryKey: ["allChapterIds", id],
-  //   queryFn: async () => fetchAllChapterIds(id!),
-  //   select: (data) => data.map((i) => i.id),
-  //   enabled: !!id,
-  // });
 
   // const markItems = useMutation({
   //   mutationFn: async (input: { items: string[]; markAsRead: boolean }) => {
@@ -351,6 +323,13 @@ const SeriesPage = () => {
                   className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
                   onClick={() => {
                     // removeManga.mutate();
+
+                    if (auth.user && id) {
+                      removeUserSavedManga.mutate({
+                        userId: auth.user.id,
+                        mangaId: id,
+                      });
+                    }
                   }}
                 >
                   <StarSolidIcon className="h-6 w-6" />
@@ -361,7 +340,12 @@ const SeriesPage = () => {
                 <button
                   className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
                   onClick={() => {
-                    // saveManga.mutate();
+                    if (auth.user && id) {
+                      addUserSavedManga.mutate({
+                        userId: auth.user.id,
+                        mangaId: id,
+                      });
+                    }
                   }}
                 >
                   <StarOutlineIcon className="h-6 w-6" />
