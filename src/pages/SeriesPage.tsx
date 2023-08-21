@@ -341,19 +341,17 @@ const SeriesPage = () => {
             <button
               className="h-6 w-6 rounded border-2 border-black dark:border-white"
               onClick={() => {
-                // if (allChapterIds.data) {
-                //   if (selectedItems.length >= allChapterIds.data.length) {
-                //     setSelectedItems([]);
-                //   } else {
-                //     setSelectedItems(allChapterIds.data);
-                //   }
-                // }
+                if (chapterIds.data) {
+                  if (selectedItems.length >= chapterIds.data.length) {
+                    setSelectedItems([]);
+                  } else {
+                    setSelectedItems(chapterIds.data.map((i) => i.id));
+                  }
+                }
               }}
             >
-              {/* {allChapterIds.data &&
-                selectedItems.length >= allChapterIds.data.length && (
-                  <CheckIcon />
-                )} */}
+              {chapterIds.data &&
+                selectedItems.length >= chapterIds.data.length && <CheckIcon />}
             </button>
           </div>
         </div>
