@@ -1,6 +1,22 @@
 import { ClientResponseError } from "pocketbase";
 
+import { OnlyIdFullList } from "./models/base";
+import { ChapterViewPagedList } from "./models/chapterViews";
 import { pb } from "./pocketbase";
+
+export async function fetchMangaChapterViews(mangaId: string, page: number) {
+  const result = await pb.collection("chapterViews").getList(page, undefined, {
+    filter: `manga = "${mangaId}"`,
+  });
+  return await ChapterViewPagedList.parseAsync(result);
+}
+
+export async function fetchAllMangaChapterIds(mangaId: string) {
+  const result = await pb
+    .collection("chapters")
+    .getFullList({ fields: "id", filter: `manga = "${mangaId}"` });
+  return await OnlyIdFullList.parseAsync(result);
+}
 
 // async function getMangaChaptersBasic(id: string, page: number) {
 //   const raw = await pb

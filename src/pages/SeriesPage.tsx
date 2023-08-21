@@ -16,7 +16,7 @@ import { useInView } from "react-intersection-observer";
 import { Link, useParams } from "react-router-dom";
 import { z } from "zod";
 
-import { useManga, useMangaChapterViews } from "../api";
+import { useAllMangaChapterIds, useManga, useMangaChapterViews } from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 import { BasicChapter } from "../models/chapters";
@@ -197,6 +197,8 @@ const SeriesPage = () => {
 
   const [collapsed, setCollapsed] = useState(true);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const chapterIds = useAllMangaChapterIds({ mangaId: id });
 
   // const lastChapterRead = useQuery({
   //   queryKey: ["lastChapterRead", auth.user?.id, id],
@@ -385,9 +387,11 @@ const SeriesPage = () => {
       </div>
       <div className="flex flex-col">
         <div className="flex h-20 items-center justify-between border-b-2 px-4 dark:border-gray-500">
-          <p className="text-lg">
-            {manga.chaptersAvailable} chapter(s) available
-          </p>
+          {chapterIds.data && (
+            <p className="text-lg">
+              {chapterIds.data.length} chapter(s) available
+            </p>
+          )}
           <div className="flex items-center gap-4">
             <button className="h-6 w-6">
               <AdjustmentsVerticalIcon />
@@ -473,12 +477,16 @@ const SeriesPage = () => {
           })}
         </div> */}
         <div className="flex flex-col">
-          {/* {chapterItems.map((item, i) => {
+          {chapterItems.map((item, i) => {
             const isViewItem = i == chapterItems.length - 1;
-            let hasReadChapter = !!chapterRead.data?.find(
-              (obj) => obj.chapter == item.id,
-            );
-            const isContinue = lastChapterRead.data?.chapter === item.id;
+
+            const hasReadChapter = false;
+            const isContinue = false;
+
+            // let hasReadChapter = !!chapterRead.data?.find(
+            //   (obj) => obj.chapter == item.id,
+            // );
+            // const isContinue = lastChapterRead.data?.chapter === item.id;
             const select = (select: boolean, shift: boolean) => {
               if (!auth.user) {
                 return;
@@ -527,7 +535,7 @@ const SeriesPage = () => {
                 disableSelectMarker={!auth.user}
               />
             );
-          })} */}
+          })}
         </div>
         {selectedItems.length > 0 && (
           // TODO(patrik): Make the disable the buttons then doing
