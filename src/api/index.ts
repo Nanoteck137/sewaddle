@@ -1,4 +1,5 @@
 export { useManga } from "./hooks/useManga";
+export { useChapter } from "./hooks/useChapter";
 export { useMangaViews } from "./hooks/useMangaViews";
 export { useUserBookmark } from "./hooks/useUserBookmark";
 export { useUserSavedManga } from "./hooks/useUserSavedManga";

@@ -1,4 +1,5 @@
 import { OnlyIdFullList } from "./models/base";
+import { Chapter } from "./models/chapters";
 import { ChapterViewPagedList } from "./models/chapterViews";
 import { UserMarkedChapterFullList } from "./models/userMarkedChapters";
 import { pb } from "./pocketbase";
@@ -46,6 +47,11 @@ export async function unmarkUserChapters(ids: string[]) {
 
   const result = await Promise.all(promises);
   return result;
+}
+
+export async function fetchSingleChapter(chapterId: string) {
+  const result = await pb.collection("chapters").getOne(chapterId);
+  return await Chapter.parseAsync(result);
 }
 
 // async function getMangaChaptersBasic(id: string, page: number) {
