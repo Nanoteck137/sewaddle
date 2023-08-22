@@ -17,7 +17,7 @@ type AuthContext = {
 
   register: (data: {
     username: string;
-    password: string;
+    newPassword: string;
     passwordConfirm: string;
   }) => Promise<void>;
 
@@ -55,11 +55,11 @@ export const AuthProvider = (props: AuthProviderProps) => {
   const register = useCallback(
     async (data: {
       username: string;
-      password: string;
+      newPassword: string;
       passwordConfirm: string;
     }) => {
       await pb.collection("users").create(data);
-      await login(data);
+      await login({ username: data.username, password: data.newPassword });
     },
     [],
   );

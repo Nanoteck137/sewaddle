@@ -3,11 +3,12 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import Input from "../components/Input";
 import { useAuth } from "../contexts/AuthContext";
 
 const LoginSchema = z.object({
   username: z.string().min(1),
-  password: z.string().min(1),
+  password: z.string().min(8).max(72),
 });
 type LoginSchema = z.infer<typeof LoginSchema>;
 
@@ -23,6 +24,8 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const auth = useAuth();
 
+  if (auth.isLoggedIn) return <Navigate to="/" />;
+
   const onSubmit = (data: LoginSchema) => {
     auth.login(data).then(() => {
       navigate("/");
@@ -30,26 +33,29 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="h-full p-6">
-      {auth.isLoggedIn && <Navigate to="/" />}
-      <div className="mx-auto w-full">
+    <div className="flex h-full w-full md:items-center">
+      <div className="w-full p-6 md:mx-auto md:max-w-lg md:rounded md:border-2 md:border-gray-500">
         <Link to="/" className="block text-center text-4xl">
           Sewaddle
         </Link>
-        <div className="h-6" />
-        <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-          <label htmlFor="username">Username</label>
-          <input id="username" type="text" {...register("username")} />
-          {errors.username && (
-            <p className="dark:text-red-500">{errors.username.message}</p>
-          )}
-          <label htmlFor="password">Password</label>
-          <input id="password" type="password" {...register("password")} />
-          {errors.password && (
-            <p className="dark:text-red-500">{errors.password.message}</p>
-          )}
-          <div className="h-6" />
-          <button className="bg-gray-300" type="submit">
+        <form
+          className="mt-10 flex flex-col gap-8 md:mt-12"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <Input
+            type="text"
+            placeholder="Username"
+            error={errors.username?.message}
+            {...register("username")}
+          />
+          <Input
+            type="password"
+            placeholder="Password"
+            error={errors.password?.message}
+            {...register("password")}
+          />
+
+          <button className="rounded bg-red-300 py-2" type="submit">
             Login
           </button>
         </form>

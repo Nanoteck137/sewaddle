@@ -3,15 +3,16 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import Input from "../components/Input";
 import { useAuth } from "../contexts/AuthContext";
 
 const RegisterSchema = z
   .object({
     username: z.string().min(1),
-    password: z.string().min(1),
-    passwordConfirm: z.string().min(1),
+    newPassword: z.string().min(8).max(72),
+    passwordConfirm: z.string(),
   })
-  .refine((data) => data.password === data.passwordConfirm, {
+  .refine((data) => data.newPassword === data.passwordConfirm, {
     message: "Password don't match",
     path: ["passwordConfirm"],
   });
@@ -29,6 +30,8 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const auth = useAuth();
 
+  if (auth.isLoggedIn) return <Navigate to="/" />;
+
   const onSubmit = async (data: RegisterSchema) => {
     auth.register(data).then(() => {
       navigate("/");
@@ -36,44 +39,37 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="h-full p-6">
-      {auth.isLoggedIn && <Navigate to="/" />}
-
-      <div className="mx-auto w-full">
+    <div className="flex h-full w-full md:items-center">
+      <div className="w-full p-6 md:mx-auto md:max-w-lg md:rounded md:border-2 md:border-gray-500 md:shadow">
         <Link to="/" className="block text-center text-4xl">
           Sewaddle
         </Link>
-        <div className="h-6" />
-        <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-col">
-            <label htmlFor="username">Username</label>
-            <input id="username" type="text" {...register("username")} />
-            {errors.username && (
-              <p className="dark:text-red-500">{errors.username.message}</p>
-            )}
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="password">Password</label>
-            <input id="password" type="password" {...register("password")} />
-            {errors.password && (
-              <p className="dark:text-red-500">{errors.password.message}</p>
-            )}
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="passwordConfirm">Confirm Password</label>
-            <input
-              id="passwordConfirm"
-              type="password"
-              {...register("passwordConfirm")}
-            />
-            {errors.passwordConfirm && (
-              <p className="dark:text-red-500">
-                {errors.passwordConfirm.message}
-              </p>
-            )}
-          </div>
-          <div className="h-6" />
-          <button className="bg-gray-300" type="submit">
+        <form
+          className="mt-10 flex flex-col gap-8 md:mt-12"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <Input
+            type="text"
+            placeholder="Username"
+            error={errors.username?.message}
+            autoComplete="username"
+            {...register("username")}
+          />
+          <Input
+            type="password"
+            placeholder="Password"
+            error={errors.newPassword?.message}
+            autoComplete="new-password"
+            {...register("newPassword")}
+          />
+          <Input
+            type="password"
+            placeholder="Confirm Password"
+            error={errors.passwordConfirm?.message}
+            {...register("passwordConfirm")}
+          />
+
+          <button className="rounded bg-red-300 py-2" type="submit">
             Register
           </button>
         </form>

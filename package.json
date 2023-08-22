@@ -16,6 +16,7 @@
     "@headlessui/tailwindcss": "^0.2.0",
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.2.0",
+    "@tailwindcss/forms": "^0.5.4",
     "@tanstack/react-query": "^4.32.6",
     "html-react-parser": "^4.2.1",
     "pocketbase": "^0.16.0",
