@@ -1,3 +1,4 @@
+import { Popover } from "@headlessui/react";
 import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 import {
   AdjustmentsVerticalIcon,
@@ -6,13 +7,15 @@ import {
   BookOpenIcon,
   CheckIcon,
   EllipsisVerticalIcon,
+  PaperClipIcon,
+  PencilSquareIcon,
   StarIcon as StarSolidIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import parse from "html-react-parser";
 import { forwardRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
   useAddUserSavedManga,
@@ -22,6 +25,7 @@ import {
   useMarkUserChapters,
   useRemoveUserSavedManga,
   useUnmarkUserChapters,
+  useUpdateUserBookmark,
   useUserBookmark,
   useUserMarkedChapters,
   useUserSavedManga,
@@ -36,10 +40,14 @@ type ChapterProps = {
   hasRead: boolean;
   isGroup: boolean;
 
-  select: (select: boolean, shift: boolean) => void;
   showSelectMarker: boolean;
   disableSelectMarker: boolean;
   isSelected: boolean;
+
+  select: (select: boolean, shift: boolean) => void;
+  mark: () => void;
+  unmark: () => void;
+  setAsCurrent: () => void;
 };
 
 const Chapter = forwardRef<HTMLAnchorElement, ChapterProps>((props, ref) => {
@@ -115,7 +123,7 @@ const Chapter = forwardRef<HTMLAnchorElement, ChapterProps>((props, ref) => {
   );
 });
 
-const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
+const SmallChapterItem = forwardRef<HTMLDivElement, ChapterProps>(
   (props, ref) => {
     const {
       chapter,
@@ -123,27 +131,29 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
       isGroup,
       isContinue,
       showSelectMarker,
-      select,
       isSelected,
       disableSelectMarker,
+      select,
+      mark,
+      unmark,
+      setAsCurrent,
     } = props;
 
+    const navigate = useNavigate();
+
     return (
-      <Link
-        className={`flex justify-between border-b-2 py-1 last:border-none dark:border-gray-500 ${
+      <div
+        className={`relative flex justify-between border-b-2 py-1 last:border-none dark:border-gray-500 ${
           showSelectMarker ? "select-none" : ""
         }`}
         ref={ref}
-        to={`/view/${chapter.id}`}
-        draggable="false"
-        onClick={(e) => {
-          if (showSelectMarker) {
-            e.preventDefault();
-            select(!isSelected, e.shiftKey);
-          }
-        }}
       >
-        <div className="flex gap-2">
+        <div
+          className="group relative flex flex-grow cursor-pointer gap-2"
+          onClick={() => {
+            navigate(`/view/${chapter.id}`);
+          }}
+        >
           <p className="w-12 text-right">{chapter.idx}.</p>
           <img
             className="h-16 w-12 rounded border object-cover dark:border-gray-500"
@@ -151,9 +161,11 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
             alt=""
           />
           <div className="flex flex-col justify-between">
-            {!isGroup && <p>Ch. {chapter.name}</p>}
+            {!isGroup && (
+              <p className="group-hover:underline">Ch. {chapter.name}</p>
+            )}
             {isGroup && (
-              <p>
+              <p className="group-hover:underline">
                 Ch. {chapter.group} - {chapter.name}
               </p>
             )}
@@ -165,23 +177,61 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
             )}
           </div>
         </div>
+
         {!disableSelectMarker && (
           <div className="flex items-center gap-4 p-4">
             {!showSelectMarker && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <EllipsisVerticalIcon className="h-6 w-6" />
-              </button>
+              <Popover className="relative">
+                <Popover.Button className="flex items-center rounded-full p-1 hover:bg-black/20">
+                  <EllipsisVerticalIcon className="h-6 w-6" />
+                </Popover.Button>
+                <Popover.Panel className="absolute right-0 z-[1000] flex w-56 flex-col gap-0 overflow-hidden rounded border-2 border-gray-500 bg-gray-600 hover:bg-red-300">
+                  {({ close }) => (
+                    <>
+                      {!hasRead && (
+                        <button
+                          className="flex gap-2 border-gray-500 bg-gray-600 p-2 text-start hover:bg-gray-500 [&:not(:last-child)]:border-b"
+                          onClick={() => {
+                            mark();
+                            close();
+                          }}
+                        >
+                          <BookmarkIcon className="h-5 w-5" />
+                          <p>Mark as Read</p>
+                        </button>
+                      )}
+                      {hasRead && (
+                        <button
+                          className="flex gap-2 border-gray-500 bg-gray-600 p-2 text-start hover:bg-gray-500 [&:not(:last-child)]:border-b"
+                          onClick={() => {
+                            unmark();
+                            close();
+                          }}
+                        >
+                          <BookmarkSlashIcon className="h-5 w-5" />
+                          <p>Mark as Unread</p>
+                        </button>
+                      )}
+                      {!isContinue && (
+                        <button
+                          className="flex gap-2 bg-gray-600 p-2 hover:bg-gray-500"
+                          onClick={() => {
+                            setAsCurrent();
+                            close();
+                          }}
+                        >
+                          <PaperClipIcon className="h-5 w-5" />
+                          <p>Set as current</p>
+                        </button>
+                      )}
+                    </>
+                  )}
+                </Popover.Panel>
+              </Popover>
             )}
             <button
               className="h-6 w-6 rounded border-2 border-black dark:border-white"
               onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
                 select(!isSelected, e.shiftKey);
               }}
             >
@@ -189,7 +239,7 @@ const SmallChapterItem = forwardRef<HTMLAnchorElement, ChapterProps>(
             </button>
           </div>
         )}
-      </Link>
+      </div>
     );
   },
 );
@@ -234,6 +284,8 @@ const SeriesPage = () => {
 
   const markItems = useMarkUserChapters();
   const unmarkItems = useUnmarkUserChapters();
+
+  const updateBookmark = useUpdateUserBookmark();
 
   useEffect(() => {
     if (markItems.isSuccess || unmarkItems.isSuccess) {
@@ -428,10 +480,12 @@ const SeriesPage = () => {
               (obj) => obj.chapter == item.id,
             );
             const isContinue = userBookmark.data?.chapter === item.id;
+
             const select = (select: boolean, shift: boolean) => {
               if (!auth.user) {
                 return;
               }
+
               if (select) {
                 if (shift) {
                   const firstSelected = selectedItems[0];
@@ -439,16 +493,19 @@ const SeriesPage = () => {
                     (i) => i.id === firstSelected,
                   );
                   let last = i;
+
                   if (first > last) {
                     let tmp = last;
                     last = first;
                     first = tmp;
                   }
+
                   let items = [];
                   let numItems = last - first + 1;
                   for (let i = 0; i < numItems; i++) {
                     items.push(first + i);
                   }
+
                   const ids = items.map((i) => chapterItems[i].id);
                   setSelectedItems(ids);
                 } else {
@@ -460,8 +517,45 @@ const SeriesPage = () => {
                 ]);
               }
             };
+
+            const mark = () => {
+              if (!auth.user) {
+                return;
+              }
+
+              markItems.mutate({ userId: auth.user.id, chapterIds: [item.id] });
+            };
+
+            const unmark = () => {
+              if (!auth.user || !userMarkedChapters.data) {
+                return;
+              }
+
+              const id = userMarkedChapters.data?.find(
+                (i) => i.chapter === item.id,
+              );
+
+              if (id) {
+                unmarkItems.mutate({ userId: auth.user.id, ids: [id.id] });
+              }
+            };
+
+            const setAsCurrent = () => {
+              if (!auth.user || !id) {
+                return;
+              }
+
+              updateBookmark.mutate({
+                userId: auth.user.id,
+                mangaId: id,
+                chapterId: item.id,
+                page: 0,
+              });
+            };
+
             const showSelectMarker = selectedItems.length > 0;
             const selected = !!selectedItems.find((i) => i === item.id);
+
             return (
               <SmallChapterItem
                 ref={isViewItem ? ref : undefined}
@@ -472,8 +566,11 @@ const SeriesPage = () => {
                 isGroup={manga.isGroup}
                 isSelected={selected}
                 showSelectMarker={showSelectMarker}
-                select={select}
                 disableSelectMarker={!auth.user}
+                select={select}
+                mark={mark}
+                unmark={unmark}
+                setAsCurrent={setAsCurrent}
               />
             );
           })}
