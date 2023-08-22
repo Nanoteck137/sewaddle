@@ -8,7 +8,6 @@ import {
   CheckIcon,
   EllipsisVerticalIcon,
   PaperClipIcon,
-  PencilSquareIcon,
   StarIcon as StarSolidIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
@@ -50,199 +49,124 @@ type ChapterProps = {
   setAsCurrent: () => void;
 };
 
-const Chapter = forwardRef<HTMLAnchorElement, ChapterProps>((props, ref) => {
+const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
   const {
     chapter,
-    isContinue,
     hasRead,
     isGroup,
-    isSelected,
+    isContinue,
     showSelectMarker,
+    isSelected,
     disableSelectMarker,
     select,
+    mark,
+    unmark,
+    setAsCurrent,
   } = props;
 
+  const navigate = useNavigate();
+
   return (
-    <Link
-      ref={ref}
-      to={`/view/${chapter.id}`}
-      className={`group relative flex flex-col items-center rounded border-2 shadow dark:border-gray-500 dark:bg-gray-600 ${
+    <div
+      className={`relative flex justify-between border-b-2 py-1 last:border-none dark:border-gray-500 ${
         showSelectMarker ? "select-none" : ""
       }`}
-      draggable="false"
-      onClick={(e) => {
-        if (showSelectMarker) {
-          e.preventDefault();
-          select(!isSelected, e.shiftKey);
-        }
-      }}
+      ref={ref}
     >
-      {isGroup && (
-        <p className="h-auto flex-grow p-1">
-          Ch. {chapter.group} - {chapter.name}
-        </p>
-      )}
-      {!isGroup && <p className="h-auto flex-grow p-1">Ch. {chapter.name}</p>}
-
-      <div className="relative">
+      <div
+        className="group relative flex flex-grow cursor-pointer gap-2"
+        onClick={() => {
+          navigate(`/view/${chapter.id}`);
+        }}
+      >
+        <p className="w-12 text-right">{chapter.idx}.</p>
         <img
-          className=""
+          className="h-16 w-12 rounded border object-cover dark:border-gray-500"
           src={pb.getFileUrl(chapter, chapter.cover)}
-          draggable="false"
-          alt="Chapter Cover"
+          alt=""
         />
+        <div className="flex flex-col justify-between">
+          {!isGroup && (
+            <p className="group-hover:underline">Ch. {chapter.name}</p>
+          )}
+          {isGroup && (
+            <p className="group-hover:underline">
+              Ch. {chapter.group} - {chapter.name}
+            </p>
+          )}
+          {!disableSelectMarker && (
+            <div className="flex gap-2">
+              {hasRead && <p>Read</p>}
+              {isContinue && <p>Current</p>}
+            </div>
+          )}
+        </div>
+      </div>
 
-        {!disableSelectMarker && (
+      {!disableSelectMarker && (
+        <div className="flex items-center gap-4 p-4">
+          {!showSelectMarker && (
+            <Popover className="relative">
+              <Popover.Button className="flex items-center rounded-full p-1 hover:bg-black/20">
+                <EllipsisVerticalIcon className="h-6 w-6" />
+              </Popover.Button>
+              <Popover.Panel className="absolute right-0 z-[1000] flex w-56 flex-col gap-0 overflow-hidden rounded border-2 border-gray-500 bg-gray-600 hover:bg-red-300">
+                {({ close }) => (
+                  <>
+                    {!hasRead && (
+                      <button
+                        className="flex gap-2 border-gray-500 bg-gray-600 p-2 text-start hover:bg-gray-500 [&:not(:last-child)]:border-b"
+                        onClick={() => {
+                          mark();
+                          close();
+                        }}
+                      >
+                        <BookmarkIcon className="h-5 w-5" />
+                        <p>Mark as Read</p>
+                      </button>
+                    )}
+                    {hasRead && (
+                      <button
+                        className="flex gap-2 border-gray-500 bg-gray-600 p-2 text-start hover:bg-gray-500 [&:not(:last-child)]:border-b"
+                        onClick={() => {
+                          unmark();
+                          close();
+                        }}
+                      >
+                        <BookmarkSlashIcon className="h-5 w-5" />
+                        <p>Mark as Unread</p>
+                      </button>
+                    )}
+                    {!isContinue && (
+                      <button
+                        className="flex gap-2 bg-gray-600 p-2 hover:bg-gray-500"
+                        onClick={() => {
+                          setAsCurrent();
+                          close();
+                        }}
+                      >
+                        <PaperClipIcon className="h-5 w-5" />
+                        <p>Set as current</p>
+                      </button>
+                    )}
+                  </>
+                )}
+              </Popover.Panel>
+            </Popover>
+          )}
           <button
-            className={`absolute left-2 top-2 h-8 w-8 rounded border-2 border-gray-400  bg-black/80 ${
-              showSelectMarker ? "" : "hidden group-hover:block"
-            }`}
+            className="h-6 w-6 rounded border-2 border-black dark:border-white"
             onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
               select(!isSelected, e.shiftKey);
             }}
           >
-            {isSelected && <XMarkIcon />}
+            {isSelected && <CheckIcon className="" />}
           </button>
-        )}
-
-        <div
-          className={`absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full p-1 shadow-xl ${
-            isContinue
-              ? "bg-yellow-400/95"
-              : hasRead
-              ? "bg-green-400/95"
-              : "bg-red-500/95"
-          }`}
-        >
-          {chapter.pageCount}
         </div>
-      </div>
-    </Link>
+      )}
+    </div>
   );
 });
-
-const SmallChapterItem = forwardRef<HTMLDivElement, ChapterProps>(
-  (props, ref) => {
-    const {
-      chapter,
-      hasRead,
-      isGroup,
-      isContinue,
-      showSelectMarker,
-      isSelected,
-      disableSelectMarker,
-      select,
-      mark,
-      unmark,
-      setAsCurrent,
-    } = props;
-
-    const navigate = useNavigate();
-
-    return (
-      <div
-        className={`relative flex justify-between border-b-2 py-1 last:border-none dark:border-gray-500 ${
-          showSelectMarker ? "select-none" : ""
-        }`}
-        ref={ref}
-      >
-        <div
-          className="group relative flex flex-grow cursor-pointer gap-2"
-          onClick={() => {
-            navigate(`/view/${chapter.id}`);
-          }}
-        >
-          <p className="w-12 text-right">{chapter.idx}.</p>
-          <img
-            className="h-16 w-12 rounded border object-cover dark:border-gray-500"
-            src={pb.getFileUrl(chapter, chapter.cover)}
-            alt=""
-          />
-          <div className="flex flex-col justify-between">
-            {!isGroup && (
-              <p className="group-hover:underline">Ch. {chapter.name}</p>
-            )}
-            {isGroup && (
-              <p className="group-hover:underline">
-                Ch. {chapter.group} - {chapter.name}
-              </p>
-            )}
-            {!disableSelectMarker && (
-              <div className="flex gap-2">
-                {hasRead && <p>Read</p>}
-                {isContinue && <p>Current</p>}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {!disableSelectMarker && (
-          <div className="flex items-center gap-4 p-4">
-            {!showSelectMarker && (
-              <Popover className="relative">
-                <Popover.Button className="flex items-center rounded-full p-1 hover:bg-black/20">
-                  <EllipsisVerticalIcon className="h-6 w-6" />
-                </Popover.Button>
-                <Popover.Panel className="absolute right-0 z-[1000] flex w-56 flex-col gap-0 overflow-hidden rounded border-2 border-gray-500 bg-gray-600 hover:bg-red-300">
-                  {({ close }) => (
-                    <>
-                      {!hasRead && (
-                        <button
-                          className="flex gap-2 border-gray-500 bg-gray-600 p-2 text-start hover:bg-gray-500 [&:not(:last-child)]:border-b"
-                          onClick={() => {
-                            mark();
-                            close();
-                          }}
-                        >
-                          <BookmarkIcon className="h-5 w-5" />
-                          <p>Mark as Read</p>
-                        </button>
-                      )}
-                      {hasRead && (
-                        <button
-                          className="flex gap-2 border-gray-500 bg-gray-600 p-2 text-start hover:bg-gray-500 [&:not(:last-child)]:border-b"
-                          onClick={() => {
-                            unmark();
-                            close();
-                          }}
-                        >
-                          <BookmarkSlashIcon className="h-5 w-5" />
-                          <p>Mark as Unread</p>
-                        </button>
-                      )}
-                      {!isContinue && (
-                        <button
-                          className="flex gap-2 bg-gray-600 p-2 hover:bg-gray-500"
-                          onClick={() => {
-                            setAsCurrent();
-                            close();
-                          }}
-                        >
-                          <PaperClipIcon className="h-5 w-5" />
-                          <p>Set as current</p>
-                        </button>
-                      )}
-                    </>
-                  )}
-                </Popover.Panel>
-              </Popover>
-            )}
-            <button
-              className="h-6 w-6 rounded border-2 border-black dark:border-white"
-              onClick={(e) => {
-                select(!isSelected, e.shiftKey);
-              }}
-            >
-              {isSelected && <CheckIcon className="" />}
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  },
-);
 
 const SeriesPage = () => {
   const { id } = useParams();
@@ -411,67 +335,7 @@ const SeriesPage = () => {
             )}
           </div>
         </div>
-        {/* <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
-          {chapterItems.map((item, i) => {
-            const isViewItem = i == chapterItems.length - 1;
-            let hasReadChapter = !!chapterRead.data?.find(
-              (obj) => obj.chapter == item.id,
-            );
-            const isContinue = lastChapterRead.data?.chapter === item.id;
-            const select = (select: boolean, shift: boolean) => {
-              if (!auth.user) {
-                return;
-              }
-              console.log("Select");
-              if (select) {
-                if (shift) {
-                  const firstSelected = selectedItems[0];
-                  let first = chapterItems.findIndex(
-                    (i) => i.id === firstSelected,
-                  );
-                  let last = i;
-                  if (first > last) {
-                    let tmp = last;
-                    last = first;
-                    first = tmp;
-                  }
-                  console.log("First last", first, last);
-                  let items = [];
-                  let numItems = last - first + 1;
-                  console.log("Num", numItems);
-                  for (let i = 0; i < numItems; i++) {
-                    items.push(first + i);
-                  }
-                  console.log(items);
-                  const ids = items.map((i) => chapterItems[i].id);
-                  setSelectedItems(ids);
-                } else {
-                  setSelectedItems((prev) => [...prev, item.id]);
-                }
-              } else {
-                setSelectedItems((prev) => [
-                  ...prev.filter((i) => i !== item.id),
-                ]);
-              }
-            };
-            const showSelectMarker = selectedItems.length > 0;
-            const selected = !!selectedItems.find((i) => i === item.id);
-            return (
-              <Chapter
-                ref={isViewItem ? ref : undefined}
-                key={item.id}
-                chapter={item}
-                isContinue={isContinue}
-                hasRead={hasReadChapter}
-                isGroup={manga.isGroup}
-                isSelected={selected}
-                showSelectMarker={showSelectMarker}
-                select={select}
-                disableSelectMarker={!auth.user}
-              />
-            );
-          })}
-        </div> */}
+
         <div className="flex flex-col">
           {chapterItems.map((item, i) => {
             const isViewItem = i == chapterItems.length - 1;
@@ -557,7 +421,7 @@ const SeriesPage = () => {
             const selected = !!selectedItems.find((i) => i === item.id);
 
             return (
-              <SmallChapterItem
+              <ChapterItem
                 ref={isViewItem ? ref : undefined}
                 key={item.id}
                 chapter={item}
