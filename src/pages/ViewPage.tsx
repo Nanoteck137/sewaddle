@@ -125,7 +125,7 @@ const ViewPage = () => {
   return (
     <div className="relative flex h-full w-full justify-center">
       <button
-        className="absolute left-0 h-full w-1/2 bg-red-400/20"
+        className="absolute left-0 h-full w-1/2 cursor-w-resize"
         onClick={nextPage}
       ></button>
 
@@ -136,7 +136,7 @@ const ViewPage = () => {
       />
 
       <button
-        className="absolute right-0 h-full w-1/2 bg-blue-400/20"
+        className="absolute right-0 h-full w-1/2 cursor-e-resize"
         onClick={prevPage}
       ></button>
 
