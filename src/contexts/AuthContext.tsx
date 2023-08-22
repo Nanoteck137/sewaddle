@@ -8,8 +8,8 @@ import {
 } from "react";
 import { Admin, Record } from "pocketbase";
 
+import { User } from "../api/models/users";
 import { pb } from "../api/pocketbase";
-import { User } from "../models/user";
 
 type AuthContext = {
   isLoggedIn: boolean;
@@ -58,13 +58,11 @@ export const AuthProvider = (props: AuthProviderProps) => {
       newPassword: string;
       passwordConfirm: string;
     }) => {
-      await pb
-        .collection("users")
-        .create({
-          username: data.username,
-          password: data.newPassword,
-          passwordConfirm: data.passwordConfirm,
-        });
+      await pb.collection("users").create({
+        username: data.username,
+        password: data.newPassword,
+        passwordConfirm: data.passwordConfirm,
+      });
       await login({ username: data.username, password: data.newPassword });
     },
     [],
