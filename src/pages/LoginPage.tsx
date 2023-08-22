@@ -46,12 +46,14 @@ const LoginPage = () => {
             type="text"
             placeholder="Username"
             error={errors.username?.message}
+            autoComplete="username"
             {...register("username")}
           />
           <Input
             type="password"
             placeholder="Password"
             error={errors.password?.message}
+            autoComplete="current-password"
             {...register("password")}
           />
 

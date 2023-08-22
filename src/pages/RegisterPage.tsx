@@ -66,6 +66,7 @@ const RegisterPage = () => {
             type="password"
             placeholder="Confirm Password"
             error={errors.passwordConfirm?.message}
+            autoComplete="new-password"
             {...register("passwordConfirm")}
           />
 
