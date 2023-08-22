@@ -49,7 +49,7 @@ const ViewPage = () => {
         } else {
           setState((prev) => ({ ...prev, isLastPage: true }));
           if (auth.user && id) {
-            markUserChapters.mutate({ userId: auth.user.id, chapterIds: [id] });
+            markUserChapters.mutate({ user: auth.user, chapterIds: [id] });
           }
         }
       }
@@ -104,7 +104,7 @@ const ViewPage = () => {
   useEffect(() => {
     if (auth.user && chapterQuery.data) {
       updateUserBookmark.mutate({
-        userId: auth.user.id,
+        user: auth.user,
         mangaId: chapterQuery.data.manga,
         chapterId: chapterQuery.data.id,
         page: state.currentPage,

@@ -1,8 +1,10 @@
 import { ClientResponseError } from "pocketbase";
 
+import { Id } from "./models/base";
 import { Manga } from "./models/mangas";
 import { MangaViewFullList } from "./models/mangaViews";
 import { UserBookmark } from "./models/userBookmarks";
+import { User } from "./models/users";
 import {
   UserSavedManga,
   UserSavedMangaExpandedPagedList,
@@ -19,11 +21,11 @@ export async function fetchSingleManga(mangaId: string) {
   return await Manga.parseAsync(rec);
 }
 
-export async function fetchUserBookmark(userId: string, mangaId: string) {
+export async function fetchUserBookmark(user: User, mangaId: Id) {
   try {
     const result = await pb
       .collection("userBookmarks")
-      .getFirstListItem(`user = "${userId}" && manga = "${mangaId}"`);
+      .getFirstListItem(`user = "${user.id}" && manga = "${mangaId}"`);
     return await UserBookmark.parseAsync(result);
   } catch (e) {
     if (e instanceof ClientResponseError) {
@@ -36,11 +38,11 @@ export async function fetchUserBookmark(userId: string, mangaId: string) {
   }
 }
 
-export async function fetchUserSavedManga(userId: string, mangaId: string) {
+export async function fetchUserSavedManga(user: User, mangaId: Id) {
   try {
     const result = await pb
       .collection("userSavedMangas")
-      .getFirstListItem(`user = "${userId}" && manga = "${mangaId}"`);
+      .getFirstListItem(`user = "${user.id}" && manga = "${mangaId}"`);
     return await UserSavedManga.parseAsync(result);
   } catch (e) {
     if (e instanceof ClientResponseError) {
@@ -53,16 +55,16 @@ export async function fetchUserSavedManga(userId: string, mangaId: string) {
   }
 }
 
-export async function createUserSavedManga(userId: string, mangaId: string) {
+export async function createUserSavedManga(user: User, mangaId: Id) {
   const result = await pb.collection("userSavedMangas").create({
-    user: userId,
+    user: user.id,
     manga: mangaId,
   });
   return await UserSavedManga.parseAsync(result);
 }
 
-export async function removeUserSavedManga(userId: string, mangaId: string) {
-  const savedManga = await fetchUserSavedManga(userId, mangaId);
+export async function removeUserSavedManga(user: User, mangaId: Id) {
+  const savedManga = await fetchUserSavedManga(user, mangaId);
   if (!savedManga) {
     return null;
   }
@@ -71,24 +73,24 @@ export async function removeUserSavedManga(userId: string, mangaId: string) {
   return result;
 }
 
-export async function fetchUserSavedMangas(userId: string, page: number) {
+export async function fetchUserSavedMangas(user: User, page: number) {
   const result = await pb
     .collection("userSavedMangas")
     .getList(page, undefined, {
-      filter: `user = "${userId}"`,
+      filter: `user = "${user.id}"`,
       expand: "manga",
     });
 
   return await UserSavedMangaExpandedPagedList.parseAsync(result);
 }
 
-export async function createUserMangaSaved(userId: string, mangaId: string) {
+export async function createUserMangaSaved(user: User, mangaId: Id) {
   return await pb.collection("userMangaSaved").create({
-    user: userId,
+    user: user.id,
     manga: mangaId,
   });
 }
 
-export async function deleteUserMangaSaved(id: string) {
+export async function deleteUserMangaSaved(id: Id) {
   return await pb.collection("userMangaSaved").delete(id);
 }

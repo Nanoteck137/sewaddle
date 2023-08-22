@@ -1,39 +1,40 @@
 import { ClientResponseError } from "pocketbase";
 
 import { fetchUserBookmark } from "./mangas";
-import { OnlyIdFullList } from "./models/base";
+import { Id, OnlyIdFullList } from "./models/base";
 import { Chapter } from "./models/chapters";
 import { ChapterViewPagedList } from "./models/chapterViews";
 import { UserBookmark } from "./models/userBookmarks";
 import { UserMarkedChapterFullList } from "./models/userMarkedChapters";
+import { User } from "./models/users";
 import { pb } from "./pocketbase";
 
-export async function fetchMangaChapterViews(mangaId: string, page: number) {
+export async function fetchMangaChapterViews(mangaId: Id, page: number) {
   const result = await pb.collection("chapterViews").getList(page, undefined, {
     filter: `manga = "${mangaId}"`,
   });
   return await ChapterViewPagedList.parseAsync(result);
 }
 
-export async function fetchAllMangaChapterIds(mangaId: string) {
+export async function fetchAllMangaChapterIds(mangaId: Id) {
   const result = await pb
     .collection("chapters")
     .getFullList({ fields: "id", filter: `manga = "${mangaId}"` });
   return await OnlyIdFullList.parseAsync(result);
 }
 
-export async function fetchUserMarkedChapters(userId: string, mangaId: string) {
+export async function fetchUserMarkedChapters(user: User, mangaId: Id) {
   const result = await pb.collection("userMarkedChapters").getFullList({
-    filter: `user = "${userId}" && chapter.manga = "${mangaId}"`,
+    filter: `user = "${user.id}" && chapter.manga = "${mangaId}"`,
   });
   return await UserMarkedChapterFullList.parseAsync(result);
 }
 
-export async function markUserChapters(userId: string, chapterIds: string[]) {
+export async function markUserChapters(user: User, chapterIds: Id[]) {
   const promises = chapterIds.map((chapterId) => {
     return pb.collection("userMarkedChapters").create(
       {
-        user: userId,
+        user: user.id,
         chapter: chapterId,
       },
       { $autoCancel: false },
@@ -54,7 +55,7 @@ export async function markUserChapters(userId: string, chapterIds: string[]) {
   }
 }
 
-export async function unmarkUserChapters(ids: string[]) {
+export async function unmarkUserChapters(ids: Id[]) {
   const promises = ids.map((id) => {
     return pb.collection("userMarkedChapters").delete(id);
   });
@@ -63,12 +64,12 @@ export async function unmarkUserChapters(ids: string[]) {
   return result;
 }
 
-export async function fetchSingleChapter(chapterId: string) {
+export async function fetchSingleChapter(chapterId: Id) {
   const result = await pb.collection("chapters").getOne(chapterId);
   return await Chapter.parseAsync(result);
 }
 
-async function fetchNextChapter(mangaId: string, index: number) {
+async function fetchNextChapter(mangaId: Id, index: number) {
   try {
     const rec = await pb
       .collection("chapters")
@@ -86,7 +87,7 @@ async function fetchNextChapter(mangaId: string, index: number) {
   }
 }
 
-async function fetchPrevChapter(mangaId: string, index: number) {
+async function fetchPrevChapter(mangaId: Id, index: number) {
   try {
     const rec = await pb
       .collection("chapters")
@@ -104,7 +105,7 @@ async function fetchPrevChapter(mangaId: string, index: number) {
   }
 }
 
-export async function fetchChapterNeighbours(mangaId: string, index: number) {
+export async function fetchChapterNeighbours(mangaId: Id, index: number) {
   const next = await fetchNextChapter(mangaId, index);
   const prev = await fetchPrevChapter(mangaId, index);
 
@@ -115,13 +116,13 @@ export async function fetchChapterNeighbours(mangaId: string, index: number) {
 }
 
 export async function updateUserBookmark(
-  userId: string,
-  mangaId: string,
-  chapterId: string,
+  user: User,
+  mangaId: Id,
+  chapterId: Id,
   page: number,
 ) {
   try {
-    const bookmark = await fetchUserBookmark(userId, mangaId);
+    const bookmark = await fetchUserBookmark(user, mangaId);
     if (bookmark) {
       const rec = await pb.collection("userBookmarks").update(bookmark.id, {
         chapter: chapterId,
@@ -130,7 +131,7 @@ export async function updateUserBookmark(
       return await UserBookmark.parseAsync(rec);
     } else {
       const rec = await pb.collection("userBookmarks").create({
-        user: userId,
+        user: user.id,
         manga: mangaId,
         chapter: chapterId,
         page,

@@ -182,14 +182,17 @@ const SeriesPage = () => {
 
   const chapterIds = useAllMangaChapterIds({ mangaId: id });
 
-  const userBookmark = useUserBookmark({ userId: auth.user?.id, mangaId: id });
+  const userBookmark = useUserBookmark({
+    user: auth.user,
+    mangaId: id,
+  });
   const userMarkedChapters = useUserMarkedChapters({
-    userId: auth.user?.id,
+    user: auth.user,
     mangaId: id,
   });
 
   const userSavedManga = useUserSavedManga({
-    userId: auth.user?.id,
+    user: auth.user,
     mangaId: id,
   });
 
@@ -260,7 +263,7 @@ const SeriesPage = () => {
 
                     if (auth.user && id) {
                       removeUserSavedManga.mutate({
-                        userId: auth.user.id,
+                        user: auth.user,
                         mangaId: id,
                       });
                     }
@@ -276,7 +279,7 @@ const SeriesPage = () => {
                   onClick={() => {
                     if (auth.user && id) {
                       addUserSavedManga.mutate({
-                        userId: auth.user.id,
+                        user: auth.user,
                         mangaId: id,
                       });
                     }
@@ -387,7 +390,7 @@ const SeriesPage = () => {
                 return;
               }
 
-              markItems.mutate({ userId: auth.user.id, chapterIds: [item.id] });
+              markItems.mutate({ user: auth.user, chapterIds: [item.id] });
             };
 
             const unmark = () => {
@@ -400,7 +403,7 @@ const SeriesPage = () => {
               );
 
               if (id) {
-                unmarkItems.mutate({ userId: auth.user.id, ids: [id.id] });
+                unmarkItems.mutate({ user: auth.user, ids: [id.id] });
               }
             };
 
@@ -410,7 +413,7 @@ const SeriesPage = () => {
               }
 
               updateBookmark.mutate({
-                userId: auth.user.id,
+                user: auth.user,
                 mangaId: id,
                 chapterId: item.id,
                 page: 0,
@@ -470,7 +473,7 @@ const SeriesPage = () => {
                       }
                     });
                     markItems.mutate({
-                      userId: auth.user.id,
+                      user: auth.user,
                       chapterIds: items,
                     });
                   }
@@ -486,7 +489,7 @@ const SeriesPage = () => {
                         return selectedItems.find((i) => i === item.chapter);
                       })
                       .map((item) => item.id);
-                    unmarkItems.mutate({ userId: auth.user.id, ids: items });
+                    unmarkItems.mutate({ user: auth.user, ids: items });
                   }
                 }}
               >

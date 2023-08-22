@@ -13,7 +13,7 @@ import { pb } from "../api/pocketbase";
 
 type AuthContext = {
   isLoggedIn: boolean;
-  user: User | null;
+  user?: User;
 
   register: (data: {
     username: string;
@@ -32,7 +32,6 @@ type AuthContext = {
 
 const AuthContext = createContext<AuthContext>({
   isLoggedIn: false,
-  user: null,
 
   register: async () => {},
   login: async () => {},
@@ -49,7 +48,7 @@ type AuthProviderProps = {
 };
 
 export const AuthProvider = (props: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User>();
   const [isLoggedIn, setLoggedIn] = useState(pb.authStore.isValid);
 
   const register = useCallback(
@@ -80,7 +79,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
   const logout = useCallback(() => {
     console.log("LOGOUT");
     pb.authStore.clear();
-    setUser(null);
+    setUser(undefined);
     setLoggedIn(false);
   }, []);
 
@@ -105,7 +104,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
         setUser(user);
         setLoggedIn(true);
       } else {
-        setUser(null);
+        setUser(undefined);
         setLoggedIn(false);
       }
     };

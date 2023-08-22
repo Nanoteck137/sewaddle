@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchUserSavedMangas } from "../mangas";
+import { User } from "../models/users";
 
-export function useUserSavedMangas(input: { userId?: string }) {
+export function useUserSavedMangas(input: { user?: User }) {
   return useQuery({
-    queryKey: ["userSavedMangas", input.userId],
-    queryFn: async () => await fetchUserSavedMangas(input.userId!, 0),
-    enabled: !!input.userId,
+    queryKey: ["userSavedMangas", input.user?.id],
+    queryFn: async () => await fetchUserSavedMangas(input.user!, 0),
+    enabled: !!input.user,
   });
 }

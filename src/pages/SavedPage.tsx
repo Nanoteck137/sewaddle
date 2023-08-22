@@ -8,7 +8,7 @@ const SavedPage = () => {
   const auth = useAuth();
   if (!auth.isLoggedIn) return <Navigate to="/" />;
 
-  const userSavedMangas = useUserSavedMangas({ userId: auth.user?.id });
+  const userSavedMangas = useUserSavedMangas({ user: auth.user });
 
   if (userSavedMangas.isError) return <p>Error</p>;
   if (userSavedMangas.isLoading) return <p>Loading...</p>;
