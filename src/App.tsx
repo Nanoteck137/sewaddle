@@ -6,7 +6,6 @@ import { useTernaryDarkMode } from "usehooks-ts";
 import { AuthProvider } from "./contexts/AuthContext";
 import BlankLayout from "./layouts/BlankLayout";
 import DefaultLayout from "./layouts/DefaultLayout";
-import AboutPage from "./pages/AboutPage";
 import AccountPage from "./pages/AccountPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -42,7 +41,6 @@ const App = () => {
 
                   <Route path="account" element={<AccountPage />} />
                   <Route path="saved" element={<SavedPage />} />
-                  <Route path="about" element={<AboutPage />} />
                 </Route>
 
                 <Route element={<BlankLayout />}>
