@@ -58,7 +58,13 @@ export const AuthProvider = (props: AuthProviderProps) => {
       newPassword: string;
       passwordConfirm: string;
     }) => {
-      await pb.collection("users").create(data);
+      await pb
+        .collection("users")
+        .create({
+          username: data.username,
+          password: data.newPassword,
+          passwordConfirm: data.passwordConfirm,
+        });
       await login({ username: data.username, password: data.newPassword });
     },
     [],

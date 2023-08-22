@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import Input from "../components/Input";
 import { useAuth } from "../contexts/AuthContext";
 
 const ChangePasswordSchema = z
@@ -39,38 +40,31 @@ const ChangePassword = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit(submit)}>
-        <div className="flex flex-col">
-          <label htmlFor="oldPassword">Old Password</label>
-          <input
-            className="text-black"
-            id="oldPassword"
-            type="text"
-            {...register("oldPassword")}
-          />
-          {errors.oldPassword && <p>{errors.oldPassword.message}</p>}
-        </div>
-        <div className="flex flex-col">
-          <label htmlFor="password">New Password</label>
-          <input
-            className="text-black"
-            id="password"
-            type="text"
-            {...register("password")}
-          />
-          {errors.password && <p>{errors.password.message}</p>}
-        </div>
-        <div className="flex flex-col">
-          <label htmlFor="passwordConfirm">Confirm Password</label>
-          <input
-            className="text-black"
-            id="passwordConfirm"
-            type="text"
-            {...register("passwordConfirm")}
-          />
-          {errors.passwordConfirm && <p>{errors.passwordConfirm.message}</p>}
-        </div>
-        <button type="submit">Change Password</button>
+      <form className="flex flex-col gap-6" onSubmit={handleSubmit(submit)}>
+        <Input
+          type="password"
+          placeholder="Current Password"
+          autoComplete="current-password"
+          error={errors.oldPassword?.message}
+          {...register("oldPassword")}
+        />
+        <Input
+          type="password"
+          placeholder="New Password"
+          autoComplete="new-password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
+        <Input
+          type="password"
+          placeholder="Confirm Password"
+          autoComplete="new-password"
+          error={errors.passwordConfirm?.message}
+          {...register("passwordConfirm")}
+        />
+        <button className="rounded bg-red-300 py-2" type="submit">
+          Change Password
+        </button>
       </form>
     </div>
   );
@@ -80,11 +74,10 @@ const AccountPage = () => {
   const auth = useAuth();
 
   if (!auth.isLoggedIn) return <Navigate to="/login" />;
-  if (!auth.user) return <p></p>;
 
   return (
-    <div>
-      <p>Account Page: {auth.user.username}</p>
+    <div className="flex flex-col gap-6 p-2">
+      <p>Account Page: {auth.user?.username}</p>
       <ChangePassword />
     </div>
   );
