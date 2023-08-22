@@ -76,9 +76,11 @@ const AccountPage = () => {
   if (!auth.isLoggedIn) return <Navigate to="/login" />;
 
   return (
-    <div className="flex flex-col gap-6 p-2">
-      <p>Account Page: {auth.user?.username}</p>
-      <ChangePassword />
+    <div className="mx-auto w-full py-10 md:max-w-xl">
+      <div className="flex flex-col gap-7 p-2">
+        <p className="text-xl">Username: {auth.user?.username}</p>
+        <ChangePassword />
+      </div>
     </div>
   );
 };
