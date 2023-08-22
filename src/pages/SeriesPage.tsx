@@ -338,21 +338,25 @@ const SeriesPage = () => {
             <button className="h-6 w-6">
               <AdjustmentsVerticalIcon />
             </button>
-            <button
-              className="h-6 w-6 rounded border-2 border-black dark:border-white"
-              onClick={() => {
-                if (chapterIds.data) {
-                  if (selectedItems.length >= chapterIds.data.length) {
-                    setSelectedItems([]);
-                  } else {
-                    setSelectedItems(chapterIds.data.map((i) => i.id));
+            {auth.isLoggedIn && (
+              <button
+                className="h-6 w-6 rounded border-2 border-black dark:border-white"
+                onClick={() => {
+                  if (chapterIds.data) {
+                    if (selectedItems.length >= chapterIds.data.length) {
+                      setSelectedItems([]);
+                    } else {
+                      setSelectedItems(chapterIds.data.map((i) => i.id));
+                    }
                   }
-                }
-              }}
-            >
-              {chapterIds.data &&
-                selectedItems.length >= chapterIds.data.length && <CheckIcon />}
-            </button>
+                }}
+              >
+                {chapterIds.data &&
+                  selectedItems.length >= chapterIds.data.length && (
+                    <CheckIcon />
+                  )}
+              </button>
+            )}
           </div>
         </div>
         {/* <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
