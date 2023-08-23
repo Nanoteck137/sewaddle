@@ -44,3 +44,11 @@ export const PrimaryDisabled: Story = {
     disabled: true,
   },
 };
+
+export const Secondary: Story = {
+  args: {
+    variant: "secondary",
+    size: "md",
+    children: "Hello World",
+  },
+};

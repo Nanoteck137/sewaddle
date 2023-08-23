@@ -247,7 +247,7 @@ const SeriesPage = () => {
             <div className="grid grid-cols-2 gap-2">
               <Link
                 className={cn(
-                  buttonVarients({ variant: "primary", size: "md" }),
+                  buttonVarients({ variant: "secondary", size: "md" }),
                 )}
                 to={manga.malUrl}
                 target="_blank"
@@ -256,7 +256,7 @@ const SeriesPage = () => {
               </Link>
               <Link
                 className={cn(
-                  buttonVarients({ variant: "primary", size: "md" }),
+                  buttonVarients({ variant: "secondary", size: "md" }),
                 )}
                 to={manga.anilistUrl}
                 target="_blank"

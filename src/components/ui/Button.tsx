@@ -9,7 +9,8 @@ export const buttonVarients = cva(
       variant: {
         primary:
           "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-black dark:hover:bg-gray-300",
-        secondary: "bg-red-300 hover:bg-red-200",
+        secondary:
+          "bg-slate-300 text-black hover:bg-slate-400 dark:bg-slate-500 dark:text-white dark:hover:bg-slate-400",
       },
       size: {
         sm: "px-2 py-1 text-sm",
