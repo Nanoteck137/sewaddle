@@ -15,7 +15,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={twMerge(
-          `flex items-center rounded border-b-2 border-gray-100 p-2 shadow-md hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600 lg:max-xl:flex-col lg:max-xl:border-none lg:max-xl:shadow-none ${
+          `flex items-center rounded border-b-2 border-gray-100 p-2 shadow-md text-black dark:text-white hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600 lg:max-xl:flex-col lg:max-xl:border-none lg:max-xl:shadow-none ${
             selected ? "bg-gray-100 dark:bg-gray-600" : ""
           }`,
           className,

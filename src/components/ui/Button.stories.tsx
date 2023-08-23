@@ -1,7 +1,7 @@
-import { StarIcon } from "@heroicons/react/24/solid";
 import { Meta, StoryObj } from "@storybook/react";
 
-import Button from "./Button";
+import { cn } from "@/lib/util";
+import Button, { buttonVarients } from "./Button";
 
 const meta: Meta<typeof Button> = {
   title: "UI/Button",
@@ -12,25 +12,45 @@ export default meta;
 
 type Story = StoryObj<typeof Button>;
 
-export const Primary: Story = {
+export const PrimarySmall: Story = {
   args: {
-    test: true,
+    variant: "primary",
+    size: "sm",
     children: "Hello World",
   },
 };
 
-const Test = () => {
-  return (
-    <div className="flex items-center gap-2">
-      <StarIcon className="w-5 h-5" />
-      <span>Hello World</span>
-    </div>
-  );
+export const PrimaryMedium: Story = {
+  args: {
+    variant: "primary",
+    size: "md",
+    children: "Hello World",
+  },
 };
 
-export const CustomChildren: Story = {
+export const PrimaryLarge: Story = {
   args: {
-    test: false,
-    children: <Test />,
+    variant: "primary",
+    size: "lg",
+    children: "Hello World",
   },
+};
+
+export const Link: Story = {
+  args: {
+    className: "inline-block cursor-pointer select-none",
+  },
+  render: (args) => (
+    <a
+      className={cn(
+        buttonVarients({
+          variant: args.variant,
+          size: args.size,
+          className: args.className,
+        }),
+      )}
+    >
+      Button
+    </a>
+  ),
 };
