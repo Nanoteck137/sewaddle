@@ -3,10 +3,7 @@
   "tabWidth": 2,
   "singleQuote": false,
   "bracketSameLine": false,
-  "plugins": [
-    "@ianvs/prettier-plugin-sort-imports",
-    "prettier-plugin-tailwindcss"
-  ],
+  "plugins": ["@ianvs/prettier-plugin-sort-imports"],
   "importOrder": ["react", "<THIRD_PARTY_MODULES>", "", "^[./]"],
   "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
   "importOrderTypeScriptVersion": "5.0.0"
