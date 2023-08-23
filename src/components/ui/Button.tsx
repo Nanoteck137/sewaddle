@@ -1,14 +1,14 @@
 import { cn } from "@/lib/util";
-import { VariantProps, cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 import { ComponentPropsWithRef, PropsWithChildren } from "react";
 
 export const buttonVarients = cva(
-  "flex justify-center items-center gap-2 rounded shadow hover:shadow-md transition-all duration-200 active:scale-95 active:shadow",
+  "flex justify-center items-center gap-2 rounded shadow hover:shadow-md transition-all duration-200 active:scale-95 active:shadow disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:shadow-none",
   {
     variants: {
       variant: {
         primary:
-          "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-black dark:hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:shadow-none",
+          "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-black dark:hover:bg-gray-300",
         secondary: "bg-red-300 hover:bg-red-200",
       },
       size: {

@@ -1,11 +1,11 @@
 import { Meta, StoryObj } from "@storybook/react";
 
-import { cn } from "@/lib/util";
-import Button, { buttonVarients } from "./Button";
+import Button from "./Button";
 
 const meta: Meta<typeof Button> = {
   title: "UI/Button",
   component: Button,
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -43,23 +43,4 @@ export const PrimaryDisabled: Story = {
     children: "Hello World",
     disabled: true,
   },
-};
-
-export const Link: Story = {
-  args: {
-    className: "inline-block cursor-pointer select-none",
-  },
-  render: (args) => (
-    <a
-      className={cn(
-        buttonVarients({
-          variant: args.variant,
-          size: args.size,
-          className: args.className,
-        }),
-      )}
-    >
-      Button
-    </a>
-  ),
 };
