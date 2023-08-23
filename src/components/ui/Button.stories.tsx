@@ -36,6 +36,15 @@ export const PrimaryLarge: Story = {
   },
 };
 
+export const PrimaryDisabled: Story = {
+  args: {
+    variant: "primary",
+    size: "md",
+    children: "Hello World",
+    disabled: true,
+  },
+};
+
 export const Link: Story = {
   args: {
     className: "inline-block cursor-pointer select-none",
