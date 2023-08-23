@@ -16,6 +16,8 @@ import { forwardRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import Button, { buttonVarients } from "@/components/ui/Button";
+import { cn } from "@/lib/util";
 import {
   useAddUserSavedManga,
   useAllMangaChapterIds,
@@ -231,7 +233,9 @@ const SeriesPage = () => {
 
   return (
     <div className="flex flex-col gap-4 p-2">
-      <p className="text-center text-2xl">{manga.englishTitle}</p>
+      <p className="text-center text-2xl pb-2 border-b border-gray-500">
+        {manga.englishTitle}
+      </p>
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
         <div className="flex w-full justify-center">
           <div className="flex w-max flex-col gap-2">
@@ -242,25 +246,27 @@ const SeriesPage = () => {
             />
             <div className="grid grid-cols-2 gap-2">
               <Link
-                className="rounded bg-[#3577ff] px-4 py-2 text-center text-white"
+                className={cn(
+                  buttonVarients({ variant: "primary", size: "md" }),
+                )}
                 to={manga.malUrl}
                 target="_blank"
               >
                 MAL
               </Link>
               <Link
-                className="rounded bg-[#3577ff] px-4 py-2 text-center text-white"
+                className={cn(
+                  buttonVarients({ variant: "primary", size: "md" }),
+                )}
                 to={manga.anilistUrl}
                 target="_blank"
               >
                 Anilist
               </Link>
               {userSavedManga.data && (
-                <button
-                  className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-200 px-4 py-2 text-black dark:bg-gray-500 dark:text-white"
+                <Button
+                  className="col-span-2"
                   onClick={() => {
-                    // removeManga.mutate();
-
                     if (auth.user && id) {
                       removeUserSavedManga.mutate({
                         user: auth.user,
@@ -271,11 +277,11 @@ const SeriesPage = () => {
                 >
                   <StarSolidIcon className="h-6 w-6" />
                   <p>Saved</p>
-                </button>
+                </Button>
               )}
               {!userSavedManga.data && (
-                <button
-                  className="col-span-2 flex items-center justify-center gap-2 rounded bg-gray-700 px-4 py-2 text-white dark:bg-gray-100 dark:text-black"
+                <Button
+                  className="col-span-2"
                   onClick={() => {
                     if (auth.user && id) {
                       addUserSavedManga.mutate({
@@ -287,7 +293,7 @@ const SeriesPage = () => {
                 >
                   <StarOutlineIcon className="h-6 w-6" />
                   <p>Save</p>
-                </button>
+                </Button>
               )}
             </div>
           </div>
