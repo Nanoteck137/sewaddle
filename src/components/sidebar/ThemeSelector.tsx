@@ -44,7 +44,6 @@ const ThemeSelector = () => {
       as="div"
       className="relative flex w-full items-center justify-center"
     >
-      {({ open }) => (
         <>
           <Listbox.Button
             className="w-full"
@@ -71,7 +70,6 @@ const ThemeSelector = () => {
             />
           </Listbox.Options>
         </>
-      )}
     </Listbox>
   );
 };
