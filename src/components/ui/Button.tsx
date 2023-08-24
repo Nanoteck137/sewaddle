@@ -1,6 +1,6 @@
 import { cn } from "@/lib/util";
 import { cva, type VariantProps } from "class-variance-authority";
-import { ComponentPropsWithRef, PropsWithChildren } from "react";
+import { ComponentPropsWithRef, forwardRef, PropsWithChildren } from "react";
 
 export const buttonVarients = cva(
   "flex justify-center items-center gap-2 rounded shadow hover:shadow-md transition-all duration-200 active:scale-95 active:shadow disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:shadow-none",
@@ -30,16 +30,16 @@ interface ButtonProps
     PropsWithChildren,
     VariantProps<typeof buttonVarients> {}
 
-const Button = (props: ButtonProps) => {
+const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
   const { variant, size, className, ...other } = props;
 
   const classes = buttonVarients({ variant, size, className });
 
   return (
-    <button {...other} className={cn(classes)}>
+    <button {...other} ref={ref} className={cn(classes)}>
       {props.children}
     </button>
   );
-};
+});
 
 export default Button;
