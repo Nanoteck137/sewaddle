@@ -52,3 +52,12 @@ export const Secondary: Story = {
     children: "Hello World",
   },
 };
+
+export const SecondaryDisabled: Story = {
+  args: {
+    variant: "secondary",
+    size: "md",
+    children: "Hello World",
+    disabled: true,
+  },
+};
