@@ -27,7 +27,7 @@
           npmBuild = "npm run build";
 
           extraEnvVars = {
-            VITE_TEST = test;
+            VITE_TEST = ${test};
           };
 
           # buildPhase = ''
