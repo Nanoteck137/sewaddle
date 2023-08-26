@@ -20,14 +20,14 @@
 
         nodeDeps = node2nixOutput.nodeDependencies;
 
-        test = { test ? "" }: pkgs.buildNpmPackage {
+        test = { var ? "" }: pkgs.buildNpmPackage {
           name = "sewaddle";
           version = "0.0.1";
           src = gitignore.lib.gitignoreSource ./.;
           npmBuild = "npm run build";
 
           extraEnvVars = {
-            VITE_TEST = ${test};
+            VITE_TEST = var;
           };
 
           # buildPhase = ''
