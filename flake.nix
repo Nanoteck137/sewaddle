@@ -13,29 +13,28 @@
   outputs = { self, flake-utils, nixpkgs, bp, gitignore }: 
     flake-utils.lib.eachDefaultSystem (system: 
       let 
-        pkgs = import nixpkgs { inherit system; overlays = [ bp.overlays.default ]; };
+        # pkgs = import nixpkgs { inherit system; overlays = [ bp.overlays.default ]; };
+        pkgs = import nixpkgs { inherit system; };
 
         nodejs = pkgs.nodejs-18_x;
         node2nixOutput = import ./nix { inherit pkgs nodejs system; };
 
         nodeDeps = node2nixOutput.nodeDependencies;
 
-        test = { var ? "" }: pkgs.buildNpmPackage {
+        sewaddle = pkgs.buildNpmPackage {
           name = "sewaddle";
-          version = "0.0.1";
+          version = "v0.0.1";
           src = gitignore.lib.gitignoreSource ./.;
-          npmBuild = "npm run build";
+          npmDepsHash = "sha256-hkjrbH1zuaNKsvcQqCWjrMKTGRg9LyGvL+8oVGBApbI=";
+  
+          VITE_TEST = "";
 
-          extraEnvVars = {
-            VITE_TEST = var;
-          };
-
-          # buildPhase = ''
-          #   runHook preBuild
-          #   ${npmBuild}
-          #   runHook postBuild
-          # '';
-
+          buildPhase = ''
+            runHook preBuild
+            npm run build
+            runHook postBuild
+          '';
+        
           installPhase = ''
             runHook preInstall
             cp -r dist $out/
@@ -44,8 +43,8 @@
         };
 
       in with pkgs; {
-        lib.test = test;
-        devShells.default = mkShell { buildInputs = [ nodejs node2nix ]; };
+        packages.default = sewaddle;
+        devShells.default = mkShell { buildInputs = [ pkgs.yarn nodejs node2nix ]; };
       }
     );
 }
