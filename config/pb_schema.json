@@ -1,5 +1,28 @@
 [
   {
+    "id": "_pb_users_auth_",
+    "name": "users",
+    "type": "auth",
+    "system": false,
+    "schema": [],
+    "indexes": [],
+    "listRule": "id = @request.auth.id",
+    "viewRule": "id = @request.auth.id",
+    "createRule": "",
+    "updateRule": "id = @request.auth.id",
+    "deleteRule": "id = @request.auth.id",
+    "options": {
+      "allowEmailAuth": false,
+      "allowOAuth2Auth": false,
+      "allowUsernameAuth": true,
+      "exceptEmailDomains": null,
+      "manageRule": null,
+      "minPasswordLength": 8,
+      "onlyEmailDomains": null,
+      "requireEmail": false
+    }
+  },
+  {
     "id": "udnewb1celavs3a",
     "name": "mangas",
     "type": "base",
@@ -302,29 +325,6 @@
     "options": {}
   },
   {
-    "id": "_pb_users_auth_",
-    "name": "users",
-    "type": "auth",
-    "system": false,
-    "schema": [],
-    "indexes": [],
-    "listRule": "id = @request.auth.id",
-    "viewRule": "id = @request.auth.id",
-    "createRule": "",
-    "updateRule": "id = @request.auth.id",
-    "deleteRule": "id = @request.auth.id",
-    "options": {
-      "allowEmailAuth": false,
-      "allowOAuth2Auth": false,
-      "allowUsernameAuth": true,
-      "exceptEmailDomains": null,
-      "manageRule": null,
-      "minPasswordLength": 8,
-      "onlyEmailDomains": null,
-      "requireEmail": false
-    }
-  },
-  {
     "id": "i9a8pto1zkcqy3c",
     "name": "userMarkedChapters",
     "type": "base",
@@ -466,7 +466,7 @@
         "system": false,
         "required": false,
         "options": {
-          "collectionId": "dk8pw8vwe4ero0n",
+          "collectionId": "udnewb1celavs3a",
           "cascadeDelete": false,
           "minSelect": null,
           "maxSelect": 1,
@@ -491,7 +491,7 @@
     "system": false,
     "schema": [
       {
-        "id": "u4qa42xs",
+        "id": "et8tgvni",
         "name": "name",
         "type": "text",
         "system": false,
@@ -503,7 +503,7 @@
         }
       },
       {
-        "id": "hlgnrpz3",
+        "id": "bdwsyogf",
         "name": "idx",
         "type": "number",
         "system": false,
@@ -514,7 +514,7 @@
         }
       },
       {
-        "id": "97dbfqir",
+        "id": "xfbkkgjd",
         "name": "group",
         "type": "number",
         "system": false,
@@ -525,7 +525,7 @@
         }
       },
       {
-        "id": "8jrosulm",
+        "id": "qgwk545w",
         "name": "cover",
         "type": "file",
         "system": false,
@@ -545,7 +545,7 @@
         }
       },
       {
-        "id": "flcmhywm",
+        "id": "2jqnpukh",
         "name": "manga",
         "type": "relation",
         "system": false,
@@ -559,7 +559,7 @@
         }
       },
       {
-        "id": "ruixzlso",
+        "id": "ppovp9ne",
         "name": "pageCount",
         "type": "json",
         "system": false,
@@ -584,7 +584,7 @@
     "system": false,
     "schema": [
       {
-        "id": "og4krkbf",
+        "id": "9phiryk1",
         "name": "englishTitle",
         "type": "text",
         "system": false,
@@ -596,7 +596,7 @@
         }
       },
       {
-        "id": "buezjicy",
+        "id": "77pqgr88",
         "name": "nativeTitle",
         "type": "text",
         "system": false,
@@ -608,7 +608,7 @@
         }
       },
       {
-        "id": "yonfzoln",
+        "id": "g00ucknw",
         "name": "romajiTitle",
         "type": "text",
         "system": false,
@@ -620,7 +620,7 @@
         }
       },
       {
-        "id": "yn1znxl0",
+        "id": "zfjf5hcd",
         "name": "color",
         "type": "text",
         "system": false,
@@ -632,7 +632,7 @@
         }
       },
       {
-        "id": "y8w3wdig",
+        "id": "wfvzz7g9",
         "name": "cover",
         "type": "file",
         "system": false,
@@ -646,7 +646,7 @@
         }
       },
       {
-        "id": "u6y2vh1o",
+        "id": "mb63nhvn",
         "name": "chaptersAvailable",
         "type": "number",
         "system": false,
