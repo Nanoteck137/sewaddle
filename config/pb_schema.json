@@ -23,308 +23,6 @@
     }
   },
   {
-    "id": "udnewb1celavs3a",
-    "name": "mangas",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "vh9xpehc",
-        "name": "name",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "cwsh2ffz",
-        "name": "englishTitle",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "12qpiate",
-        "name": "nativeTitle",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "clu6ktcd",
-        "name": "romajiTitle",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "s6xt6eac",
-        "name": "malUrl",
-        "type": "url",
-        "system": false,
-        "required": true,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "xam4il6z",
-        "name": "anilistUrl",
-        "type": "url",
-        "system": false,
-        "required": true,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "ukhoxcz4",
-        "name": "description",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "cachgwrc",
-        "name": "startDate",
-        "type": "date",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "xbxkteoi",
-        "name": "endDate",
-        "type": "date",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": "",
-          "max": ""
-        }
-      },
-      {
-        "id": "jgg5rds1",
-        "name": "color",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "i1vx3qpe",
-        "name": "isGroup",
-        "type": "bool",
-        "system": false,
-        "required": false,
-        "options": {}
-      },
-      {
-        "id": "dfagyclf",
-        "name": "banner",
-        "type": "file",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 5242880,
-          "mimeTypes": [],
-          "thumbs": [],
-          "protected": false
-        }
-      },
-      {
-        "id": "lkdk6egz",
-        "name": "coverMedium",
-        "type": "file",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 5242880,
-          "mimeTypes": [],
-          "thumbs": [],
-          "protected": false
-        }
-      },
-      {
-        "id": "li6x38vy",
-        "name": "coverLarge",
-        "type": "file",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 5242880,
-          "mimeTypes": [],
-          "thumbs": [],
-          "protected": false
-        }
-      },
-      {
-        "id": "ocmyr1sd",
-        "name": "coverExtraLarge",
-        "type": "file",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 5242880,
-          "mimeTypes": [],
-          "thumbs": [],
-          "protected": false
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX `idx_EPqorrR` ON `mangas` (`name`)"
-    ],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": "",
-    "updateRule": "",
-    "deleteRule": "",
-    "options": {}
-  },
-  {
-    "id": "qouar9z7iq893m3",
-    "name": "chapters",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "dpsn6bcj",
-        "name": "idx",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "ra8epm4h",
-        "name": "name",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "rqqx7uus",
-        "name": "group",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "zse5wc9j",
-        "name": "manga",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "udnewb1celavs3a",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": []
-        }
-      },
-      {
-        "id": "hwnu9e9y",
-        "name": "cover",
-        "type": "file",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 10485760,
-          "mimeTypes": [
-            "image/jpeg",
-            "image/png",
-            "image/svg+xml",
-            "image/gif",
-            "image/webp"
-          ],
-          "thumbs": [],
-          "protected": false
-        }
-      },
-      {
-        "id": "ipnphnsg",
-        "name": "pages",
-        "type": "file",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 400,
-          "maxSize": 36700160,
-          "mimeTypes": [
-            "image/jpeg",
-            "image/png",
-            "image/svg+xml",
-            "image/gif",
-            "image/webp"
-          ],
-          "thumbs": [],
-          "protected": false
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX `idx_YTKzXkF` ON `chapters` (\n  `manga`,\n  `idx`\n)"
-    ],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": "",
-    "updateRule": "",
-    "deleteRule": "",
-    "options": {}
-  },
-  {
     "id": "i9a8pto1zkcqy3c",
     "name": "userMarkedChapters",
     "type": "base",
@@ -485,106 +183,13 @@
     "options": {}
   },
   {
-    "id": "4as4axnw50xt809",
-    "name": "chapterViews",
-    "type": "view",
-    "system": false,
-    "schema": [
-      {
-        "id": "et8tgvni",
-        "name": "name",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "bdwsyogf",
-        "name": "idx",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "xfbkkgjd",
-        "name": "group",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "qgwk545w",
-        "name": "cover",
-        "type": "file",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "maxSize": 10485760,
-          "mimeTypes": [
-            "image/jpeg",
-            "image/png",
-            "image/svg+xml",
-            "image/gif",
-            "image/webp"
-          ],
-          "thumbs": [],
-          "protected": false
-        }
-      },
-      {
-        "id": "2jqnpukh",
-        "name": "manga",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "udnewb1celavs3a",
-          "cascadeDelete": true,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": []
-        }
-      },
-      {
-        "id": "ppovp9ne",
-        "name": "pageCount",
-        "type": "json",
-        "system": false,
-        "required": false,
-        "options": {}
-      }
-    ],
-    "indexes": [],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {
-      "query": "SELECT\n  chapters.id,\n  chapters.name,\n  chapters.idx,\n  chapters.\"group\",\n  chapters.cover,\n  chapters.manga,\n  JSON_ARRAY_LENGTH(chapters.pages) as pageCount,\n  chapters.created,\n  chapters.updated\nFROM chapters"
-    }
-  },
-  {
     "id": "dk8pw8vwe4ero0n",
     "name": "mangaViews",
     "type": "view",
     "system": false,
     "schema": [
       {
-        "id": "9phiryk1",
+        "id": "4auncbob",
         "name": "englishTitle",
         "type": "text",
         "system": false,
@@ -596,7 +201,7 @@
         }
       },
       {
-        "id": "77pqgr88",
+        "id": "xnpwnnaq",
         "name": "nativeTitle",
         "type": "text",
         "system": false,
@@ -608,7 +213,7 @@
         }
       },
       {
-        "id": "g00ucknw",
+        "id": "oaus5quf",
         "name": "romajiTitle",
         "type": "text",
         "system": false,
@@ -620,7 +225,7 @@
         }
       },
       {
-        "id": "zfjf5hcd",
+        "id": "eytqnw6j",
         "name": "color",
         "type": "text",
         "system": false,
@@ -632,7 +237,7 @@
         }
       },
       {
-        "id": "wfvzz7g9",
+        "id": "r24tag2u",
         "name": "cover",
         "type": "file",
         "system": false,
@@ -646,7 +251,7 @@
         }
       },
       {
-        "id": "mb63nhvn",
+        "id": "63d8cybx",
         "name": "chaptersAvailable",
         "type": "number",
         "system": false,
@@ -666,5 +271,381 @@
     "options": {
       "query": "SELECT\n  mangas.id,\n  mangas.englishTitle,\n  mangas.nativeTitle,\n  mangas.romajiTitle,\n  mangas.color,\n  mangas.coverExtraLarge as cover,\n  count(chapters.id) as chaptersAvailable\nFROM mangas\nLEFT JOIN chapters on chapters.manga = mangas.id\nGROUP BY mangas.id"
     }
+  },
+  {
+    "id": "udnewb1celavs3a",
+    "name": "mangas",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "t2oh0dwo",
+        "name": "malId",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "crhmryug",
+        "name": "anilistId",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "cwsh2ffz",
+        "name": "englishTitle",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "12qpiate",
+        "name": "nativeTitle",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "clu6ktcd",
+        "name": "romajiTitle",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "s6xt6eac",
+        "name": "malUrl",
+        "type": "url",
+        "system": false,
+        "required": true,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "xam4il6z",
+        "name": "anilistUrl",
+        "type": "url",
+        "system": false,
+        "required": true,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "ukhoxcz4",
+        "name": "description",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "cachgwrc",
+        "name": "startDate",
+        "type": "date",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "xbxkteoi",
+        "name": "endDate",
+        "type": "date",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": "",
+          "max": ""
+        }
+      },
+      {
+        "id": "jgg5rds1",
+        "name": "color",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "dfagyclf",
+        "name": "banner",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": [],
+          "protected": false
+        }
+      },
+      {
+        "id": "lkdk6egz",
+        "name": "coverMedium",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": [],
+          "protected": false
+        }
+      },
+      {
+        "id": "li6x38vy",
+        "name": "coverLarge",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": [],
+          "protected": false
+        }
+      },
+      {
+        "id": "ocmyr1sd",
+        "name": "coverExtraLarge",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [],
+          "thumbs": [],
+          "protected": false
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_CFzh2e3` ON `mangas` (`malId`)",
+      "CREATE UNIQUE INDEX `idx_UvzLPgW` ON `mangas` (`anilistId`)"
+    ],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
+  },
+  {
+    "id": "4as4axnw50xt809",
+    "name": "chapterViews",
+    "type": "view",
+    "system": false,
+    "schema": [
+      {
+        "id": "h7tu1vcj",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "famvlsxl",
+        "name": "idx",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "ivnxlt71",
+        "name": "cover",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 10485760,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "thumbs": [],
+          "protected": false
+        }
+      },
+      {
+        "id": "x9ewjmbl",
+        "name": "manga",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "udnewb1celavs3a",
+          "cascadeDelete": true,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "wcuwc3ye",
+        "name": "pageCount",
+        "type": "json",
+        "system": false,
+        "required": false,
+        "options": {}
+      }
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {
+      "query": "SELECT\n  chapters.id,\n  chapters.name,\n  chapters.idx,\n  chapters.cover,\n  chapters.manga,\n  JSON_ARRAY_LENGTH(chapters.pages) as pageCount,\n  chapters.created,\n  chapters.updated\nFROM chapters"
+    }
+  },
+  {
+    "id": "qouar9z7iq893m3",
+    "name": "chapters",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "dpsn6bcj",
+        "name": "idx",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "ra8epm4h",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "zse5wc9j",
+        "name": "manga",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "udnewb1celavs3a",
+          "cascadeDelete": true,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "hwnu9e9y",
+        "name": "cover",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 10485760,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "thumbs": [],
+          "protected": false
+        }
+      },
+      {
+        "id": "ipnphnsg",
+        "name": "pages",
+        "type": "file",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 400,
+          "maxSize": 36700160,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "thumbs": [],
+          "protected": false
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_YTKzXkF` ON `chapters` (\n  `manga`,\n  `idx`\n)"
+    ],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {}
   }
 ]
