@@ -3,7 +3,8 @@ import { z } from "zod";
 import { Collection } from "./base";
 
 export const Manga = Collection.extend({
-  name: z.string(),
+  malId: z.number(),
+  anilistId: z.number(),
   englishTitle: z.string(),
   nativeTitle: z.string(),
   romajiTitle: z.string(),
@@ -16,7 +17,6 @@ export const Manga = Collection.extend({
     z.coerce.date().nullish(),
   ),
   color: z.string(),
-  isGroup: z.boolean(),
   banner: z.string(),
   coverMedium: z.string(),
   coverLarge: z.string(),

@@ -5,7 +5,6 @@ import { createGetPagedListSchema, Id, ViewCollection } from "./base";
 export const ChapterView = ViewCollection.extend({
   name: z.string(),
   idx: z.number(),
-  group: z.number(),
   cover: z.string(),
   manga: Id,
   pageCount: z.number(),

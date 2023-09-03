@@ -16,6 +16,7 @@ import { forwardRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { ChapterView } from "@/api/models/chapterViews";
 import Button, { buttonVarients } from "@/components/ui/Button";
 import { cn } from "@/lib/util";
 import {
@@ -33,13 +34,11 @@ import {
 } from "../api";
 import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
-import { BasicChapter } from "../models/chapters";
 
 type ChapterProps = {
-  chapter: BasicChapter;
+  chapter: ChapterView;
   isContinue: boolean;
   hasRead: boolean;
-  isGroup: boolean;
 
   showSelectMarker: boolean;
   disableSelectMarker: boolean;
@@ -55,7 +54,6 @@ const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
   const {
     chapter,
     hasRead,
-    isGroup,
     isContinue,
     showSelectMarker,
     isSelected,
@@ -88,14 +86,7 @@ const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
           alt=""
         />
         <div className="flex flex-col justify-between">
-          {!isGroup && (
-            <p className="group-hover:underline">Ch. {chapter.name}</p>
-          )}
-          {isGroup && (
-            <p className="group-hover:underline">
-              Ch. {chapter.group} - {chapter.name}
-            </p>
-          )}
+          <p className="group-hover:underline">{chapter.name}</p>
           {!disableSelectMarker && (
             <div className="flex gap-2">
               {hasRead && <p>Read</p>}
@@ -299,11 +290,11 @@ const SeriesPage = () => {
           </div>
         </div>
         <div className="col-span-2 flex flex-col gap-2 p-2 md:items-start">
-          <p
+          <span
             className={`whitespace-pre-wrap ${collapsed ? "line-clamp-6" : ""}`}
           >
             {parse(manga.description)}
-          </p>
+          </span>
           <button
             className="text-gray-500 dark:text-gray-300"
             onClick={() => setCollapsed((prev) => !prev)}
@@ -436,7 +427,6 @@ const SeriesPage = () => {
                 chapter={item}
                 isContinue={isContinue}
                 hasRead={hasReadChapter}
-                isGroup={manga.isGroup}
                 isSelected={selected}
                 showSelectMarker={showSelectMarker}
                 disableSelectMarker={!auth.user}
