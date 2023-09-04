@@ -29,7 +29,6 @@ const ViewPage = () => {
   const chapterNeighbours = useChapterNeighbours({
     chapter: chapterQuery.data,
   });
-  console.log(chapterNeighbours.data);
 
   const updateUserBookmark = useUpdateUserBookmark();
 
