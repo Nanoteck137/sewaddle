@@ -75,6 +75,7 @@ async function fetchNextChapter(mangaId: Id, index: number) {
       .collection("chapters")
       .getFirstListItem(`manga = "${mangaId}" && idx > ${index}`, {
         fields: "id",
+        sort: "idx",
       });
     return rec.id;
   } catch (e) {
@@ -93,6 +94,7 @@ async function fetchPrevChapter(mangaId: Id, index: number) {
       .collection("chapters")
       .getFirstListItem(`manga = "${mangaId}" && idx < ${index}`, {
         fields: "id",
+        sort: "-idx",
       });
     return rec.id;
   } catch (e) {
