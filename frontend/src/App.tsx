@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { httpBatchLink } from "@trpc/client";
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useTernaryDarkMode } from "usehooks-ts";
@@ -12,8 +13,17 @@ import RegisterPage from "./pages/RegisterPage";
 import SavedPage from "./pages/SavedPage";
 import SeriesPage from "./pages/SeriesPage";
 import ViewPage from "./pages/ViewPage";
+import { trpc } from "./trpc";
 
 const queryClient = new QueryClient();
+
+const trpcClient = trpc.createClient({
+  links: [
+    httpBatchLink({
+      url: "http://localhost:3000/trpc",
+    }),
+  ],
+});
 
 const App = () => {
   const { isDarkMode } = useTernaryDarkMode();
@@ -28,29 +38,31 @@ const App = () => {
 
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/">
-                <Route element={<DefaultLayout />}>
-                  <Route index element={<HomePage />} />
-                  <Route path="series/:id" element={<SeriesPage />} />
-                  <Route path="view/:id" element={<ViewPage />} />
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/">
+                  <Route element={<DefaultLayout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="series/:id" element={<SeriesPage />} />
+                    <Route path="view/:id" element={<ViewPage />} />
 
-                  <Route path="account" element={<AccountPage />} />
-                  <Route path="saved" element={<SavedPage />} />
-                </Route>
+                    <Route path="account" element={<AccountPage />} />
+                    <Route path="saved" element={<SavedPage />} />
+                  </Route>
 
-                <Route element={<BlankLayout />}>
-                  <Route path="login" element={<LoginPage />} />
-                  <Route path="register" element={<RegisterPage />} />
+                  <Route element={<BlankLayout />}>
+                    <Route path="login" element={<LoginPage />} />
+                    <Route path="register" element={<RegisterPage />} />
+                  </Route>
                 </Route>
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </QueryClientProvider>
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
     </>
   );
 };

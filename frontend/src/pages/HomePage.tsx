@@ -1,13 +1,20 @@
-import { useMangaViews } from "../api";
-import MangaList from "../components/MangaList";
+import { trpc } from "@/trpc";
 
 const HomePage = () => {
-  const { data, isLoading, isError } = useMangaViews();
+  const { data, isLoading, error } = trpc.manga.list.useQuery();
 
-  if (isError) return <p>Error</p>;
+  // const { data, isLoading, isError } = useMangaViews();
+  if (error) return <p>{error.message}</p>;
   if (isLoading) return <p>Loading...</p>;
 
-  return <MangaList list={data} />;
+  return (
+    <div>
+      {data.map((item) => {
+        return <p key={item.id}>{item.title}</p>;
+      })}
+    </div>
+  );
+  // return <MangaList list={data} />;
 };
 
 export default HomePage;
