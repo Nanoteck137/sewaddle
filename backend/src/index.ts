@@ -3,12 +3,13 @@ import "./env";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
+import morgan from "morgan";
+import path from "path";
 import { createOpenApiExpressMiddleware } from "trpc-openapi";
 import { appRouter } from "./api/router";
-import { Context } from "./trpc";
-import path from "path";
-import morgan from "morgan";
 import env from "./env";
+import { Context } from "./trpc";
 
 function createContextInner(): Context {
   return {};
@@ -17,7 +18,7 @@ function createContextInner(): Context {
 const app = express();
 
 app.use(cors());
-// app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet());
 app.use(morgan(env.NODE_ENV == "development" ? "dev" : "combined"));
 
 app.use(express.static(path.join(process.cwd(), "public")));
@@ -38,8 +39,10 @@ app.use(
   }),
 );
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "public/index.html"));
-});
+if (env.NODE_ENV !== "development") {
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(process.cwd(), "public/index.html"));
+  });
+}
 
 app.listen(3000);
