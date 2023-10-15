@@ -18,7 +18,7 @@ const Item = (props: { manga: MangaView }) => {
         src={pb.getFileUrl(manga, manga.cover)}
         alt=""
       />
-      <p className="p-4 text-center">{manga.englishTitle}</p>
+      <p className="p-4 text-center">{manga.title}</p>
     </Link>
   );
 };

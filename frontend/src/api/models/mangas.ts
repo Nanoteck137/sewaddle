@@ -3,13 +3,9 @@ import { z } from "zod";
 import { Collection } from "./base";
 
 export const Manga = Collection.extend({
+  title: z.string(),
   malId: z.number(),
   anilistId: z.number(),
-  englishTitle: z.string(),
-  nativeTitle: z.string(),
-  romajiTitle: z.string(),
-  malUrl: z.string().url(),
-  anilistUrl: z.string().url(),
   description: z.string(),
   startDate: z.coerce.date(),
   endDate: z.preprocess(
@@ -18,8 +14,6 @@ export const Manga = Collection.extend({
   ),
   color: z.string(),
   banner: z.string(),
-  coverMedium: z.string(),
-  coverLarge: z.string(),
-  coverExtraLarge: z.string(),
+  cover: z.string()
 });
 export type Manga = z.infer<typeof Manga>;

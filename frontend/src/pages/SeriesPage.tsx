@@ -225,14 +225,14 @@ const SeriesPage = () => {
   return (
     <div className="flex flex-col gap-4 p-2">
       <p className="text-center text-2xl pb-2 border-b border-gray-500">
-        {manga.englishTitle}
+        {manga.title}
       </p>
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
         <div className="flex w-full justify-center">
           <div className="flex w-max flex-col gap-2">
             <img
               className="w-max rounded border shadow-xl dark:border-gray-500"
-              src={pb.getFileUrl(manga, manga.coverExtraLarge)}
+              src={pb.getFileUrl(manga, manga.cover)}
               alt=""
             />
             <div className="grid grid-cols-2 gap-2">
@@ -240,7 +240,7 @@ const SeriesPage = () => {
                 className={cn(
                   buttonVarients({ variant: "secondary", size: "md" }),
                 )}
-                to={manga.malUrl}
+                to={`https://myanimelist.net/manga/${manga.malId}`}
                 target="_blank"
               >
                 MAL
@@ -249,7 +249,7 @@ const SeriesPage = () => {
                 className={cn(
                   buttonVarients({ variant: "secondary", size: "md" }),
                 )}
-                to={manga.anilistUrl}
+                to={`https://anilist.co/manga/${manga.anilistId}`}
                 target="_blank"
               >
                 Anilist
@@ -289,7 +289,7 @@ const SeriesPage = () => {
             </div>
           </div>
         </div>
-        <div className="col-span-2 flex flex-col gap-2 p-2 md:items-start">
+        <div className="col-span-2 flex flex-col gap-2 px-2 md:items-start">
           <span
             className={`whitespace-pre-wrap ${collapsed ? "line-clamp-6" : ""}`}
           >
