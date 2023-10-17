@@ -1,24 +1,20 @@
+import { db } from "../../db";
 import { publicProcedure, router } from "../../trpc";
 
 export const mangaRouter = router({
-  list: publicProcedure.query(() => {
-    return [
-      {
-        id: 0,
-        title: "Hello World",
+  list: publicProcedure.query(async ({ ctx }) => {
+    const res = await db.query.mangas.findMany({
+      columns: { id: true, title: true, cover: true },
+      with: {
+        chapters: {
+          columns: { index: true },
+        },
       },
-      {
-        id: 1,
-        title: "Testing",
-      },
-      {
-        id: 2,
-        title: "Wooh",
-      },
-      {
-        id: 3,
-        title: "Lel",
-      },
-    ];
+    });
+    return res.map((manga) => ({
+      ...manga,
+      chapters: manga.chapters.length,
+      cover: `/image/manga/${manga.id}/${manga.cover}`,
+    }));
   }),
 });
