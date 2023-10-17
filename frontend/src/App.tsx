@@ -48,7 +48,10 @@ const App = () => {
                   <Route element={<DefaultLayout />}>
                     <Route index element={<HomePage />} />
                     <Route path="series/:id" element={<SeriesPage />} />
-                    <Route path="view/:id" element={<ViewPage />} />
+                    <Route
+                      path="view/:mangaId/:chapterIndex"
+                      element={<ViewPage />}
+                    />
 
                     <Route path="account" element={<AccountPage />} />
                     <Route path="saved" element={<SavedPage />} />

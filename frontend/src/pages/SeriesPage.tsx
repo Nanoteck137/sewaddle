@@ -16,14 +16,13 @@ import { forwardRef, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { ChapterView } from "@/api/models/chapterViews";
+import { apiEndpoint } from "@/App";
 import Button, { buttonVarients } from "@/components/ui/Button";
 import { cn } from "@/lib/util";
+import { RouterOutput, trpc } from "@/trpc";
 import {
   useAddUserSavedManga,
   useAllMangaChapterIds,
-  useManga,
-  useMangaChapterViews,
   useMarkUserChapters,
   useRemoveUserSavedManga,
   useUnmarkUserChapters,
@@ -32,11 +31,12 @@ import {
   useUserMarkedChapters,
   useUserSavedManga,
 } from "../api";
-import { pb } from "../api/pocketbase";
 import { useAuth } from "../contexts/AuthContext";
 
+type Chapter = RouterOutput["manga"]["getChapters"][number];
+
 type ChapterProps = {
-  chapter: ChapterView;
+  chapter: Chapter;
   isContinue: boolean;
   hasRead: boolean;
 
@@ -76,13 +76,13 @@ const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
       <div
         className="group relative flex flex-grow cursor-pointer gap-2"
         onClick={() => {
-          navigate(`/view/${chapter.id}`);
+          navigate(`/view/${chapter.mangaId}/${chapter.index}`);
         }}
       >
-        <p className="w-12 text-right">{chapter.idx}.</p>
+        <p className="w-12 text-right">{chapter.index}.</p>
         <img
           className="h-16 w-12 rounded border object-cover dark:border-gray-500"
-          src={pb.getFileUrl(chapter, chapter.cover)}
+          src={`${apiEndpoint}${chapter.cover}`}
           alt=""
         />
         <div className="flex flex-col justify-between">
@@ -164,8 +164,17 @@ const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
 const SeriesPage = () => {
   const { id } = useParams();
 
-  const mangaQuery = useManga({ mangaId: id });
-  const mangaChaptersQuery = useMangaChapterViews({ mangaId: id });
+  // const mangaQuery = useManga({ mangaId: id });
+  const manga = trpc.manga.get.useQuery(
+    { mangaId: id || "" },
+    { enabled: !!id },
+  );
+
+  const chapters = trpc.manga.getChapters.useQuery(
+    { mangaId: id || "" },
+    { enabled: !!id },
+  );
+  // const mangaChaptersQuery = useMangaChapterViews({ mangaId: id });
 
   const [ref, inView] = useInView();
   const auth = useAuth();
@@ -192,15 +201,15 @@ const SeriesPage = () => {
   const addUserSavedManga = useAddUserSavedManga();
   const removeUserSavedManga = useRemoveUserSavedManga();
 
-  useEffect(() => {
-    if (inView && mangaChaptersQuery.hasNextPage) {
-      mangaChaptersQuery.fetchNextPage();
-    }
-  }, [
-    inView,
-    mangaChaptersQuery.hasNextPage,
-    mangaChaptersQuery.fetchNextPage,
-  ]);
+  // useEffect(() => {
+  //   if (inView && mangaChaptersQuery.hasNextPage) {
+  //     mangaChaptersQuery.fetchNextPage();
+  //   }
+  // }, [
+  //   inView,
+  //   mangaChaptersQuery.hasNextPage,
+  //   mangaChaptersQuery.fetchNextPage,
+  // ]);
 
   const markItems = useMarkUserChapters();
   const unmarkItems = useUnmarkUserChapters();
@@ -213,26 +222,25 @@ const SeriesPage = () => {
     }
   }, [markItems.isSuccess, unmarkItems.isSuccess]);
 
-  if (mangaQuery.isError || mangaChaptersQuery.isError) return <p>Error</p>;
-  if (mangaQuery.isLoading || mangaChaptersQuery.isLoading)
-    return <p>Loading...</p>;
+  if (manga.isError || chapters.isError) return <p>Error</p>;
+  if (manga.isLoading || chapters.isLoading) return <p>Loading...</p>;
 
-  const { data: manga } = mangaQuery;
-  const { data: chapters } = mangaChaptersQuery;
+  // const { data: manga } = mangaQuery;
+  // const { data: chapters } = mangaChaptersQuery;
 
-  const chapterItems = chapters.pages.map((i) => i.items).flat();
+  // const chapterItems = chapters.pages.map((i) => i.items).flat();
 
   return (
     <div className="flex flex-col gap-4 p-2">
       <p className="text-center text-2xl pb-2 border-b border-gray-500">
-        {manga.title}
+        {manga.data.title}
       </p>
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
         <div className="flex w-full justify-center">
           <div className="flex w-max flex-col gap-2">
             <img
               className="w-max rounded border shadow-xl dark:border-gray-500"
-              src={pb.getFileUrl(manga, manga.cover)}
+              src={`${apiEndpoint}${manga.data.cover}`}
               alt=""
             />
             <div className="grid grid-cols-2 gap-2">
@@ -240,7 +248,7 @@ const SeriesPage = () => {
                 className={cn(
                   buttonVarients({ variant: "secondary", size: "md" }),
                 )}
-                to={`https://myanimelist.net/manga/${manga.malId}`}
+                to={`https://myanimelist.net/manga/${manga.data.malId}`}
                 target="_blank"
               >
                 MAL
@@ -249,7 +257,7 @@ const SeriesPage = () => {
                 className={cn(
                   buttonVarients({ variant: "secondary", size: "md" }),
                 )}
-                to={`https://anilist.co/manga/${manga.anilistId}`}
+                to={`https://anilist.co/manga/${manga.data.anilistId}`}
                 target="_blank"
               >
                 Anilist
@@ -293,7 +301,7 @@ const SeriesPage = () => {
           <span
             className={`whitespace-pre-wrap ${collapsed ? "line-clamp-6" : ""}`}
           >
-            {parse(manga.description)}
+            {parse(manga.data.description || "")}
           </span>
           <button
             className="text-gray-500 dark:text-gray-300"
@@ -305,11 +313,9 @@ const SeriesPage = () => {
       </div>
       <div className="flex flex-col">
         <div className="flex h-20 items-center justify-between border-b-2 px-4 dark:border-gray-500">
-          {chapterIds.data && (
-            <p className="text-lg">
-              {chapterIds.data.length} chapter(s) available
-            </p>
-          )}
+          <p className="text-lg">
+            {manga.data.chapters.length} chapter(s) available
+          </p>
           <div className="flex items-center gap-4">
             <button className="h-6 w-6">
               <AdjustmentsVerticalIcon />
@@ -337,93 +343,90 @@ const SeriesPage = () => {
         </div>
 
         <div className="flex flex-col">
-          {chapterItems.map((item, i) => {
-            const isViewItem = i == chapterItems.length - 1;
+          {chapters.data.map((item, i) => {
+            const isViewItem = i == chapters.data.length - 1;
 
-            let hasReadChapter = !!userMarkedChapters.data?.find(
-              (obj) => obj.chapter == item.id,
-            );
-            const isContinue = userBookmark.data?.chapter === item.id;
+            // let hasReadChapter = !!userMarkedChapters.data?.find(
+            //   (obj) => obj.chapter == item.id,
+            // );
+            // const isContinue = userBookmark.data?.chapter === item.id;
+
+            let hasReadChapter = false;
+            const isContinue = false;
 
             const select = (select: boolean, shift: boolean) => {
-              if (!auth.user) {
-                return;
-              }
-
-              if (select) {
-                if (shift) {
-                  const firstSelected = selectedItems[0];
-                  let first = chapterItems.findIndex(
-                    (i) => i.id === firstSelected,
-                  );
-                  let last = i;
-
-                  if (first > last) {
-                    let tmp = last;
-                    last = first;
-                    first = tmp;
-                  }
-
-                  let items = [];
-                  let numItems = last - first + 1;
-                  for (let i = 0; i < numItems; i++) {
-                    items.push(first + i);
-                  }
-
-                  const ids = items.map((i) => chapterItems[i].id);
-                  setSelectedItems(ids);
-                } else {
-                  setSelectedItems((prev) => [...prev, item.id]);
-                }
-              } else {
-                setSelectedItems((prev) => [
-                  ...prev.filter((i) => i !== item.id),
-                ]);
-              }
+              // if (!auth.user) {
+              //   return;
+              // }
+              // if (select) {
+              //   if (shift) {
+              //     const firstSelected = selectedItems[0];
+              //     let first = chapterItems.findIndex(
+              //       (i) => i.id === firstSelected,
+              //     );
+              //     let last = i;
+              //     if (first > last) {
+              //       let tmp = last;
+              //       last = first;
+              //       first = tmp;
+              //     }
+              //     let items = [];
+              //     let numItems = last - first + 1;
+              //     for (let i = 0; i < numItems; i++) {
+              //       items.push(first + i);
+              //     }
+              //     const ids = items.map((i) => chapterItems[i].id);
+              //     setSelectedItems(ids);
+              //   } else {
+              //     setSelectedItems((prev) => [...prev, item.id]);
+              //   }
+              // } else {
+              //   setSelectedItems((prev) => [
+              //     ...prev.filter((i) => i !== item.id),
+              //   ]);
+              // }
             };
 
             const mark = () => {
-              if (!auth.user) {
-                return;
-              }
-
-              markItems.mutate({ user: auth.user, chapterIds: [item.id] });
+              // if (!auth.user) {
+              //   return;
+              // }
+              // markItems.mutate({ user: auth.user, chapterIds: [item.id] });
             };
 
             const unmark = () => {
-              if (!auth.user || !userMarkedChapters.data) {
-                return;
-              }
-
-              const id = userMarkedChapters.data?.find(
-                (i) => i.chapter === item.id,
-              );
-
-              if (id) {
-                unmarkItems.mutate({ user: auth.user, ids: [id.id] });
-              }
+              // if (!auth.user || !userMarkedChapters.data) {
+              //   return;
+              // }
+              // const id = userMarkedChapters.data?.find(
+              //   (i) => i.chapter === item.id,
+              // );
+              // if (id) {
+              //   unmarkItems.mutate({ user: auth.user, ids: [id.id] });
+              // }
             };
 
             const setAsCurrent = () => {
-              if (!auth.user || !id) {
-                return;
-              }
-
-              updateBookmark.mutate({
-                user: auth.user,
-                mangaId: id,
-                chapterId: item.id,
-                page: 0,
-              });
+              // if (!auth.user || !id) {
+              //   return;
+              // }
+              // updateBookmark.mutate({
+              //   user: auth.user,
+              //   mangaId: id,
+              //   chapterId: item.id,
+              //   page: 0,
+              // });
             };
 
-            const showSelectMarker = selectedItems.length > 0;
-            const selected = !!selectedItems.find((i) => i === item.id);
+            // const showSelectMarker = selectedItems.length > 0;
+            // const selected = !!selectedItems.find((i) => i === item.id);
+            const showSelectMarker = false;
+            const selected = false;
 
             return (
               <ChapterItem
                 ref={isViewItem ? ref : undefined}
-                key={item.id}
+                key={item.index}
                 chapter={item}
                 isContinue={isContinue}
                 hasRead={hasReadChapter}

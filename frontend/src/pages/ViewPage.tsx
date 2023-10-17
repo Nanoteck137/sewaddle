@@ -2,17 +2,13 @@ import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import {
-  useChapter,
-  useChapterNeighbours,
-  useMarkUserChapters,
-  useUpdateUserBookmark,
-} from "../api";
-import { pb } from "../api/pocketbase";
+import { apiEndpoint } from "@/App";
+import { trpc } from "@/trpc";
+import { useMarkUserChapters, useUpdateUserBookmark } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 
 const ViewPage = () => {
-  const { id } = useParams();
+  const { mangaId, chapterIndex } = useParams();
   const [search, setSearch] = useSearchParams();
 
   const navigate = useNavigate();
@@ -24,11 +20,15 @@ const ViewPage = () => {
     isLastPage: false,
   });
 
-  const chapterQuery = useChapter({ chapterId: id });
+  // const chapterQuery = useChapter({ chapterId: id });
 
-  const chapterNeighbours = useChapterNeighbours({
-    chapter: chapterQuery.data,
-  });
+  const chapters = trpc.manga.viewChapter.useQuery(
+    {
+      mangaId: mangaId || "",
+      chapterIndex: parseInt(chapterIndex || ""),
+    },
+    { enabled: !!mangaId && !!chapterIndex },
+  );
 
   const updateUserBookmark = useUpdateUserBookmark();
 
@@ -43,14 +43,16 @@ const ViewPage = () => {
       setState((prev) => ({ ...prev, currentPage: page }));
       setSearch({ page: page.toString() });
     } else {
-      if (chapterNeighbours.data && chapterNeighbours.data.next) {
+      if (chapters.data && chapters.data.nextChapter) {
         if (state.isLastPage) {
-          navigate(`/view/${chapterNeighbours.data.next}?page=0`);
+          navigate(
+            `/view/${chapters.data.mangaId}/${chapters.data.nextChapter}?page=0`,
+          );
         } else {
           setState((prev) => ({ ...prev, isLastPage: true }));
-          if (auth.user && id) {
-            markUserChapters.mutate({ user: auth.user, chapterIds: [id] });
-          }
+          // if (auth.user && id) {
+          //   markUserChapters.mutate({ user: auth.user, chapterIds: [id] });
+          // }
         }
       }
     }
@@ -65,24 +67,26 @@ const ViewPage = () => {
         setState((prev) => ({ ...prev, isLastPage: false }));
       }
     } else {
-      if (chapterNeighbours.data && chapterNeighbours.data.prev) {
-        navigate(`/view/${chapterNeighbours.data.prev}?page=`);
+      if (chapters.data && chapters.data.prevChapter) {
+        navigate(
+          `/view/${chapters.data.mangaId}/${chapters.data.prevChapter}?page=`,
+        );
       }
     }
   };
 
   useEffect(() => {
     const page = search.get("page");
-    if (page !== null && chapterQuery.data) {
+    if (page !== null && chapters.data) {
       if (page === "") {
-        const page = chapterQuery.data.pages.length - 1;
+        const page = chapters.data.pages.length - 1;
         setState((prev) => ({
           ...prev,
           currentPage: page,
         }));
       } else {
         const n = parseInt(page);
-        if (n >= 0 && n < chapterQuery.data.pages.length) {
+        if (n >= 0 && n < chapters.data.pages.length) {
           setState((prev) => ({
             ...prev,
             currentPage: n,
@@ -90,7 +94,7 @@ const ViewPage = () => {
         }
       }
     }
-  }, [chapterQuery.data, search]);
+  }, [chapters.data, search]);
 
   useEffect(() => {
     // NOTE(patrik): Need to reset the state when we navigate to
@@ -99,27 +103,28 @@ const ViewPage = () => {
       currentPage: 0,
       isLastPage: false,
     });
-  }, [id]);
+  }, [chapterIndex]);
 
-  useEffect(() => {
-    if (auth.user && chapterQuery.data) {
-      updateUserBookmark.mutate({
-        user: auth.user,
-        mangaId: chapterQuery.data.manga,
-        chapterId: chapterQuery.data.id,
-        page: state.currentPage,
-      });
-    }
-  }, [auth.user, chapterQuery.data, state.currentPage]);
+  // useEffect(() => {
+  //   if (auth.user && chapterQuery.data) {
+  //     updateUserBookmark.mutate({
+  //       user: auth.user,
+  //       mangaId: chapterQuery.data.manga,
+  //       chapterId: chapterQuery.data.id,
+  //       page: state.currentPage,
+  //     });
+  //   }
+  // }, [auth.user, chapterQuery.data, state.currentPage]);
 
-  if (chapterQuery.isError) return <p>Error</p>;
-  if (chapterQuery.isLoading) return <p>Loading...</p>;
+  if (chapters.isError) return <p>Error</p>;
+  if (chapters.isLoading) return <p>Loading...</p>;
 
-  const { data } = chapterQuery;
+  const { data } = chapters;
 
   const getCurrentPageUrl = () => {
     // TODO(patrik): If currentPage > page length just clamp it
-    return pb.getFileUrl(data, data.pages[state.currentPage]);
+    // return pb.getFileUrl(data, data.pages[state.currentPage]);
+    return `${apiEndpoint}${data.pages[state.currentPage]}`;
   };
 
   return (
