@@ -17,10 +17,11 @@ import { trpc } from "./trpc";
 
 const queryClient = new QueryClient();
 
+export const apiEndpoint = "http://localhost:3000";
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "http://localhost:3000/trpc",
+      url: `${apiEndpoint}/trpc`,
     }),
   ],
 });
