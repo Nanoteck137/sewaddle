@@ -49,7 +49,6 @@ const FetchMangaImageSchema = z.object({
 app.get("/image/manga/:mangaId/:image", async (req, res) => {
   try {
     const params = await FetchMangaImageSchema.parseAsync(req.params);
-    console.log(params);
 
     const p = path.join(env.TARGET_PATH, params.mangaId);
     res.sendFile(params.image, { root: p, maxAge: 86400 * 30 * 1000 }, (e) => {
@@ -74,7 +73,6 @@ const FetchChapterImageSchema = z.object({
 app.get("/image/chapter/:mangaId/:chapterIndex/:image", async (req, res) => {
   try {
     const params = await FetchChapterImageSchema.parseAsync(req.params);
-    console.log(params);
 
     const p = path.join(
       env.TARGET_PATH,

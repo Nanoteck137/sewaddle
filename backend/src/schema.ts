@@ -47,7 +47,8 @@ export const chapters = sqliteTable(
       .references(() => mangas.id, { onDelete: "cascade" })
       .notNull(),
 
-    pages: text("pages", { mode: "json" }).$type<string[]>(),
+    cover: text("cover").notNull(),
+    pages: text("pages", { mode: "json" }).$type<string[]>().notNull(),
   },
   (chapters) => ({
     pk: primaryKey(chapters.mangaId, chapters.index),

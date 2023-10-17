@@ -131,6 +131,8 @@ async function main() {
 
     const numChapters = Math.floor(Math.random() * 10) + 2;
     for (let chapterIndex = 1; chapterIndex <= numChapters; chapterIndex++) {
+      if (chapterIndex == 4) continue;
+
       const chapterPath = path.join(chaptersPath, chapterIndex.toString());
       fs.mkdirSync(chapterPath, { recursive: true });
 
@@ -149,6 +151,7 @@ async function main() {
         index: chapterIndex,
         name: `Chapter ${chapterIndex}`,
         mangaId: res.id,
+        cover: pages[0],
         pages,
       });
     }
