@@ -1,6 +1,6 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import Input from "../components/Input";
@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 const LoginSchema = z.object({
   username: z.string().min(1),
-  password: z.string().min(8).max(72),
+  password: z.string(), //.min(8).max(72),
 });
 type LoginSchema = z.infer<typeof LoginSchema>;
 

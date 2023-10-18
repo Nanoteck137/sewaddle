@@ -1,14 +1,13 @@
 import {
-  createContext,
   ReactNode,
+  createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
-import { Admin, Record } from "pocketbase";
 
-import { User } from "../api/models/users";
+import { RouterOutput, trpc } from "@/trpc";
+// import { User } from "../api/models/users";
 import { pb } from "../api/pocketbase";
 
 type AuthContext = {
@@ -47,9 +46,21 @@ type AuthProviderProps = {
   children?: ReactNode;
 };
 
+type User = RouterOutput["auth"]["getProfile"];
+
 export const AuthProvider = (props: AuthProviderProps) => {
-  const [user, setUser] = useState<User>();
-  const [isLoggedIn, setLoggedIn] = useState(pb.authStore.isValid);
+  const [token, setToken] = useState(localStorage.getItem("loginToken"));
+
+  const profile = trpc.auth.getProfile.useQuery(undefined, {
+    enabled: !!token,
+  });
+
+  const authLogin = trpc.auth.login.useMutation({
+    onSuccess: async (obj) => {
+      localStorage.setItem("loginToken", obj.token);
+      setToken(obj.token);
+    },
+  });
 
   const register = useCallback(
     async (data: {
@@ -69,18 +80,18 @@ export const AuthProvider = (props: AuthProviderProps) => {
 
   const login = useCallback(
     async (data: { username: string; password: string }) => {
-      await pb
-        .collection("users")
-        .authWithPassword(data.username, data.password);
+      authLogin.mutate(data);
+      // await pb
+      //   .collection("users")
+      //   .authWithPassword(data.username, data.password);
     },
     [],
   );
 
   const logout = useCallback(() => {
-    console.log("LOGOUT");
-    pb.authStore.clear();
-    setUser(undefined);
-    setLoggedIn(false);
+    localStorage.removeItem("loginToken");
+    profile.remove();
+    setToken(null);
   }, []);
 
   const changePassword = useCallback(
@@ -89,46 +100,50 @@ export const AuthProvider = (props: AuthProviderProps) => {
       password: string;
       passwordConfirm: string;
     }) => {
-      if (user) {
-        await pb.collection("users").update(user.id, data);
-        logout();
+      if (profile.data) {
+        // await pb.collection("users").update(user.id, data);
+        // logout();
       }
     },
-    [user],
+    [profile.data],
   );
 
-  useEffect(() => {
-    const updateUser = (model: Record | Admin | null) => {
-      if (model && model instanceof Record) {
-        const user = User.parse(model);
-        setUser(user);
-        setLoggedIn(true);
-      } else {
-        setUser(undefined);
-        setLoggedIn(false);
-      }
-    };
+  // useEffect(() => {
+  //   const token = localStorage.getItem("loginToken");
+  // }, []);
 
-    if (pb.authStore.isValid) {
-      updateUser(pb.authStore.model);
-    }
+  // useEffect(() => {
+  //   const updateUser = (model: Record | Admin | null) => {
+  //     if (model && model instanceof Record) {
+  //       const user = User.parse(model);
+  //       setUser(user);
+  //       setLoggedIn(true);
+  //     } else {
+  //       setUser(undefined);
+  //       setLoggedIn(false);
+  //     }
+  //   };
 
-    const unsub = pb.authStore.onChange((token, model) => {
-      console.log("onChange", model);
-      console.log("onChange", token);
-      updateUser(model);
-    });
+  //   if (pb.authStore.isValid) {
+  //     updateUser(pb.authStore.model);
+  //   }
 
-    return () => {
-      unsub();
-    };
-  }, []);
+  //   const unsub = pb.authStore.onChange((token, model) => {
+  //     console.log("onChange", model);
+  //     console.log("onChange", token);
+  //     updateUser(model);
+  //   });
+
+  //   return () => {
+  //     unsub();
+  //   };
+  // }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn,
-        user,
+        isLoggedIn: !!token,
+        user: profile.data,
         register,
         login,
         logout,

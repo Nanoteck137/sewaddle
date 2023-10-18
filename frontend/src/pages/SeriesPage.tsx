@@ -1,5 +1,4 @@
 import { Popover } from "@headlessui/react";
-import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 import {
   AdjustmentsVerticalIcon,
   BookmarkIcon,
@@ -8,7 +7,6 @@ import {
   CheckIcon,
   EllipsisVerticalIcon,
   PaperClipIcon,
-  StarIcon as StarSolidIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import parse from "html-react-parser";
@@ -17,7 +15,7 @@ import { useInView } from "react-intersection-observer";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { apiEndpoint } from "@/App";
-import Button, { buttonVarients } from "@/components/ui/Button";
+import { buttonVarients } from "@/components/ui/Button";
 import { cn } from "@/lib/util";
 import { RouterOutput, trpc } from "@/trpc";
 import {
@@ -27,9 +25,6 @@ import {
   useRemoveUserSavedManga,
   useUnmarkUserChapters,
   useUpdateUserBookmark,
-  useUserBookmark,
-  useUserMarkedChapters,
-  useUserSavedManga,
 } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -184,19 +179,19 @@ const SeriesPage = () => {
 
   const chapterIds = useAllMangaChapterIds({ mangaId: id });
 
-  const userBookmark = useUserBookmark({
-    user: auth.user,
-    mangaId: id,
-  });
-  const userMarkedChapters = useUserMarkedChapters({
-    user: auth.user,
-    mangaId: id,
-  });
+  // const userBookmark = useUserBookmark({
+  //   user: auth.user,
+  //   mangaId: id,
+  // });
+  // const userMarkedChapters = useUserMarkedChapters({
+  //   user: auth.user,
+  //   mangaId: id,
+  // });
 
-  const userSavedManga = useUserSavedManga({
-    user: auth.user,
-    mangaId: id,
-  });
+  // const userSavedManga = useUserSavedManga({
+  //   user: auth.user,
+  //   mangaId: id,
+  // });
 
   const addUserSavedManga = useAddUserSavedManga();
   const removeUserSavedManga = useRemoveUserSavedManga();
@@ -262,7 +257,7 @@ const SeriesPage = () => {
               >
                 Anilist
               </Link>
-              {userSavedManga.data && (
+              {/* {userSavedManga.data && (
                 <Button
                   className="col-span-2"
                   onClick={() => {
@@ -293,7 +288,7 @@ const SeriesPage = () => {
                   <StarOutlineIcon className="h-6 w-6" />
                   <p>Save</p>
                 </Button>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -351,7 +346,7 @@ const SeriesPage = () => {
             // );
             // const isContinue = userBookmark.data?.chapter === item.id;
 
-            let hasReadChapter = false;
+            let hasReadChapter = item.userRead ?? false;
             const isContinue = false;
 
             const select = (select: boolean, shift: boolean) => {
@@ -461,35 +456,35 @@ const SeriesPage = () => {
               )}
               <button
                 onClick={() => {
-                  if (auth.user) {
-                    const items = selectedItems.filter((id) => {
-                      if (userMarkedChapters.data) {
-                        return !userMarkedChapters.data.find(
-                          (i) => i.chapter === id,
-                        );
-                      } else {
-                        return false;
-                      }
-                    });
-                    markItems.mutate({
-                      user: auth.user,
-                      chapterIds: items,
-                    });
-                  }
+                  // if (auth.user) {
+                  //   const items = selectedItems.filter((id) => {
+                  //     if (userMarkedChapters.data) {
+                  //       return !userMarkedChapters.data.find(
+                  //         (i) => i.chapter === id,
+                  //       );
+                  //     } else {
+                  //       return false;
+                  //     }
+                  //   });
+                  //   markItems.mutate({
+                  //     user: auth.user,
+                  //     chapterIds: items,
+                  //   });
+                  // }
                 }}
               >
                 <BookmarkIcon className="h-7 w-7" />
               </button>
               <button
                 onClick={() => {
-                  if (auth.user && userMarkedChapters.data) {
-                    const items = userMarkedChapters.data
-                      .filter((item) => {
-                        return selectedItems.find((i) => i === item.chapter);
-                      })
-                      .map((item) => item.id);
-                    unmarkItems.mutate({ user: auth.user, ids: items });
-                  }
+                  // if (auth.user && userMarkedChapters.data) {
+                  //   const items = userMarkedChapters.data
+                  //     .filter((item) => {
+                  //       return selectedItems.find((i) => i === item.chapter);
+                  //     })
+                  //     .map((item) => item.id);
+                  //   unmarkItems.mutate({ user: auth.user, ids: items });
+                  // }
                 }}
               >
                 <BookmarkSlashIcon className="h-7 w-7" />

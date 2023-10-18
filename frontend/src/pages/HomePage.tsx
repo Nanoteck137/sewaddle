@@ -3,7 +3,6 @@ import { trpc } from "@/trpc";
 
 const HomePage = () => {
   const { data, isLoading, error } = trpc.manga.list.useQuery();
-  console.log(data);
 
   // const { data, isLoading, isError } = useMangaViews();
   if (error) return <p>{error.message}</p>;
