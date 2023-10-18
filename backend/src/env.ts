@@ -10,6 +10,7 @@ export const env = createEnv({
     DATABASE_PATH: z.string(),
     NODE_ENV: z.enum(["production", "development"]).default("development"),
     TARGET_PATH: z.string(),
+    JWT_SECRET: z.string(),
   },
 
   runtimeEnv: process.env,

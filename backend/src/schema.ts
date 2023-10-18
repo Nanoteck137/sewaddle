@@ -1,6 +1,7 @@
 import { init } from "@paralleldrive/cuid2";
 import { relations } from "drizzle-orm";
 import {
+  foreignKey,
   integer,
   primaryKey,
   sqliteTable,
@@ -11,6 +12,44 @@ import {
 export const createId = init({
   length: 8,
 });
+
+export const createChapterId = init({
+  length: 12,
+});
+
+export const createUserId = init({
+  length: 16,
+});
+
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey().$defaultFn(createUserId),
+
+  username: text("username").notNull().unique(),
+  // TODO(patrik): Hash password
+  password: text("password").notNull(),
+});
+
+export const userChapterRead = sqliteTable(
+  "userChapterRead",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    mangaId: text("mangaId").notNull(),
+    index: integer("index").notNull(),
+  },
+  (userChapterRead) => ({
+    pk: primaryKey(
+      userChapterRead.userId,
+      userChapterRead.mangaId,
+      userChapterRead.index,
+    ),
+    chapterReference: foreignKey(() => ({
+      columns: [userChapterRead.mangaId, userChapterRead.index],
+      foreignColumns: [chapters.mangaId, chapters.index],
+    })).onDelete("cascade"),
+  }),
+);
 
 export const mangas = sqliteTable(
   "mangas",
@@ -52,7 +91,7 @@ export const chapters = sqliteTable(
   },
   (chapters) => ({
     pk: primaryKey(chapters.mangaId, chapters.index),
-    indexIndex: uniqueIndex("indexIndex").on(chapters.mangaId, chapters.index),
+    // indexIndex: uniqueIndex("indexIndex").on(chapters.mangaId, chapters.index),
   }),
 );
 

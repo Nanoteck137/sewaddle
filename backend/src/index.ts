@@ -8,28 +8,39 @@ import { createOpenApiExpressMiddleware } from "trpc-openapi";
 import { appRouter } from "./api/router";
 import { env } from "./env";
 import { Context } from "./trpc";
-import { db } from "./db";
-import { mangas } from "./schema";
-import { eq } from "drizzle-orm";
 import { ZodError, z } from "zod";
+import jwt from "jsonwebtoken";
 
-function createContextInner(): Context {
-  return {};
+const TokenSchema = z.object({ userId: z.string().cuid2() });
+
+function createContextInner(token: string | null): Context {
+  if (token) {
+    const j = jwt.verify(token, env.JWT_SECRET);
+    const o = TokenSchema.safeParse(j);
+    if (o.success) {
+      return {
+        userId: o.data.userId,
+      };
+    }
+  }
+
+  return {
+    userId: null,
+  };
 }
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
-
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use(
   "/api",
   createOpenApiExpressMiddleware({
     router: appRouter,
-    createContext: () => createContextInner(),
+    createContext: () => createContextInner(null),
   }),
 );
 
@@ -37,7 +48,12 @@ app.use(
   "/trpc",
   createExpressMiddleware({
     router: appRouter,
-    createContext: () => createContextInner(),
+    createContext: ({ req, res }) => {
+      const auth = req.headers.authorization;
+      const token = auth?.split(" ").at(1);
+
+      return createContextInner(token ?? null);
+    },
   }),
 );
 
@@ -83,7 +99,7 @@ app.get("/image/chapter/:mangaId/:chapterIndex/:image", async (req, res) => {
     res.sendFile(params.image, { root: p }, (e) => {
       if (e) {
         console.log(e);
-        res.status(404).json({ message: "Cover not available" });
+        res.status(404).json({ message: "Image not available" });
       }
     });
   } catch (e) {

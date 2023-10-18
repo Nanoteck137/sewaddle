@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "./db";
-import { chapters, mangas, createId } from "./schema";
+import { chapters, mangas, createId, users, userChapterRead } from "./schema";
 import fs from "fs";
 import axios from "axios";
 import { env } from "./env";
@@ -17,6 +17,12 @@ async function reset(target: string) {
       fs.rmSync(p, { recursive: true, force: true });
     }
     await db.delete(mangas).where(eq(mangas.id, id.id));
+  }
+
+  const userIds = await db.query.users.findMany({ columns: { id: true } });
+
+  for (let id of userIds) {
+    await db.delete(users).where(eq(users.id, id.id));
   }
 }
 
@@ -108,6 +114,11 @@ async function main() {
   const cache = path.join(env.TARGET_PATH, "cache");
   fs.mkdirSync(cache, { recursive: true });
 
+  const [admin] = await db
+    .insert(users)
+    .values({ username: "admin", password: "admin" })
+    .returning({ userId: users.id });
+
   for (let i = 0; i < 10; i++) {
     const coverSize = coverSizes[Math.floor(Math.random() * coverSizes.length)];
     let coverImage = await getImage(cache, coverSize[0], coverSize[1]);
@@ -154,6 +165,14 @@ async function main() {
         cover: pages[0],
         pages,
       });
+
+      if (Math.random() > 0.5) {
+        await db.insert(userChapterRead).values({
+          userId: admin.userId,
+          mangaId: res.id,
+          index: chapterIndex,
+        });
+      }
     }
   }
 
@@ -163,17 +182,18 @@ async function main() {
     },
   });
 
-  const t = await db.query.chapters.findFirst({
-    where: and(eq(chapters.mangaId, res[0].id), eq(chapters.index, 1)),
-  });
-
   console.log(
     "Query",
     res,
     // res.map((r) => r.chapters),
     // res.map((r) => r.chapters.map((c) => c.pages)),
   );
-  console.log(t);
+
+  const user = await db.query.users.findMany();
+  console.log("Users", user);
+
+  const chapterRead = await db.query.userChapterRead.findMany();
+  console.log("chapterRead", chapterRead);
 }
 
 main().catch((e) => {
