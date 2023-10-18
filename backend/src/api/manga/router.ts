@@ -1,7 +1,12 @@
 import { z } from "zod";
 import { db } from "../../db";
 import { publicProcedure, router } from "../../trpc";
-import { chapters, mangas, userChapterRead } from "../../schema";
+import {
+  chapters,
+  mangas,
+  userBookmarks,
+  userChapterMarked,
+} from "../../schema";
 import { and, asc, desc, eq, gt, lt, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -50,43 +55,50 @@ export const mangaRouter = router({
     .input(z.object({ mangaId: z.string().cuid2() }))
     .query(async ({ input, ctx }) => {
       const userReadQuery = db
-        .select({ index: userChapterRead.index })
-        .from(userChapterRead)
+        .select({ index: userChapterMarked.index })
+        .from(userChapterMarked)
         .where(
           and(
-            eq(userChapterRead.mangaId, input.mangaId),
-            eq(userChapterRead.userId, ctx.userId ?? ""),
+            eq(userChapterMarked.mangaId, input.mangaId),
+            eq(userChapterMarked.userId, ctx.userId ?? ""),
           ),
         )
         .as("userReadQuery");
+      const userBookmarkQuery = db
+        .select()
+        .from(userBookmarks)
+        .where(
+          and(
+            eq(userBookmarks.mangaId, input.mangaId),
+            eq(userBookmarks.userId, ctx.userId ?? ""),
+          ),
+        )
+        .as("userBookmark");
       const result = await db
         .select({
           index: chapters.index,
           name: chapters.name,
           cover: chapters.cover,
           mangaId: chapters.mangaId,
-          userRead: userReadQuery.index,
+          user: {
+            read: userReadQuery.index,
+            bookmark: userBookmarkQuery.page,
+          },
         })
         .from(chapters)
         .where(eq(chapters.mangaId, input.mangaId))
         .leftJoin(userReadQuery, eq(userReadQuery.index, chapters.index))
+        .leftJoin(
+          userBookmarkQuery,
+          eq(userBookmarkQuery.chapterIndex, chapters.index),
+        )
         .orderBy(asc(chapters.index));
-
-      // const result = await db.query.chapters.findMany({
-      //   columns: {
-      //     index: true,
-      //     name: true,
-      //     cover: true,
-      //     mangaId: true,
-      //   },
-      //   where: eq(chapters.mangaId, input.mangaId),
-      //   orderBy: asc(chapters.index),
-      // });
+      console.log(result);
 
       return result.map((obj) => ({
         ...obj,
         cover: `/image/chapter/${input.mangaId}/${obj.index}/${obj.cover}`,
-        userRead: !!obj.userRead,
+        user: ctx.userId ? { ...obj.user, read: !!obj.user.read } : undefined,
       }));
     }),
   viewChapter: publicProcedure

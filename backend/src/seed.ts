@@ -1,6 +1,13 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "./db";
-import { chapters, mangas, createId, users, userChapterRead } from "./schema";
+import {
+  chapters,
+  mangas,
+  createId,
+  users,
+  userChapterMarked,
+  userBookmarks,
+} from "./schema";
 import fs from "fs";
 import axios from "axios";
 import { env } from "./env";
@@ -167,10 +174,19 @@ async function main() {
       });
 
       if (Math.random() > 0.5) {
-        await db.insert(userChapterRead).values({
+        await db.insert(userChapterMarked).values({
           userId: admin.userId,
           mangaId: res.id,
           index: chapterIndex,
+        });
+      }
+
+      if (chapterIndex === 2) {
+        await db.insert(userBookmarks).values({
+          userId: admin.userId,
+          mangaId: res.id,
+          chapterIndex,
+          page: 0,
         });
       }
     }
@@ -192,8 +208,11 @@ async function main() {
   const user = await db.query.users.findMany();
   console.log("Users", user);
 
-  const chapterRead = await db.query.userChapterRead.findMany();
+  const chapterRead = await db.query.userChapterMarked.findMany();
   console.log("chapterRead", chapterRead);
+
+  const userBookmarkValues = await db.query.userBookmarks.findMany();
+  console.log("chapterRead", userBookmarkValues);
 }
 
 main().catch((e) => {

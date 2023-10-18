@@ -29,8 +29,8 @@ export const users = sqliteTable("users", {
   password: text("password").notNull(),
 });
 
-export const userChapterRead = sqliteTable(
-  "userChapterRead",
+export const userChapterMarked = sqliteTable(
+  "userChapterMarked",
   {
     userId: text("userId")
       .notNull()
@@ -46,6 +46,27 @@ export const userChapterRead = sqliteTable(
     ),
     chapterReference: foreignKey(() => ({
       columns: [userChapterRead.mangaId, userChapterRead.index],
+      foreignColumns: [chapters.mangaId, chapters.index],
+    })).onDelete("cascade"),
+  }),
+);
+
+export const userBookmarks = sqliteTable(
+  "userBookmarks",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    mangaId: text("mangaId")
+      .notNull()
+      .references(() => mangas.id, { onDelete: "cascade" }),
+    chapterIndex: integer("chapterIndex").notNull(),
+    page: integer("page").notNull(),
+  },
+  (userBookmark) => ({
+    pk: primaryKey(userBookmark.userId, userBookmark.mangaId),
+    chapterReference: foreignKey(() => ({
+      columns: [userBookmark.mangaId, userBookmark.chapterIndex],
       foreignColumns: [chapters.mangaId, chapters.index],
     })).onDelete("cascade"),
   }),
