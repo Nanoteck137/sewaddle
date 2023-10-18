@@ -341,13 +341,8 @@ const SeriesPage = () => {
           {chapters.data.map((item, i) => {
             const isViewItem = i == chapters.data.length - 1;
 
-            // let hasReadChapter = !!userMarkedChapters.data?.find(
-            //   (obj) => obj.chapter == item.id,
-            // );
-            // const isContinue = userBookmark.data?.chapter === item.id;
-
-            let hasReadChapter = item.userRead ?? false;
-            const isContinue = false;
+            let hasReadChapter = !!item.user?.read;
+            const isContinue = item.user?.bookmark !== null;
 
             const select = (select: boolean, shift: boolean) => {
               // if (!auth.user) {
