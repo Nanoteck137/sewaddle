@@ -7,7 +7,6 @@ import {
 } from "react";
 
 import { RouterOutput, trpc } from "@/trpc";
-// import { User } from "../api/models/users";
 
 type AuthContext = {
   isLoggedIn: boolean;
@@ -79,10 +78,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
 
   const login = useCallback(
     async (data: { username: string; password: string }) => {
-      await authLogin.mutate(data);
-      // await pb
-      //   .collection("users")
-      //   .authWithPassword(data.username, data.password);
+      await authLogin.mutateAsync(data);
     },
     [],
   );
@@ -100,42 +96,9 @@ export const AuthProvider = (props: AuthProviderProps) => {
       newPasswordConfirm: string;
     }) => {
       await authChangePassword.mutateAsync(data);
-      // await pb.collection("users").update(user.id, data);
-      // logout();
     },
     [],
   );
-
-  // useEffect(() => {
-  //   const token = localStorage.getItem("loginToken");
-  // }, []);
-
-  // useEffect(() => {
-  //   const updateUser = (model: Record | Admin | null) => {
-  //     if (model && model instanceof Record) {
-  //       const user = User.parse(model);
-  //       setUser(user);
-  //       setLoggedIn(true);
-  //     } else {
-  //       setUser(undefined);
-  //       setLoggedIn(false);
-  //     }
-  //   };
-
-  //   if (pb.authStore.isValid) {
-  //     updateUser(pb.authStore.model);
-  //   }
-
-  //   const unsub = pb.authStore.onChange((token, model) => {
-  //     console.log("onChange", model);
-  //     console.log("onChange", token);
-  //     updateUser(model);
-  //   });
-
-  //   return () => {
-  //     unsub();
-  //   };
-  // }, []);
 
   return (
     <AuthContext.Provider
