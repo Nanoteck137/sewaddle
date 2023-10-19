@@ -18,10 +18,10 @@ import { apiEndpoint } from "@/App";
 import { buttonVarients } from "@/components/ui/Button";
 import { cn } from "@/lib/util";
 import { RouterOutput, trpc } from "@/trpc";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 import {
   useAddUserSavedManga,
-  useAllMangaChapterIds,
-  useMarkUserChapters,
   useRemoveUserSavedManga,
   useUnmarkUserChapters,
   useUpdateUserBookmark,
@@ -159,6 +159,8 @@ const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
 const SeriesPage = () => {
   const { id } = useParams();
 
+  const queryClient = useQueryClient();
+
   // const mangaQuery = useManga({ mangaId: id });
   const manga = trpc.manga.get.useQuery(
     { mangaId: id || "" },
@@ -175,9 +177,9 @@ const SeriesPage = () => {
   const auth = useAuth();
 
   const [collapsed, setCollapsed] = useState(true);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
-  const chapterIds = useAllMangaChapterIds({ mangaId: id });
+  // const chapterIds = useAllMangaChapterIds({ mangaId: id });
 
   // const userBookmark = useUserBookmark({
   //   user: auth.user,
@@ -206,16 +208,26 @@ const SeriesPage = () => {
   //   mangaChaptersQuery.fetchNextPage,
   // ]);
 
-  const markItems = useMarkUserChapters();
+  // const markItems = useMarkUserChapters();
+  const markChapters = trpc.manga.markChapters.useMutation({
+    onSuccess: async () => {
+      if (manga.data) {
+        const queryKey = getQueryKey(trpc.manga.getChapters, {
+          mangaId: manga.data.id,
+        });
+        await queryClient.invalidateQueries(queryKey);
+      }
+    },
+  });
   const unmarkItems = useUnmarkUserChapters();
 
   const updateBookmark = useUpdateUserBookmark();
 
   useEffect(() => {
-    if (markItems.isSuccess || unmarkItems.isSuccess) {
+    if (markChapters.isSuccess || unmarkItems.isSuccess) {
       setSelectedItems([]);
     }
-  }, [markItems.isSuccess, unmarkItems.isSuccess]);
+  }, [markChapters.isSuccess, unmarkItems.isSuccess]);
 
   if (manga.isError || chapters.isError) return <p>Error</p>;
   if (manga.isLoading || chapters.isLoading) return <p>Loading...</p>;
@@ -224,6 +236,13 @@ const SeriesPage = () => {
   // const { data: chapters } = mangaChaptersQuery;
 
   // const chapterItems = chapters.pages.map((i) => i.items).flat();
+
+  const chapterItems = chapters.data;
+  const chapterIds = manga.data.chapters;
+
+  const userMarkedChapters = chapters.data
+    .filter((c) => c.user?.read)
+    .map((c) => c.index);
 
   return (
     <div className="flex flex-col gap-4 p-2">
@@ -319,19 +338,14 @@ const SeriesPage = () => {
               <button
                 className="h-6 w-6 rounded border-2 border-black dark:border-white"
                 onClick={() => {
-                  if (chapterIds.data) {
-                    if (selectedItems.length >= chapterIds.data.length) {
-                      setSelectedItems([]);
-                    } else {
-                      setSelectedItems(chapterIds.data.map((i) => i.id));
-                    }
+                  if (selectedItems.length >= chapterIds.length) {
+                    setSelectedItems([]);
+                  } else {
+                    setSelectedItems(chapterIds.map((i) => i.index));
                   }
                 }}
               >
-                {chapterIds.data &&
-                  selectedItems.length >= chapterIds.data.length && (
-                    <CheckIcon />
-                  )}
+                {selectedItems.length >= chapterIds.length && <CheckIcon />}
               </button>
             )}
           </div>
@@ -345,36 +359,40 @@ const SeriesPage = () => {
             const isContinue = item.user?.bookmark !== null;
 
             const select = (select: boolean, shift: boolean) => {
-              // if (!auth.user) {
-              //   return;
-              // }
-              // if (select) {
-              //   if (shift) {
-              //     const firstSelected = selectedItems[0];
-              //     let first = chapterItems.findIndex(
-              //       (i) => i.id === firstSelected,
-              //     );
-              //     let last = i;
-              //     if (first > last) {
-              //       let tmp = last;
-              //       last = first;
-              //       first = tmp;
-              //     }
-              //     let items = [];
-              //     let numItems = last - first + 1;
-              //     for (let i = 0; i < numItems; i++) {
-              //       items.push(first + i);
-              //     }
-              //     const ids = items.map((i) => chapterItems[i].id);
-              //     setSelectedItems(ids);
-              //   } else {
-              //     setSelectedItems((prev) => [...prev, item.id]);
-              //   }
-              // } else {
-              //   setSelectedItems((prev) => [
-              //     ...prev.filter((i) => i !== item.id),
-              //   ]);
-              // }
+              if (!auth.user) {
+                return;
+              }
+
+              if (select) {
+                if (shift) {
+                  const firstSelected = selectedItems[0];
+                  let first = chapterItems.findIndex(
+                    (i) => i.index === firstSelected,
+                  );
+
+                  let last = i;
+                  if (first > last) {
+                    let tmp = last;
+                    last = first;
+                    first = tmp;
+                  }
+
+                  let items = [];
+                  let numItems = last - first + 1;
+                  for (let i = 0; i < numItems; i++) {
+                    items.push(first + i);
+                  }
+
+                  const ids = items.map((i) => chapterItems[i].index);
+                  setSelectedItems(ids);
+                } else {
+                  setSelectedItems((prev) => [...prev, item.index]);
+                }
+              } else {
+                setSelectedItems((prev) => [
+                  ...prev.filter((i) => i !== item.index),
+                ]);
+              }
             };
 
             const mark = () => {
@@ -408,10 +426,8 @@ const SeriesPage = () => {
               // });
             };
 
-            // const showSelectMarker = selectedItems.length > 0;
-            // const selected = !!selectedItems.find((i) => i === item.id);
-            const showSelectMarker = false;
-            const selected = false;
+            const showSelectMarker = selectedItems.length > 0;
+            const selected = !!selectedItems.find((i) => i === item.index);
 
             return (
               <ChapterItem
@@ -451,21 +467,19 @@ const SeriesPage = () => {
               )}
               <button
                 onClick={() => {
-                  // if (auth.user) {
-                  //   const items = selectedItems.filter((id) => {
-                  //     if (userMarkedChapters.data) {
-                  //       return !userMarkedChapters.data.find(
-                  //         (i) => i.chapter === id,
-                  //       );
-                  //     } else {
-                  //       return false;
-                  //     }
-                  //   });
-                  //   markItems.mutate({
-                  //     user: auth.user,
-                  //     chapterIds: items,
-                  //   });
-                  // }
+                  if (manga.data) {
+                    const items = selectedItems.filter((index) => {
+                      return !userMarkedChapters.find((i) => i === index);
+                    });
+                    markChapters.mutate({
+                      mangaId: manga.data.id,
+                      chapters: items,
+                    });
+                  }
+                  // markItems.mutate({
+                  //   user: auth.user,
+                  //   chapterIds: items,
+                  // });
                 }}
               >
                 <BookmarkIcon className="h-7 w-7" />

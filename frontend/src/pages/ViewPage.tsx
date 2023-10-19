@@ -4,7 +4,6 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { apiEndpoint } from "@/App";
 import { trpc } from "@/trpc";
-import { useMarkUserChapters, useUpdateUserBookmark } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 
 const ViewPage = () => {
@@ -22,7 +21,7 @@ const ViewPage = () => {
 
   // const chapterQuery = useChapter({ chapterId: id });
 
-  const chapters = trpc.manga.viewChapter.useQuery(
+  const chapter = trpc.manga.viewChapter.useQuery(
     {
       mangaId: mangaId || "",
       chapterIndex: parseInt(chapterIndex || ""),
@@ -30,9 +29,11 @@ const ViewPage = () => {
     { enabled: !!mangaId && !!chapterIndex },
   );
 
-  const updateUserBookmark = useUpdateUserBookmark();
+  // const updateUserBookmark = useUpdateUserBookmark();
+  const updateUserBookmark = trpc.manga.updateUserBookmark.useMutation();
+  const markChapters = trpc.manga.markChapters.useMutation();
 
-  const markUserChapters = useMarkUserChapters();
+  // const markUserChapters = useMarkUserChapters();
 
   useHotkeys(["j", "left"], () => nextPage());
   useHotkeys(["k", "right"], () => prevPage());
@@ -43,13 +44,17 @@ const ViewPage = () => {
       setState((prev) => ({ ...prev, currentPage: page }));
       setSearch({ page: page.toString() });
     } else {
-      if (chapters.data && chapters.data.nextChapter) {
+      if (chapter.data && chapter.data.nextChapter) {
         if (state.isLastPage) {
           navigate(
-            `/view/${chapters.data.mangaId}/${chapters.data.nextChapter}?page=0`,
+            `/view/${chapter.data.mangaId}/${chapter.data.nextChapter}?page=0`,
           );
         } else {
           setState((prev) => ({ ...prev, isLastPage: true }));
+          markChapters.mutate({
+            mangaId: chapter.data.mangaId,
+            chapters: [chapter.data.index],
+          });
           // if (auth.user && id) {
           //   markUserChapters.mutate({ user: auth.user, chapterIds: [id] });
           // }
@@ -67,9 +72,9 @@ const ViewPage = () => {
         setState((prev) => ({ ...prev, isLastPage: false }));
       }
     } else {
-      if (chapters.data && chapters.data.prevChapter) {
+      if (chapter.data && chapter.data.prevChapter) {
         navigate(
-          `/view/${chapters.data.mangaId}/${chapters.data.prevChapter}?page=`,
+          `/view/${chapter.data.mangaId}/${chapter.data.prevChapter}?page=`,
         );
       }
     }
@@ -77,16 +82,16 @@ const ViewPage = () => {
 
   useEffect(() => {
     const page = search.get("page");
-    if (page !== null && chapters.data) {
+    if (page !== null && chapter.data) {
       if (page === "") {
-        const page = chapters.data.pages.length - 1;
+        const page = chapter.data.pages.length - 1;
         setState((prev) => ({
           ...prev,
           currentPage: page,
         }));
       } else {
         const n = parseInt(page);
-        if (n >= 0 && n < chapters.data.pages.length) {
+        if (n >= 0 && n < chapter.data.pages.length) {
           setState((prev) => ({
             ...prev,
             currentPage: n,
@@ -94,7 +99,7 @@ const ViewPage = () => {
         }
       }
     }
-  }, [chapters.data, search]);
+  }, [chapter.data, search]);
 
   useEffect(() => {
     // NOTE(patrik): Need to reset the state when we navigate to
@@ -105,21 +110,20 @@ const ViewPage = () => {
     });
   }, [chapterIndex]);
 
-  // useEffect(() => {
-  //   if (auth.user && chapterQuery.data) {
-  //     updateUserBookmark.mutate({
-  //       user: auth.user,
-  //       mangaId: chapterQuery.data.manga,
-  //       chapterId: chapterQuery.data.id,
-  //       page: state.currentPage,
-  //     });
-  //   }
-  // }, [auth.user, chapterQuery.data, state.currentPage]);
+  useEffect(() => {
+    if (chapter.data) {
+      updateUserBookmark.mutate({
+        mangaId: chapter.data.mangaId,
+        chapterIndex: chapter.data.index,
+        page: state.currentPage,
+      });
+    }
+  }, [auth.user, chapter.data, state.currentPage]);
 
-  if (chapters.isError) return <p>Error</p>;
-  if (chapters.isLoading) return <p>Loading...</p>;
+  if (chapter.isError) return <p>Error</p>;
+  if (chapter.isLoading) return <p>Loading...</p>;
 
-  const { data } = chapters;
+  const { data } = chapter;
 
   const getCurrentPageUrl = () => {
     // TODO(patrik): If currentPage > page length just clamp it
