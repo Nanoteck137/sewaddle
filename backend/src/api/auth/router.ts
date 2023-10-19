@@ -24,7 +24,24 @@ export const authRouter = router({
         token,
       };
     }),
-  register: publicProcedure.mutation(() => {}),
+  register: publicProcedure
+    .input(
+      z.object({
+        username: z.string().min(1),
+        password: z.string().min(8),
+        passwordConfirm: z.string().min(8),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      if (input.password !== input.passwordConfirm) {
+        throw new TRPCError({ code: "BAD_REQUEST" });
+      }
+
+      await db.insert(users).values({
+        username: input.username,
+        password: input.password,
+      });
+    }),
   getProfile: protectedProcedure.query(async ({ ctx }) => {
     return {
       ...ctx.user,
