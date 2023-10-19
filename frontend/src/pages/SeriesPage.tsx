@@ -417,18 +417,24 @@ const SeriesPage = () => {
               //   return;
               // }
               // markItems.mutate({ user: auth.user, chapterIds: [item.id] });
+              markChapters.mutate({
+                mangaId: manga.data.id,
+                chapters: [item.index],
+              });
             };
 
             const unmark = () => {
               // if (!auth.user || !userMarkedChapters.data) {
               //   return;
               // }
-              // const id = userMarkedChapters.data?.find(
-              //   (i) => i.chapter === item.id,
-              // );
-              // if (id) {
-              //   unmarkItems.mutate({ user: auth.user, ids: [id.id] });
-              // }
+              const index = userMarkedChapters.find((i) => i === item.index);
+              if (index) {
+                // unmarkItems.mutate({ user: auth.user, ids: [id.id] });
+                unmarkChapters.mutate({
+                  mangaId: manga.data.id,
+                  chapters: [index],
+                });
+              }
             };
 
             const setAsCurrent = () => {
@@ -493,10 +499,12 @@ const SeriesPage = () => {
                     const items = selectedItems.filter((index) => {
                       return !userMarkedChapters.find((i) => i === index);
                     });
-                    markChapters.mutate({
-                      mangaId: manga.data.id,
-                      chapters: items,
-                    });
+                    if (items.length > 0) {
+                      markChapters.mutate({
+                        mangaId: manga.data.id,
+                        chapters: items,
+                      });
+                    }
                   }
                 }}
               >
@@ -510,10 +518,12 @@ const SeriesPage = () => {
                         return selectedItems.find((i) => i === item);
                       })
                       .map((item) => item);
-                    unmarkChapters.mutate({
-                      mangaId: manga.data.id,
-                      chapters: items,
-                    });
+                    if (items.length > 0) {
+                      unmarkChapters.mutate({
+                        mangaId: manga.data.id,
+                        chapters: items,
+                      });
+                    }
                   }
                 }}
               >
