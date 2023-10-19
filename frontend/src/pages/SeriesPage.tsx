@@ -22,6 +22,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { useAddUserSavedManga, useRemoveUserSavedManga } from "../api";
 import { useAuth } from "../contexts/AuthContext";
+// import { updateUserBookmark } from "@/api/chapters";
 
 type Chapter = RouterOutput["manga"]["getChapters"][number];
 
@@ -473,6 +474,13 @@ const SeriesPage = () => {
               {selectedItems.length === 1 && (
                 <button
                   onClick={() => {
+                    if (manga.data) {
+                      updateBookmark.mutate({
+                        mangaId: manga.data.id,
+                        chapterIndex: selectedItems[0],
+                        page: 0,
+                      });
+                    }
                     // markItemCurrent.mutate(selectedItems[0]);
                   }}
                 >
