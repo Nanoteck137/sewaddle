@@ -329,17 +329,23 @@ const SeriesPage = () => {
           </div>
         </div>
         <div className="col-span-2 flex flex-col gap-2 px-2 md:items-start">
-          <span
-            className={`whitespace-pre-wrap ${collapsed ? "line-clamp-6" : ""}`}
-          >
-            {parse(manga.data.description || "")}
-          </span>
-          <button
-            className="text-gray-500 dark:text-gray-300"
-            onClick={() => setCollapsed((prev) => !prev)}
-          >
-            {collapsed ? "Show more" : "Show less"}
-          </button>
+          {manga.data.description && (
+            <>
+              <span
+                className={`whitespace-pre-wrap ${
+                  collapsed ? "line-clamp-6" : ""
+                }`}
+              >
+                {parse(manga.data.description)}
+              </span>
+              <button
+                className="text-gray-500 dark:text-gray-300"
+                onClick={() => setCollapsed((prev) => !prev)}
+              >
+                {collapsed ? "Show more" : "Show less"}
+              </button>
+            </>
+          )}
         </div>
       </div>
       <div className="flex flex-col">
