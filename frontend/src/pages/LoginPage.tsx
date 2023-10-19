@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 const LoginSchema = z.object({
   username: z.string().min(1),
-  password: z.string(), //.min(8).max(72),
+  password: z.string().min(8),
 });
 type LoginSchema = z.infer<typeof LoginSchema>;
 

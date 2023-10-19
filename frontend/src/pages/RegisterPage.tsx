@@ -1,6 +1,6 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import Input from "../components/Input";
@@ -9,10 +9,10 @@ import { useAuth } from "../contexts/AuthContext";
 const RegisterSchema = z
   .object({
     username: z.string().min(1),
-    newPassword: z.string().min(8).max(72),
+    password: z.string().min(8),
     passwordConfirm: z.string(),
   })
-  .refine((data) => data.newPassword === data.passwordConfirm, {
+  .refine((data) => data.password === data.passwordConfirm, {
     message: "Password don't match",
     path: ["passwordConfirm"],
   });
@@ -58,9 +58,9 @@ const RegisterPage = () => {
           <Input
             type="password"
             placeholder="Password"
-            error={errors.newPassword?.message}
+            error={errors.password?.message}
             autoComplete="new-password"
-            {...register("newPassword")}
+            {...register("password")}
           />
           <Input
             type="password"

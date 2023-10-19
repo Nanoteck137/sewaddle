@@ -8,7 +8,6 @@ import {
 
 import { RouterOutput, trpc } from "@/trpc";
 // import { User } from "../api/models/users";
-import { pb } from "../api/pocketbase";
 
 type AuthContext = {
   isLoggedIn: boolean;
@@ -16,7 +15,7 @@ type AuthContext = {
 
   register: (data: {
     username: string;
-    newPassword: string;
+    password: string;
     passwordConfirm: string;
   }) => Promise<void>;
 
@@ -62,18 +61,16 @@ export const AuthProvider = (props: AuthProviderProps) => {
     },
   });
 
+  const authRegister = trpc.auth.register.useMutation();
+
   const register = useCallback(
     async (data: {
       username: string;
-      newPassword: string;
+      password: string;
       passwordConfirm: string;
     }) => {
-      await pb.collection("users").create({
-        username: data.username,
-        password: data.newPassword,
-        passwordConfirm: data.passwordConfirm,
-      });
-      await login({ username: data.username, password: data.newPassword });
+      await authRegister.mutateAsync(data);
+      await login({ username: data.username, password: data.password });
     },
     [],
   );
