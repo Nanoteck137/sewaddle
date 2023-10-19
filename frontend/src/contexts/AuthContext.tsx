@@ -3,6 +3,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -51,7 +52,14 @@ export const AuthProvider = (props: AuthProviderProps) => {
 
   const profile = trpc.auth.getProfile.useQuery(undefined, {
     enabled: !!token,
+    retry: 1,
   });
+
+  useEffect(() => {
+    if (profile.error) {
+      if (profile.error.data?.code === "UNAUTHORIZED") logout();
+    }
+  }, [profile.error]);
 
   const authLogin = trpc.auth.login.useMutation({
     onSuccess: async (obj) => {
