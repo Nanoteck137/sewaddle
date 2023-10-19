@@ -20,12 +20,7 @@ import { cn } from "@/lib/util";
 import { RouterOutput, trpc } from "@/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
-import {
-  useAddUserSavedManga,
-  useRemoveUserSavedManga,
-  useUnmarkUserChapters,
-  useUpdateUserBookmark,
-} from "../api";
+import { useAddUserSavedManga, useRemoveUserSavedManga } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 
 type Chapter = RouterOutput["manga"]["getChapters"][number];
@@ -215,19 +210,40 @@ const SeriesPage = () => {
         const queryKey = getQueryKey(trpc.manga.getChapters, {
           mangaId: manga.data.id,
         });
-        await queryClient.invalidateQueries(queryKey);
+        queryClient.invalidateQueries(queryKey);
       }
     },
   });
-  const unmarkItems = useUnmarkUserChapters();
 
-  const updateBookmark = useUpdateUserBookmark();
+  const unmarkChapters = trpc.manga.unmarkChapters.useMutation({
+    onSuccess: () => {
+      if (manga.data) {
+        const queryKey = getQueryKey(trpc.manga.getChapters, {
+          mangaId: manga.data.id,
+        });
+        queryClient.invalidateQueries(queryKey);
+      }
+    },
+  });
+  // const unmarkItems = useUnmarkUserChapters();
+
+  // const updateBookmark = useUpdateUserBookmark();
+  const updateBookmark = trpc.manga.updateUserBookmark.useMutation({
+    onSuccess: () => {
+      if (manga.data) {
+        const queryKey = getQueryKey(trpc.manga.getChapters, {
+          mangaId: manga.data.id,
+        });
+        queryClient.invalidateQueries(queryKey);
+      }
+    },
+  });
 
   useEffect(() => {
-    if (markChapters.isSuccess || unmarkItems.isSuccess) {
+    if (markChapters.isSuccess || unmarkChapters.isSuccess) {
       setSelectedItems([]);
     }
-  }, [markChapters.isSuccess, unmarkItems.isSuccess]);
+  }, [markChapters.isSuccess, unmarkChapters.isSuccess]);
 
   if (manga.isError || chapters.isError) return <p>Error</p>;
   if (manga.isLoading || chapters.isLoading) return <p>Loading...</p>;
@@ -415,15 +431,13 @@ const SeriesPage = () => {
             };
 
             const setAsCurrent = () => {
-              // if (!auth.user || !id) {
-              //   return;
-              // }
-              // updateBookmark.mutate({
-              //   user: auth.user,
-              //   mangaId: id,
-              //   chapterId: item.id,
-              //   page: 0,
-              // });
+              if (manga.data) {
+                updateBookmark.mutate({
+                  mangaId: manga.data.id,
+                  chapterIndex: item.index,
+                  page: 0,
+                });
+              }
             };
 
             const showSelectMarker = selectedItems.length > 0;
@@ -476,24 +490,23 @@ const SeriesPage = () => {
                       chapters: items,
                     });
                   }
-                  // markItems.mutate({
-                  //   user: auth.user,
-                  //   chapterIds: items,
-                  // });
                 }}
               >
                 <BookmarkIcon className="h-7 w-7" />
               </button>
               <button
                 onClick={() => {
-                  // if (auth.user && userMarkedChapters.data) {
-                  //   const items = userMarkedChapters.data
-                  //     .filter((item) => {
-                  //       return selectedItems.find((i) => i === item.chapter);
-                  //     })
-                  //     .map((item) => item.id);
-                  //   unmarkItems.mutate({ user: auth.user, ids: items });
-                  // }
+                  if (manga.data) {
+                    const items = userMarkedChapters
+                      .filter((item) => {
+                        return selectedItems.find((i) => i === item);
+                      })
+                      .map((item) => item);
+                    unmarkChapters.mutate({
+                      mangaId: manga.data.id,
+                      chapters: items,
+                    });
+                  }
                 }}
               >
                 <BookmarkSlashIcon className="h-7 w-7" />
