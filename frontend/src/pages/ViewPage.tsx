@@ -103,7 +103,7 @@ const ViewPage = () => {
   }, [chapterIndex]);
 
   useEffect(() => {
-    if (chapter.data) {
+    if (auth.user && chapter.data) {
       updateUserBookmark.mutate({
         mangaId: chapter.data.mangaId,
         chapterIndex: chapter.data.index,
