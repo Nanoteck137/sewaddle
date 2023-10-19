@@ -19,8 +19,6 @@ const ViewPage = () => {
     isLastPage: false,
   });
 
-  // const chapterQuery = useChapter({ chapterId: id });
-
   const chapter = trpc.manga.viewChapter.useQuery(
     {
       mangaId: mangaId || "",
@@ -29,11 +27,8 @@ const ViewPage = () => {
     { enabled: !!mangaId && !!chapterIndex },
   );
 
-  // const updateUserBookmark = useUpdateUserBookmark();
   const updateUserBookmark = trpc.manga.updateUserBookmark.useMutation();
   const markChapters = trpc.manga.markChapters.useMutation();
-
-  // const markUserChapters = useMarkUserChapters();
 
   useHotkeys(["j", "left"], () => nextPage());
   useHotkeys(["k", "right"], () => prevPage());
@@ -55,9 +50,6 @@ const ViewPage = () => {
             mangaId: chapter.data.mangaId,
             chapters: [chapter.data.index],
           });
-          // if (auth.user && id) {
-          //   markUserChapters.mutate({ user: auth.user, chapterIds: [id] });
-          // }
         }
       }
     }
@@ -127,7 +119,6 @@ const ViewPage = () => {
 
   const getCurrentPageUrl = () => {
     // TODO(patrik): If currentPage > page length just clamp it
-    // return pb.getFileUrl(data, data.pages[state.currentPage]);
     return `${apiEndpoint}${data.pages[state.currentPage]}`;
   };
 

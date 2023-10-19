@@ -11,7 +11,6 @@ import {
 } from "@heroicons/react/24/solid";
 import parse from "html-react-parser";
 import { forwardRef, useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { apiEndpoint } from "@/App";
@@ -20,9 +19,7 @@ import { cn } from "@/lib/util";
 import { RouterOutput, trpc } from "@/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
-import { useAddUserSavedManga, useRemoveUserSavedManga } from "../api";
 import { useAuth } from "../contexts/AuthContext";
-// import { updateUserBookmark } from "@/api/chapters";
 
 type Chapter = RouterOutput["manga"]["getChapters"][number];
 
@@ -157,7 +154,6 @@ const SeriesPage = () => {
 
   const queryClient = useQueryClient();
 
-  // const mangaQuery = useManga({ mangaId: id });
   const manga = trpc.manga.get.useQuery(
     { mangaId: id || "" },
     { enabled: !!id },
@@ -167,44 +163,12 @@ const SeriesPage = () => {
     { mangaId: id || "" },
     { enabled: !!id },
   );
-  // const mangaChaptersQuery = useMangaChapterViews({ mangaId: id });
 
-  const [ref, inView] = useInView();
   const auth = useAuth();
 
   const [collapsed, setCollapsed] = useState(true);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
-  // const chapterIds = useAllMangaChapterIds({ mangaId: id });
-
-  // const userBookmark = useUserBookmark({
-  //   user: auth.user,
-  //   mangaId: id,
-  // });
-  // const userMarkedChapters = useUserMarkedChapters({
-  //   user: auth.user,
-  //   mangaId: id,
-  // });
-
-  // const userSavedManga = useUserSavedManga({
-  //   user: auth.user,
-  //   mangaId: id,
-  // });
-
-  const addUserSavedManga = useAddUserSavedManga();
-  const removeUserSavedManga = useRemoveUserSavedManga();
-
-  // useEffect(() => {
-  //   if (inView && mangaChaptersQuery.hasNextPage) {
-  //     mangaChaptersQuery.fetchNextPage();
-  //   }
-  // }, [
-  //   inView,
-  //   mangaChaptersQuery.hasNextPage,
-  //   mangaChaptersQuery.fetchNextPage,
-  // ]);
-
-  // const markItems = useMarkUserChapters();
   const markChapters = trpc.manga.markChapters.useMutation({
     onSuccess: async () => {
       if (manga.data) {
@@ -226,9 +190,7 @@ const SeriesPage = () => {
       }
     },
   });
-  // const unmarkItems = useUnmarkUserChapters();
 
-  // const updateBookmark = useUpdateUserBookmark();
   const updateBookmark = trpc.manga.updateUserBookmark.useMutation({
     onSuccess: () => {
       if (manga.data) {
@@ -248,11 +210,6 @@ const SeriesPage = () => {
 
   if (manga.isError || chapters.isError) return <p>Error</p>;
   if (manga.isLoading || chapters.isLoading) return <p>Loading...</p>;
-
-  // const { data: manga } = mangaQuery;
-  // const { data: chapters } = mangaChaptersQuery;
-
-  // const chapterItems = chapters.pages.map((i) => i.items).flat();
 
   const chapterItems = chapters.data;
   const chapterIds = manga.data.chapters;
@@ -376,8 +333,6 @@ const SeriesPage = () => {
 
         <div className="flex flex-col">
           {chapters.data.map((item, i) => {
-            const isViewItem = i == chapters.data.length - 1;
-
             let hasReadChapter = !!item.user?.read;
             const isContinue = item.user?.bookmark !== null;
 
@@ -458,7 +413,6 @@ const SeriesPage = () => {
 
             return (
               <ChapterItem
-                ref={isViewItem ? ref : undefined}
                 key={item.index}
                 chapter={item}
                 isContinue={isContinue}
