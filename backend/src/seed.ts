@@ -123,7 +123,7 @@ async function main() {
 
   const [admin] = await db
     .insert(users)
-    .values({ username: "admin", password: "admin" })
+    .values({ username: "admin", password: "password" })
     .returning({ userId: users.id });
 
   for (let i = 0; i < 10; i++) {
