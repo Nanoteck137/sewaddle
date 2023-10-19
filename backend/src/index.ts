@@ -10,6 +10,12 @@ import { env } from "./env";
 import { Context } from "./trpc";
 import { ZodError, z } from "zod";
 import jwt from "jsonwebtoken";
+import { isCuid } from "@paralleldrive/cuid2";
+import fs from "fs/promises";
+import { existsSync } from "fs";
+import { db } from "./db";
+import { chapters, mangas } from "./schema";
+import { Manga } from "./seed";
 
 const TokenSchema = z.object({ userId: z.string().cuid2() });
 
@@ -66,7 +72,8 @@ app.get("/image/manga/:mangaId/:image", async (req, res) => {
   try {
     const params = await FetchMangaImageSchema.parseAsync(req.params);
 
-    const p = path.join(env.TARGET_PATH, params.mangaId);
+    const p = path.join(env.TARGET_PATH, params.mangaId, "images");
+    console.log(p);
     res.sendFile(params.image, { root: p, maxAge: 86400 * 30 * 1000 }, (e) => {
       if (e) {
         res.status(404).json({ message: "Cover not available" });
@@ -116,4 +123,89 @@ if (env.NODE_ENV !== "development") {
   });
 }
 
-app.listen(3000);
+app.listen(3000, () => console.log("Server started on port '3000'"));
+
+const CHAPTERS_DIR = "chapters";
+const IMAGES_DIR = "images";
+const MANGA_FILENAME = "manga.json";
+
+async function isValidEntry(p: string) {
+  const chapterDirExists = existsSync(path.join(p, CHAPTERS_DIR));
+  const imageDirExists = existsSync(path.join(p, IMAGES_DIR));
+  const mangaFileExists = existsSync(path.join(p, MANGA_FILENAME));
+
+  return chapterDirExists && imageDirExists && mangaFileExists;
+}
+
+async function getMangaData(dir: string) {
+  const s = await fs.readFile(path.join(dir, MANGA_FILENAME));
+  const obj = JSON.parse(s.toString());
+  return Manga.parse(obj);
+}
+
+async function sync() {
+  const dir = await fs.readdir(env.TARGET_PATH);
+
+  const missingManga = [];
+  const missingChapters = [];
+
+  const mangaList = await db.query.mangas.findMany({
+    with: {
+      chapters: true,
+    },
+  });
+
+  // console.log(mangaList);
+
+  for (let entry of dir) {
+    if (entry === "cache") continue;
+
+    let mangaDir = path.join(env.TARGET_PATH, entry);
+    const isValid = await isValidEntry(mangaDir);
+
+    const manga = await getMangaData(mangaDir);
+    // console.log(manga);
+
+    if (isValid) {
+      const exists = mangaList.find((manga) => manga.id === entry);
+      if (!exists) {
+        missingManga.push(manga.manga);
+      }
+
+      for (let chapter of manga.chapters) {
+        const chapterExists = !!exists?.chapters.find(
+          (c) => c.index === chapter.index,
+        );
+        if (!chapterExists) {
+          missingChapters.push({ ...chapter, mangaId: manga.manga.id });
+        }
+      }
+    }
+  }
+
+  console.log("Missing Manga", missingManga);
+  console.log("Missing chapters", missingChapters);
+  for (let manga of missingManga) {
+    await db.insert(mangas).values({
+      ...manga,
+      cover: "cover.png",
+    });
+  }
+
+  for (let chapter of missingChapters) {
+    await db.insert(chapters).values({
+      ...chapter,
+      cover: chapter.pages[0],
+    });
+  }
+}
+
+sync()
+  .then(() => console.log("Sync Successfull"))
+  .catch((e) => console.log("Err", e));
+
+setInterval(() => {
+  sync()
+    .then(() => console.log("Sync Successfull"))
+    .catch((e) => console.log("Err", e));
+}, 10000);
