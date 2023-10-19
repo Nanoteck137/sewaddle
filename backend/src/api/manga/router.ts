@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "../../db";
-import { publicProcedure, router } from "../../trpc";
+import { protectedProcedure, publicProcedure, router } from "../../trpc";
 import {
   chapters,
   mangas,
@@ -158,5 +158,46 @@ export const mangaRouter = router({
         nextChapter: nextIndex?.index ?? null,
         prevChapter: prevIndex?.index ?? null,
       };
+    }),
+  updateUserBookmark: protectedProcedure
+    .input(
+      z.object({
+        mangaId: z.string().cuid2(),
+        chapterIndex: z.number(),
+        page: z.number(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await db
+        .insert(userBookmarks)
+        .values({
+          userId: ctx.user.id,
+          mangaId: input.mangaId,
+          chapterIndex: input.chapterIndex,
+          page: input.page,
+        })
+        .onConflictDoUpdate({
+          target: [userBookmarks.userId, userBookmarks.mangaId],
+          set: {
+            chapterIndex: input.chapterIndex,
+            page: input.page,
+          },
+        });
+    }),
+  markChapters: protectedProcedure
+    .input(
+      z.object({ mangaId: z.string().cuid2(), chapters: z.array(z.number()) }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await db
+        .insert(userChapterMarked)
+        .values(
+          input.chapters.map((index) => ({
+            userId: ctx.user.id,
+            mangaId: input.mangaId,
+            index,
+          })),
+        )
+        .onConflictDoNothing();
     }),
 });
