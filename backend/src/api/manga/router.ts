@@ -200,4 +200,23 @@ export const mangaRouter = router({
         )
         .onConflictDoNothing();
     }),
+  unmarkChapters: protectedProcedure
+    .input(
+      z.object({ mangaId: z.string().cuid2(), chapters: z.array(z.number()) }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await db.transaction(async (tx) => {
+        for (let chapter of input.chapters) {
+          await tx
+            .delete(userChapterMarked)
+            .where(
+              and(
+                eq(userChapterMarked.userId, ctx.user.id),
+                eq(userChapterMarked.mangaId, input.mangaId),
+                eq(userChapterMarked.index, chapter),
+              ),
+            );
+        }
+      });
+    }),
 });
