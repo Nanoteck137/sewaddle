@@ -1,6 +1,6 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Navigate } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import Input from "../components/Input";
@@ -9,10 +9,10 @@ import { useAuth } from "../contexts/AuthContext";
 const ChangePasswordSchema = z
   .object({
     oldPassword: z.string().min(1),
-    password: z.string().min(1),
-    passwordConfirm: z.string().min(1),
+    newPassword: z.string().min(1),
+    newPasswordConfirm: z.string().min(1),
   })
-  .refine((data) => data.password === data.passwordConfirm, {
+  .refine((data) => data.newPassword === data.newPasswordConfirm, {
     message: "Password don't match",
     path: ["passwordConfirm"],
   });
@@ -31,7 +31,6 @@ const ChangePassword = () => {
   const auth = useAuth();
 
   const submit = (data: ChangePasswordSchema) => {
-    console.log("Change password", data);
     auth.changePassword(data).then(() => {
       console.log("Password changed successfully");
       reset();
@@ -52,15 +51,15 @@ const ChangePassword = () => {
           type="password"
           placeholder="New Password"
           autoComplete="new-password"
-          error={errors.password?.message}
-          {...register("password")}
+          error={errors.newPassword?.message}
+          {...register("newPassword")}
         />
         <Input
           type="password"
           placeholder="Confirm Password"
           autoComplete="new-password"
-          error={errors.passwordConfirm?.message}
-          {...register("passwordConfirm")}
+          error={errors.newPasswordConfirm?.message}
+          {...register("newPasswordConfirm")}
         />
         <button className="rounded bg-red-300 py-2" type="submit">
           Change Password

@@ -23,8 +23,8 @@ type AuthContext = {
   logout: () => void;
   changePassword: (data: {
     oldPassword: string;
-    password: string;
-    passwordConfirm: string;
+    newPassword: string;
+    newPasswordConfirm: string;
   }) => Promise<void>;
 };
 
@@ -63,6 +63,8 @@ export const AuthProvider = (props: AuthProviderProps) => {
 
   const authRegister = trpc.auth.register.useMutation();
 
+  const authChangePassword = trpc.auth.changePassword.useMutation();
+
   const register = useCallback(
     async (data: {
       username: string;
@@ -77,7 +79,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
 
   const login = useCallback(
     async (data: { username: string; password: string }) => {
-      authLogin.mutate(data);
+      await authLogin.mutate(data);
       // await pb
       //   .collection("users")
       //   .authWithPassword(data.username, data.password);
@@ -94,15 +96,14 @@ export const AuthProvider = (props: AuthProviderProps) => {
   const changePassword = useCallback(
     async (data: {
       oldPassword: string;
-      password: string;
-      passwordConfirm: string;
+      newPassword: string;
+      newPasswordConfirm: string;
     }) => {
-      if (profile.data) {
-        // await pb.collection("users").update(user.id, data);
-        // logout();
-      }
+      await authChangePassword.mutateAsync(data);
+      // await pb.collection("users").update(user.id, data);
+      // logout();
     },
-    [profile.data],
+    [],
   );
 
   // useEffect(() => {
