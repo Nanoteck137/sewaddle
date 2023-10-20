@@ -147,17 +147,10 @@ function isValidEntry(p: string) {
   return chapterDirExists && imageDirExists && mangaFileExists;
 }
 
-// TODO(patrik): Detect manga changes
-// TODO(patrik): Detect manga deletion
-// TODO(patrik): Detect chapter changes
-// TODO(patrik): Detect chapter deletion
 async function sync() {
   const entries = (await fs.readdir(env.TARGET_PATH)).filter(
     (e) => e !== "cache",
   );
-
-  // const missingManga = [];
-  // const missingChapters = [];
 
   const mangaList = await db.query.mangas.findMany({
     with: {
