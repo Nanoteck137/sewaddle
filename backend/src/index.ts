@@ -1,21 +1,25 @@
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
+import { existsSync } from "fs";
+import fs from "fs/promises";
 import helmet from "helmet";
+import jwt from "jsonwebtoken";
 import morgan from "morgan";
 import path from "path";
 import { createOpenApiExpressMiddleware } from "trpc-openapi";
-import { appRouter } from "./api/router";
-import { env } from "./env";
-import { Context } from "./trpc";
 import { ZodError, z } from "zod";
-import jwt from "jsonwebtoken";
-import { isCuid } from "@paralleldrive/cuid2";
-import fs from "fs/promises";
-import { existsSync } from "fs";
+import { appRouter } from "./api/router";
 import { db } from "./db";
+import { env } from "./env";
 import { chapters, mangas } from "./schema";
-import { Manga } from "./seed";
+import { Context } from "./trpc";
+import { MangaMetadata } from "./model/manga";
+import { eq } from "drizzle-orm";
+import {
+  readMangaMetadataFromDir,
+  readMangaMetadataWithId,
+} from "./util/manga";
 
 const TokenSchema = z.object({ userId: z.string().cuid2() });
 
@@ -74,10 +78,16 @@ app.get("/image/manga/:mangaId/:image", async (req, res) => {
 
     const p = path.join(env.TARGET_PATH, params.mangaId, "images");
     console.log(p);
+
+    if (!existsSync(path.join(p, params.image))) {
+      res.status(404);
+      return;
+    }
+
     res.sendFile(params.image, { root: p, maxAge: 86400 * 30 * 1000 }, (e) => {
-      if (e) {
-        res.status(404).json({ message: "Cover not available" });
-      }
+      // if (e) {
+      //   res.status(404).json({ message: "Cover not available" });
+      // }
     });
   } catch (e) {
     if (e instanceof ZodError) {
@@ -129,7 +139,7 @@ const CHAPTERS_DIR = "chapters";
 const IMAGES_DIR = "images";
 const MANGA_FILENAME = "manga.json";
 
-async function isValidEntry(p: string) {
+function isValidEntry(p: string) {
   const chapterDirExists = existsSync(path.join(p, CHAPTERS_DIR));
   const imageDirExists = existsSync(path.join(p, IMAGES_DIR));
   const mangaFileExists = existsSync(path.join(p, MANGA_FILENAME));
@@ -137,17 +147,17 @@ async function isValidEntry(p: string) {
   return chapterDirExists && imageDirExists && mangaFileExists;
 }
 
-async function getMangaData(dir: string) {
-  const s = await fs.readFile(path.join(dir, MANGA_FILENAME));
-  const obj = JSON.parse(s.toString());
-  return Manga.parse(obj);
-}
-
+// TODO(patrik): Detect manga changes
+// TODO(patrik): Detect manga deletion
+// TODO(patrik): Detect chapter changes
+// TODO(patrik): Detect chapter deletion
 async function sync() {
-  const dir = await fs.readdir(env.TARGET_PATH);
+  const entries = (await fs.readdir(env.TARGET_PATH)).filter(
+    (e) => e !== "cache",
+  );
 
-  const missingManga = [];
-  const missingChapters = [];
+  // const missingManga = [];
+  // const missingChapters = [];
 
   const mangaList = await db.query.mangas.findMany({
     with: {
@@ -155,57 +165,113 @@ async function sync() {
     },
   });
 
-  // console.log(mangaList);
-
-  for (let entry of dir) {
-    if (entry === "cache") continue;
-
-    let mangaDir = path.join(env.TARGET_PATH, entry);
-    const isValid = await isValidEntry(mangaDir);
-
-    const manga = await getMangaData(mangaDir);
-    // console.log(manga);
-
-    if (isValid) {
-      const exists = mangaList.find((manga) => manga.id === entry);
-      if (!exists) {
-        missingManga.push(manga.manga);
-      }
-
-      for (let chapter of manga.chapters) {
-        const chapterExists = !!exists?.chapters.find(
-          (c) => c.index === chapter.index,
-        );
-        if (!chapterExists) {
-          missingChapters.push({ ...chapter, mangaId: manga.manga.id });
-        }
-      }
-    }
-  }
-
-  console.log("Missing Manga", missingManga);
-  console.log("Missing chapters", missingChapters);
-  for (let manga of missingManga) {
-    await db.insert(mangas).values({
-      ...manga,
-      cover: "cover.png",
+  const mangaCollection = entries
+    .map((e) => path.join(env.TARGET_PATH, e))
+    .filter((dir) => {
+      return isValidEntry(dir);
+    })
+    .map((dir) => {
+      return readMangaMetadataFromDir(dir);
     });
-  }
 
-  for (let chapter of missingChapters) {
-    await db.insert(chapters).values({
-      ...chapter,
-      cover: chapter.pages[0],
-    });
-  }
+  const missingManga = mangaCollection.filter(
+    (m) => !mangaList.find((ml) => ml.id === m.id),
+  );
+
+  const deletedManga = mangaList.filter(
+    (manga) => !mangaCollection.find((m) => m.id === manga.id),
+  );
+
+  const changedManga = mangaList
+    .filter((m) => !deletedManga.find((dm) => dm.id === m.id))
+    .map((m) => {
+      const obj = readMangaMetadataWithId(m.id);
+
+      return {
+        mangaId: m.id,
+        changes: {
+          title: m.title !== obj.title ? obj.title : undefined,
+        },
+      };
+    })
+    .filter((c) => !Object.values(c.changes).every((e) => e === undefined));
+
+  console.log("Changed Manga", changedManga);
+
+  console.log(
+    "Deleted Manga",
+    deletedManga.map((m) => m.id),
+  );
+
+  console.log(
+    "Missing Manga",
+    missingManga.map((m) => m.id),
+  );
+
+  const missingChapters = mangaCollection
+    .map((manga) => {
+      const exists = mangaList.find((m) => m.id === manga.id);
+      return manga.chapters
+        .filter(
+          (chapter) => !exists?.chapters.find((c) => c.index === chapter.index),
+        )
+        .map((chapter) => ({ mangaId: manga.id, ...chapter }))
+        .filter((c) => c !== undefined);
+    })
+    .flat();
+
+  console.log(
+    "Missing Chapters",
+    missingChapters.map((c) => `${c.mangaId} : ${c.index}`),
+  );
+
+  const deletedChapters = mangaList
+    .map((manga) => {
+      const collection = mangaCollection.find((m) => m.id === manga.id);
+      return manga.chapters.filter((chapter) => {
+        return !collection?.chapters.find((c) => c.index === chapter.index);
+      });
+    })
+    .flat();
+
+  console.log(
+    "Deleted Chapters",
+    deletedChapters.map((c) => `${c.mangaId} : ${c.index}`),
+  );
+
+  // for (let manga of deletedManga) {
+  //   // TODO(patrik): Temp
+  //   await db.delete(mangas).where(eq(mangas.id, manga.id));
+  // }
+
+  // for (let manga of missingManga) {
+  //   await db.insert(mangas).values({
+  //     ...manga,
+  //     cover: "cover.png",
+  //   });
+  // }
+
+  // for (let chapter of missingChapters) {
+  //   await db.insert(chapters).values({
+  //     ...chapter,
+  //     cover: chapter.pages[0],
+  //   });
+  // }
+
+  // for (const manga of changedManga) {
+  //   await db
+  //     .update(mangas)
+  //     .set(manga.changes)
+  //     .where(eq(mangas.id, manga.mangaId));
+  // }
 }
 
 sync()
   .then(() => console.log("Sync Successfull"))
   .catch((e) => console.log("Err", e));
 
-setInterval(() => {
-  sync()
-    .then(() => console.log("Sync Successfull"))
-    .catch((e) => console.log("Err", e));
-}, 10000);
+// setInterval(() => {
+//   sync()
+//     .then(() => console.log("Sync Successfull"))
+//     .catch((e) => console.log("Err", e));
+// }, 10000);

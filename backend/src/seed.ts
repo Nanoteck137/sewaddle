@@ -8,36 +8,14 @@ import {
   userChapterMarked,
   userBookmarks,
 } from "./schema";
-import fs from "fs";
+import fs, { write } from "fs";
 import axios from "axios";
 import { env } from "./env";
 import path from "path";
 import commander, { Command } from "commander";
 import { z } from "zod";
-
-const program = new Command();
-
-function customParseInt(value: string, prev: number) {
-  // parseInt takes a string and a radix
-  const parsedValue = parseInt(value, 10);
-  if (isNaN(parsedValue)) {
-    throw new commander.InvalidArgumentError("not a number");
-  }
-  return parsedValue;
-}
-
-program
-  .option<number>(
-    "-n, --num-manga <num>",
-    "Number of mangas to generate",
-    customParseInt,
-  )
-  .option("-r, --reset", "Reset the collection", false);
-
-program.parse();
-
-const opts = program.opts();
-console.log(opts);
+import { MangaMetadata } from "./model/manga";
+import { readMangaMetadataWithId, writeMangaMetadata } from "./util/manga";
 
 const names = [
   "JoJo's Bizarre Adventure Part 9: The JoJoLands",
@@ -103,128 +81,124 @@ const pageSizes = [
   [852, 1250],
 ];
 
-export const MangaMetadata = z.object({
-  id: z.string().cuid2(),
-  title: z.string(),
-});
-export type MangaMetadata = z.infer<typeof MangaMetadata>;
+const program = new Command();
 
-export const ChapterMetadata = z.object({
-  index: z.number(),
-  name: z.string(),
-  pages: z.array(z.string()),
-});
-export type ChapterMetadata = z.infer<typeof ChapterMetadata>;
-
-export const Manga = z.object({
-  manga: MangaMetadata,
-  chapters: z.array(ChapterMetadata),
-});
-export type Manga = z.infer<typeof Manga>;
-
-async function main() {
-  if (opts.reset) {
-    const entries = fs.readdirSync(env.TARGET_PATH);
-    for (let entry of entries) {
-      if (entry === "cache") continue;
-      const p = path.join(env.TARGET_PATH, entry);
-      fs.rmSync(p, { recursive: true, force: true });
-    }
+function customParseInt(value: string, prev: number) {
+  // parseInt takes a string and a radix
+  const parsedValue = parseInt(value, 10);
+  if (isNaN(parsedValue)) {
+    throw new commander.InvalidArgumentError("not a number");
   }
-
-  const cache = path.join(env.TARGET_PATH, "cache");
-  fs.mkdirSync(cache, { recursive: true });
-
-  for (let i = 0; i < opts.numManga; i++) {
-    const coverSize = coverSizes[Math.floor(Math.random() * coverSizes.length)];
-    let coverImage = await getImage(cache, coverSize[0], coverSize[1]);
-
-    const id = createId();
-    const p = path.join(env.TARGET_PATH, id);
-    fs.mkdirSync(p, { recursive: true });
-
-    const chaptersDir = path.join(p, "chapters");
-    fs.mkdirSync(chaptersDir, { recursive: true });
-
-    const imagesDir = path.join(p, "images");
-    fs.mkdirSync(imagesDir, { recursive: true });
-
-    const coverDest = path.join(imagesDir, "cover.png");
-    fs.copyFileSync(coverImage, coverDest);
-
-    const title = names[Math.floor(Math.random() * names.length)];
-
-    const metadata: MangaMetadata = {
-      id,
-      title,
-    };
-
-    const chapters: ChapterMetadata[] = [];
-
-    const numChapters = Math.floor(Math.random() * 10) + 2;
-    for (let chapterIndex = 1; chapterIndex <= numChapters; chapterIndex++) {
-      const chapterPath = path.join(chaptersDir, chapterIndex.toString());
-      fs.mkdirSync(chapterPath, { recursive: true });
-
-      const pages = [];
-      const numPages = Math.floor(Math.random() * 30) + 6;
-      for (let pageIndex = 0; pageIndex < numPages; pageIndex++) {
-        let pageSize = pageSizes[Math.floor(Math.random() * pageSizes.length)];
-        let pageImage = await getImage(cache, pageSize[0], pageSize[1]);
-        const page = `${pageIndex}.png`;
-        fs.copyFileSync(pageImage, path.join(chapterPath, page));
-        pages.push(page);
-      }
-
-      chapters.push({
-        index: chapterIndex,
-        name: `Chapter ${chapterIndex}`,
-        pages,
-      });
-    }
-
-    let manga: Manga = {
-      manga: metadata,
-      chapters,
-    };
-
-    const metadataFile = path.join(p, "manga.json");
-    fs.writeFileSync(metadataFile, JSON.stringify(manga, null, 2));
-  }
+  return parsedValue;
 }
 
-main()
-  .then(() => console.log("Success"))
-  .catch((e) => console.error("err", e));
+program
+  .command("gen")
+  .argument("<num>", "Number of mangas to generate", customParseInt)
+  .action(async (num: number) => {
+    console.log(num);
+    for (let i = 0; i < num; i++) {
+      const manga = await generateManga();
+      await addChapter(manga);
+      await addChapter(manga);
+      await addChapter(manga);
+      await addChapter(manga);
+      console.log(manga);
 
-// async function reset(target: string) {
-//   const ids = await db.query.mangas.findMany({ columns: { id: true } });
-//   console.log("Removing", ids.length);
+      writeMangaMetadata(manga);
+    }
+  });
 
-//   for (let id of ids) {
-//     const p = path.join(target, id.id);
-//     if (fs.existsSync(p)) {
-//       console.log("Removing", p);
-//       fs.rmSync(p, { recursive: true, force: true });
-//     }
-//     await db.delete(mangas).where(eq(mangas.id, id.id));
-//   }
+program.command("reset").action(() => {
+  const entries = fs.readdirSync(env.TARGET_PATH);
+  for (let entry of entries) {
+    if (entry === "cache") continue;
+    const p = path.join(env.TARGET_PATH, entry);
+    fs.rmSync(p, { recursive: true, force: true });
+  }
+});
 
-//   const userIds = await db.query.users.findMany({ columns: { id: true } });
+program.command("change-manga").action(() => {});
+program.command("add-chapters").action(async () => {
+  const entries = fs.readdirSync(env.TARGET_PATH).filter((c) => c !== "cache");
+  const randomMangaId = entries[Math.floor(Math.random() * entries.length)];
+  const manga = readMangaMetadataWithId(randomMangaId);
+  await addChapter(manga);
+  console.log(manga);
+  writeMangaMetadata(manga);
+});
+program.command("add-pages").action(() => {});
 
-//   for (let id of userIds) {
-//     await db.delete(users).where(eq(users.id, id.id));
-//   }
-// }
+program.parse();
 
-async function getImage(target: string, width: number, height: number) {
+const opts = program.opts();
+console.log(opts);
+
+async function addChapter(manga: MangaMetadata) {
+  const mangaDir = path.join(env.TARGET_PATH, manga.id.toString());
+  const chaptersDir = path.join(mangaDir, "chapters");
+
+  const chapterIndex = manga.chapters.length + 1;
+
+  const chapterPath = path.join(chaptersDir, chapterIndex.toString());
+  fs.mkdirSync(chapterPath, { recursive: true });
+
+  const pages = [];
+  const numPages = Math.floor(Math.random() * 30) + 6;
+  for (let pageIndex = 0; pageIndex < numPages; pageIndex++) {
+    let pageSize = pageSizes[Math.floor(Math.random() * pageSizes.length)];
+    let pageImage = await getImage(pageSize[0], pageSize[1]);
+    const page = `${pageIndex}.png`;
+    fs.copyFileSync(pageImage, path.join(chapterPath, page));
+    pages.push(page);
+  }
+
+  manga.chapters.push({
+    index: chapterIndex,
+    name: `Chapter ${chapterIndex}`,
+    pages,
+  });
+}
+
+async function generateManga() {
+  const coverSize = coverSizes[Math.floor(Math.random() * coverSizes.length)];
+  let coverImage = await getImage(coverSize[0], coverSize[1]);
+
+  const id = createId();
+  const p = path.join(env.TARGET_PATH, id);
+  fs.mkdirSync(p, { recursive: true });
+
+  const chaptersDir = path.join(p, "chapters");
+  fs.mkdirSync(chaptersDir, { recursive: true });
+
+  const imagesDir = path.join(p, "images");
+  fs.mkdirSync(imagesDir, { recursive: true });
+
+  const coverDest = path.join(imagesDir, "cover.png");
+  fs.copyFileSync(coverImage, coverDest);
+
+  const title = names[Math.floor(Math.random() * names.length)];
+
+  const manga: MangaMetadata = {
+    id,
+    title,
+    chapters: [],
+  };
+
+  return manga;
+}
+
+async function getImage(width: number, height: number) {
+  const cache = path.join(env.TARGET_PATH, "cache");
+
   let name = `${width}x${height}.png`;
-  let output = path.join(target, name);
+  let output = path.join(cache, name);
 
   if (fs.existsSync(output)) {
-    console.log("Using cached image");
     return output;
   }
+
+  fs.mkdirSync(cache, { recursive: true });
 
   let url = `https://dummyimage.com/${name}/9123eb/fff`;
   const result = await axios.get(url, {
@@ -234,107 +208,3 @@ async function getImage(target: string, width: number, height: number) {
 
   return output;
 }
-
-// async function main() {
-//   await reset(env.TARGET_PATH);
-
-//   const cache = path.join(env.TARGET_PATH, "cache");
-//   fs.mkdirSync(cache, { recursive: true });
-
-//   const [admin] = await db
-//     .insert(users)
-//     .values({ username: "admin", password: "password" })
-//     .returning({ userId: users.id });
-
-//   for (let i = 0; i < 10; i++) {
-//     const coverSize = coverSizes[Math.floor(Math.random() * coverSizes.length)];
-//     let coverImage = await getImage(cache, coverSize[0], coverSize[1]);
-
-//     const id = createId();
-//     const p = path.join(env.TARGET_PATH, id);
-//     fs.mkdirSync(p, { recursive: true });
-
-//     const chaptersPath = path.join(p, "chapters");
-//     fs.mkdirSync(chaptersPath, { recursive: true });
-
-//     const coverDest = path.join(p, "cover.png");
-//     fs.copyFileSync(coverImage, coverDest);
-
-//     const name = names[Math.floor(Math.random() * names.length)];
-//     const [res] = await db
-//       .insert(mangas)
-//       .values({ id, title: name, cover: path.basename(coverDest) })
-//       .returning({ id: mangas.id });
-//     // console.log(res);
-
-//     const numChapters = Math.floor(Math.random() * 10) + 2;
-//     for (let chapterIndex = 1; chapterIndex <= numChapters; chapterIndex++) {
-//       if (chapterIndex == 4) continue;
-
-//       const chapterPath = path.join(chaptersPath, chapterIndex.toString());
-//       fs.mkdirSync(chapterPath, { recursive: true });
-
-//       const pages = [];
-
-//       const numPages = Math.floor(Math.random() * 30) + 6;
-//       for (let pageIndex = 0; pageIndex < numPages; pageIndex++) {
-//         let pageSize = pageSizes[Math.floor(Math.random() * pageSizes.length)];
-//         let pageImage = await getImage(cache, pageSize[0], pageSize[1]);
-//         const page = `${pageIndex}.png`;
-//         fs.copyFileSync(pageImage, path.join(chapterPath, page));
-//         pages.push(page);
-//       }
-
-//       await db.insert(chapters).values({
-//         index: chapterIndex,
-//         name: `Chapter ${chapterIndex}`,
-//         mangaId: res.id,
-//         cover: pages[0],
-//         pages,
-//       });
-
-//       if (Math.random() > 0.5) {
-//         await db.insert(userChapterMarked).values({
-//           userId: admin.userId,
-//           mangaId: res.id,
-//           index: chapterIndex,
-//         });
-//       }
-
-//       if (chapterIndex === 2) {
-//         await db.insert(userBookmarks).values({
-//           userId: admin.userId,
-//           mangaId: res.id,
-//           chapterIndex,
-//           page: 0,
-//         });
-//       }
-//     }
-//   }
-
-//   const res = await db.query.mangas.findMany({
-//     with: {
-//       chapters: true,
-//     },
-//   });
-
-//   console.log(
-//     "Query",
-//     res,
-//     // res.map((r) => r.chapters),
-//     // res.map((r) => r.chapters.map((c) => c.pages)),
-//   );
-
-//   const user = await db.query.users.findMany();
-//   console.log("Users", user);
-
-//   const chapterRead = await db.query.userChapterMarked.findMany();
-//   console.log("chapterRead", chapterRead);
-
-//   const userBookmarkValues = await db.query.userBookmarks.findMany();
-//   console.log("chapterRead", userBookmarkValues);
-// }
-
-// main().catch((e) => {
-//   console.error(e);
-// });
