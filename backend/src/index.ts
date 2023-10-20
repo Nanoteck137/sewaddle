@@ -239,6 +239,37 @@ async function sync() {
     deletedChapters.map((c) => `${c.mangaId} : ${c.index}`),
   );
 
+  const compareStringArrays = (a: string[], b: string[]) =>
+    a.length === b.length && a.every((element, index) => element === b[index]);
+
+  const chapterChanges = mangaList
+    .map((manga) => {
+      const collection = mangaCollection.find((m) => m.id === manga.id);
+      return manga.chapters.map((chapter) => {
+        const colChapter = collection?.chapters.find(
+          (c) => c.index === chapter.index,
+        );
+
+        return {
+          mangaId: manga.id,
+          chapterIndex: chapter.index,
+          changes: {
+            name:
+              chapter.name != colChapter?.name ? colChapter?.name : undefined,
+            pages:
+              colChapter &&
+              !compareStringArrays(chapter.pages, colChapter.pages)
+                ? colChapter.pages
+                : undefined,
+          },
+        };
+      });
+    })
+    .flat()
+    .filter((c) => !Object.values(c.changes).every((e) => e === undefined));
+
+  console.log("Chapter Changes", chapterChanges);
+
   // for (let manga of deletedManga) {
   //   // TODO(patrik): Temp
   //   await db.delete(mangas).where(eq(mangas.id, manga.id));
