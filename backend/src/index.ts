@@ -8,13 +8,12 @@ import jwt from "jsonwebtoken";
 import morgan from "morgan";
 import path from "path";
 import { createOpenApiExpressMiddleware } from "trpc-openapi";
-import { ZodError, z } from "zod";
+import { ZodError, isValid, z } from "zod";
 import { appRouter } from "./api/router";
 import { db } from "./db";
 import { env } from "./env";
 import { chapters, mangas } from "./schema";
 import { Context } from "./trpc";
-import { MangaMetadata } from "./model/manga";
 import { and, eq } from "drizzle-orm";
 import {
   readMangaMetadataFromDir,
@@ -147,7 +146,7 @@ function isValidEntry(p: string) {
   return chapterDirExists && imageDirExists && mangaFileExists;
 }
 
-async function sync() {
+async function syncDatabase() {
   const entries = (await fs.readdir(env.TARGET_PATH)).filter(
     (e) => e !== "cache",
   );
@@ -181,13 +180,13 @@ async function sync() {
   const changedManga = mangaList
     .filter((m) => !deletedManga.find((dm) => dm.id === m.id))
     .map((m) => {
-      const obj = readMangaMetadataWithId(m.id);
+      const obj = mangaCollection.find((mc) => mc.id === m.id);
 
       return {
         mangaId: m.id,
         changes: {
-          title: m.title !== obj.title ? obj.title : undefined,
-          cover: m.cover !== obj.cover ? obj.cover : undefined,
+          title: obj && m.title !== obj.title ? obj.title : undefined,
+          cover: obj && m.cover !== obj.cover ? obj.cover : undefined,
         },
       };
     })
@@ -319,12 +318,37 @@ async function sync() {
   }
 }
 
-sync()
-  .then(() => console.log("Sync Successfull"))
-  .catch((e) => console.log("Err", e));
+// TODO(patrik): Detect deletion
+async function syncTarget() {
+  const entries = (await fs.readdir(env.COLLECTION_PATH)).filter((e) =>
+    isValidEntry(path.join(env.COLLECTION_PATH, e)),
+  );
+  console.log(entries);
 
-setInterval(() => {
-  sync()
-    .then(() => console.log("Sync Successfull"))
-    .catch((e) => console.log("Err", e));
-}, 10000);
+  await fs.mkdir(env.TARGET_PATH, { recursive: true });
+
+  entries.forEach((e) => {
+    const src = path.resolve(path.join(env.COLLECTION_PATH, e));
+    const metadata = readMangaMetadataFromDir(src);
+    const dest = path.join(env.TARGET_PATH, metadata.id.toString());
+    if (!existsSync(dest)) {
+      fs.symlink(src, dest);
+    }
+  });
+}
+
+async function fullSync() {
+  await syncTarget();
+  console.log("Target syncing successful");
+
+  await syncDatabase();
+  console.log("Database syncing successful");
+}
+
+fullSync().catch(console.error);
+
+// setInterval(() => {
+//   syncDatabase()
+//     .then(() => console.log("Sync Successfull"))
+//     .catch((e) => console.log("Err", e));
+// }, 10000);

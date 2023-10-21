@@ -9,7 +9,9 @@ export const env = createEnv({
   server: {
     DATABASE_PATH: z.string(),
     NODE_ENV: z.enum(["production", "development"]).default("development"),
+    COLLECTION_PATH: z.string(),
     TARGET_PATH: z.string(),
+    TEST_PATH: z.string(),
     JWT_SECRET: z.string(),
   },
 

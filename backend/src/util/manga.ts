@@ -3,10 +3,8 @@ import { env } from "../env";
 import { MangaMetadata } from "../model/manga";
 import fs from "fs";
 
-export function writeMangaMetadata(manga: MangaMetadata) {
-  let mangaDir = path.join(env.TARGET_PATH, manga.id.toString());
-
-  const metadataFile = path.join(mangaDir, "manga.json");
+export function writeMangaMetadata(dir: string, manga: MangaMetadata) {
+  const metadataFile = path.join(dir, "manga.json");
   fs.writeFileSync(metadataFile, JSON.stringify(manga, null, 2));
 }
 
@@ -19,7 +17,9 @@ export function readMangaMetadataFromDir(dir: string) {
   return MangaMetadata.parse(obj);
 }
 
-export function readMangaMetadataWithId(mangaId: string) {
-  const mangaDir = path.join(env.TARGET_PATH, mangaId);
+// TODO(patrik): This is wrong because the directory name might not actually
+// be the mangaId
+export function readMangaMetadataWithId(base: string, mangaId: string) {
+  const mangaDir = path.join(base, mangaId);
   return readMangaMetadataFromDir(mangaDir);
 }
