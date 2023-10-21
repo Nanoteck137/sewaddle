@@ -23,8 +23,6 @@ export const mangaRouter = router({
       },
     });
 
-    console.log(res);
-
     return res.map((manga) => ({
       ...manga,
       test: !!ctx.userId,
@@ -103,7 +101,6 @@ export const mangaRouter = router({
           eq(userBookmarkQuery.chapterIndex, chapters.index),
         )
         .orderBy(asc(chapters.index));
-      console.log(result);
 
       return result.map((obj) => ({
         ...obj,
