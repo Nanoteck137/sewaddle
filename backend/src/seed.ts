@@ -1,19 +1,9 @@
-import { and, eq } from "drizzle-orm";
-import { db } from "./db";
-import {
-  chapters,
-  mangas,
-  createId,
-  users,
-  userChapterMarked,
-  userBookmarks,
-} from "./schema";
-import fs, { write } from "fs";
+import { createId } from "./schema";
+import fs from "fs";
 import axios from "axios";
 import { env } from "./env";
 import path from "path";
 import commander, { Command } from "commander";
-import { z } from "zod";
 import { ChapterMetadata, MangaMetadata } from "./model/manga";
 import { readMangaMetadataWithId, writeMangaMetadata } from "./util/manga";
 

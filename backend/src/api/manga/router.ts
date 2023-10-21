@@ -7,7 +7,7 @@ import {
   userBookmarks,
   userChapterMarked,
 } from "../../schema";
-import { and, asc, desc, eq, gt, lt, ne } from "drizzle-orm";
+import { and, asc, desc, eq, gt, lt } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const mangaRouter = router({

@@ -8,17 +8,14 @@ import jwt from "jsonwebtoken";
 import morgan from "morgan";
 import path from "path";
 import { createOpenApiExpressMiddleware } from "trpc-openapi";
-import { ZodError, isValid, z } from "zod";
+import { ZodError, z } from "zod";
 import { appRouter } from "./api/router";
 import { db } from "./db";
 import { env } from "./env";
 import { chapters, mangas } from "./schema";
 import { Context } from "./trpc";
 import { and, eq } from "drizzle-orm";
-import {
-  readMangaMetadataFromDir,
-  readMangaMetadataWithId,
-} from "./util/manga";
+import { readMangaMetadataFromDir } from "./util/manga";
 
 const TokenSchema = z.object({ userId: z.string().cuid2() });
 

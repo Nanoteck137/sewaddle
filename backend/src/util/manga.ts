@@ -1,5 +1,4 @@
 import path from "path";
-import { env } from "../env";
 import { MangaMetadata } from "../model/manga";
 import fs from "fs";
 
