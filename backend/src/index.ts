@@ -281,16 +281,25 @@ async function syncDatabase() {
   }
 
   for (let manga of missingManga) {
-    await db.insert(mangas).values({
-      ...manga,
-    });
+    await db
+      .insert(mangas)
+      .values({
+        ...manga,
+      })
+      .onConflictDoUpdate({ target: mangas.id, set: { available: true } });
   }
 
   for (let chapter of missingChapters) {
-    await db.insert(chapters).values({
-      ...chapter,
-      cover: chapter.pages[0],
-    });
+    await db
+      .insert(chapters)
+      .values({
+        ...chapter,
+        cover: chapter.pages[0],
+      })
+      .onConflictDoUpdate({
+        target: [chapters.mangaId, chapters.index],
+        set: { available: true },
+      });
   }
 
   for (const manga of changedManga) {
@@ -320,7 +329,13 @@ async function syncTarget() {
   );
   console.log(entries);
 
-  await fs.mkdir(env.TARGET_PATH, { recursive: true });
+  if (existsSync(env.TARGET_PATH)) {
+    (await fs.readdir(env.TARGET_PATH)).forEach((e) => {
+      fs.unlink(path.join(env.TARGET_PATH, e));
+    });
+  } else {
+    await fs.mkdir(env.TARGET_PATH, { recursive: true });
+  }
 
   entries.forEach((e) => {
     const src = path.resolve(path.join(env.COLLECTION_PATH, e));
