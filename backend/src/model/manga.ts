@@ -10,6 +10,7 @@ export type ChapterMetadata = z.infer<typeof ChapterMetadata>;
 export const MangaMetadata = z.object({
   id: z.string().cuid2(),
   title: z.string(),
+  cover: z.string(),
   chapters: z.array(ChapterMetadata),
 });
 export type MangaMetadata = z.infer<typeof MangaMetadata>;

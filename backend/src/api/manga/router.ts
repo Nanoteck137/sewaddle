@@ -14,12 +14,16 @@ export const mangaRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     const res = await db.query.mangas.findMany({
       columns: { id: true, title: true, cover: true },
+      where: eq(mangas.available, true),
       with: {
         chapters: {
           columns: { index: true },
+          where: eq(chapters.available, true),
         },
       },
     });
+
+    console.log(res);
 
     return res.map((manga) => ({
       ...manga,
@@ -38,6 +42,7 @@ export const mangaRouter = router({
             columns: {
               index: true,
             },
+            where: eq(chapters.available, true),
           },
         },
       });
@@ -86,7 +91,12 @@ export const mangaRouter = router({
           },
         })
         .from(chapters)
-        .where(eq(chapters.mangaId, input.mangaId))
+        .where(
+          and(
+            eq(chapters.mangaId, input.mangaId),
+            eq(chapters.available, true),
+          ),
+        )
         .leftJoin(userReadQuery, eq(userReadQuery.index, chapters.index))
         .leftJoin(
           userBookmarkQuery,

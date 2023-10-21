@@ -14,7 +14,7 @@ import { env } from "./env";
 import path from "path";
 import commander, { Command } from "commander";
 import { z } from "zod";
-import { MangaMetadata } from "./model/manga";
+import { ChapterMetadata, MangaMetadata } from "./model/manga";
 import { readMangaMetadataWithId, writeMangaMetadata } from "./util/manga";
 
 const names = [
@@ -103,7 +103,7 @@ program
       await addChapter(manga);
       await addChapter(manga);
       await addChapter(manga);
-      console.log(manga);
+      // console.log(manga);
 
       writeMangaMetadata(manga);
     }
@@ -127,12 +127,38 @@ program.command("add-chapters").action(async () => {
   console.log(manga);
   writeMangaMetadata(manga);
 });
-program.command("add-pages").action(() => {});
+
+program.command("add-pages").action(async () => {
+  const entries = fs.readdirSync(env.TARGET_PATH).filter((c) => c !== "cache");
+  const randomMangaId = entries[Math.floor(Math.random() * entries.length)];
+  const manga = readMangaMetadataWithId(randomMangaId);
+
+  const mangaDir = path.join(env.TARGET_PATH, manga.id.toString());
+  const chaptersDir = path.join(mangaDir, "chapters");
+
+  const chapter =
+    manga.chapters[Math.floor(Math.random() * manga.chapters.length)];
+
+  const chapterPath = path.join(chaptersDir, chapter.index.toString());
+
+  await addPage(chapter, chapterPath);
+
+  writeMangaMetadata(manga);
+});
 
 program.parse();
 
 const opts = program.opts();
 console.log(opts);
+
+async function addPage(chapter: ChapterMetadata, dir: string) {
+  const pageIndex = chapter.pages.length;
+  let pageSize = pageSizes[Math.floor(Math.random() * pageSizes.length)];
+  let pageImage = await getImage(pageSize[0], pageSize[1]);
+  const page = `${pageIndex}.png`;
+  fs.copyFileSync(pageImage, path.join(dir, page));
+  chapter.pages.push(page);
+}
 
 async function addChapter(manga: MangaMetadata) {
   const mangaDir = path.join(env.TARGET_PATH, manga.id.toString());
@@ -143,21 +169,21 @@ async function addChapter(manga: MangaMetadata) {
   const chapterPath = path.join(chaptersDir, chapterIndex.toString());
   fs.mkdirSync(chapterPath, { recursive: true });
 
+  const chapter: ChapterMetadata = {
+    index: chapterIndex,
+    name: `Chapter ${chapterIndex}`,
+    pages: [],
+  };
+
   const pages = [];
   const numPages = Math.floor(Math.random() * 30) + 6;
   for (let pageIndex = 0; pageIndex < numPages; pageIndex++) {
-    let pageSize = pageSizes[Math.floor(Math.random() * pageSizes.length)];
-    let pageImage = await getImage(pageSize[0], pageSize[1]);
-    const page = `${pageIndex}.png`;
-    fs.copyFileSync(pageImage, path.join(chapterPath, page));
-    pages.push(page);
+    await addPage(chapter, chapterPath);
   }
 
-  manga.chapters.push({
-    index: chapterIndex,
-    name: `Chapter ${chapterIndex}`,
-    pages,
-  });
+  console.log("Chapter", chapter);
+
+  manga.chapters.push(chapter);
 }
 
 async function generateManga() {
@@ -182,6 +208,7 @@ async function generateManga() {
   const manga: MangaMetadata = {
     id,
     title,
+    cover: "cover.png",
     chapters: [],
   };
 

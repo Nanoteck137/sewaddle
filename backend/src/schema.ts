@@ -85,6 +85,10 @@ export const mangas = sqliteTable(
     color: text("color"),
 
     cover: text("cover").notNull(),
+
+    available: integer("available", { mode: "boolean" })
+      .notNull()
+      .default(true),
   },
   (mangas) => ({
     anilistIndex: uniqueIndex("anilistIndex").on(mangas.anilistId),
@@ -109,6 +113,10 @@ export const chapters = sqliteTable(
 
     cover: text("cover").notNull(),
     pages: text("pages", { mode: "json" }).$type<string[]>().notNull(),
+
+    available: integer("available", { mode: "boolean" })
+      .notNull()
+      .default(true),
   },
   (chapters) => ({
     pk: primaryKey(chapters.mangaId, chapters.index),

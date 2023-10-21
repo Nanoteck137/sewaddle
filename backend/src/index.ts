@@ -15,7 +15,7 @@ import { env } from "./env";
 import { chapters, mangas } from "./schema";
 import { Context } from "./trpc";
 import { MangaMetadata } from "./model/manga";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   readMangaMetadataFromDir,
   readMangaMetadataWithId,
@@ -153,8 +153,11 @@ async function sync() {
   );
 
   const mangaList = await db.query.mangas.findMany({
+    where: eq(mangas.available, true),
     with: {
-      chapters: true,
+      chapters: {
+        where: eq(chapters.available, true),
+      },
     },
   });
 
@@ -184,6 +187,7 @@ async function sync() {
         mangaId: m.id,
         changes: {
           title: m.title !== obj.title ? obj.title : undefined,
+          cover: m.cover !== obj.cover ? obj.cover : undefined,
         },
       };
     })
@@ -235,7 +239,7 @@ async function sync() {
   const compareStringArrays = (a: string[], b: string[]) =>
     a.length === b.length && a.every((element, index) => element === b[index]);
 
-  const chapterChanges = mangaList
+  const changedChapters = mangaList
     .map((manga) => {
       const collection = mangaCollection.find((m) => m.id === manga.id);
       return manga.chapters.map((chapter) => {
@@ -261,41 +265,66 @@ async function sync() {
     .flat()
     .filter((c) => !Object.values(c.changes).every((e) => e === undefined));
 
-  console.log("Chapter Changes", chapterChanges);
+  console.log("Chapter Changes", changedChapters);
 
-  // for (let manga of deletedManga) {
-  //   // TODO(patrik): Temp
-  //   await db.delete(mangas).where(eq(mangas.id, manga.id));
-  // }
+  for (const chapter of deletedChapters) {
+    await db
+      .update(chapters)
+      .set({ available: false })
+      .where(
+        and(
+          eq(chapters.mangaId, chapter.mangaId),
+          eq(chapters.index, chapter.index),
+        ),
+      );
+  }
 
-  // for (let manga of missingManga) {
-  //   await db.insert(mangas).values({
-  //     ...manga,
-  //     cover: "cover.png",
-  //   });
-  // }
+  for (let manga of deletedManga) {
+    await db
+      .update(mangas)
+      .set({ available: false })
+      .where(eq(mangas.id, manga.id));
+  }
 
-  // for (let chapter of missingChapters) {
-  //   await db.insert(chapters).values({
-  //     ...chapter,
-  //     cover: chapter.pages[0],
-  //   });
-  // }
+  for (let manga of missingManga) {
+    await db.insert(mangas).values({
+      ...manga,
+    });
+  }
 
-  // for (const manga of changedManga) {
-  //   await db
-  //     .update(mangas)
-  //     .set(manga.changes)
-  //     .where(eq(mangas.id, manga.mangaId));
-  // }
+  for (let chapter of missingChapters) {
+    await db.insert(chapters).values({
+      ...chapter,
+      cover: chapter.pages[0],
+    });
+  }
+
+  for (const manga of changedManga) {
+    await db
+      .update(mangas)
+      .set(manga.changes)
+      .where(eq(mangas.id, manga.mangaId));
+  }
+
+  for (const chapter of changedChapters) {
+    await db
+      .update(chapters)
+      .set(chapter.changes)
+      .where(
+        and(
+          eq(chapters.mangaId, chapter.mangaId),
+          eq(chapters.index, chapter.chapterIndex),
+        ),
+      );
+  }
 }
 
 sync()
   .then(() => console.log("Sync Successfull"))
   .catch((e) => console.log("Err", e));
 
-// setInterval(() => {
-//   sync()
-//     .then(() => console.log("Sync Successfull"))
-//     .catch((e) => console.log("Err", e));
-// }, 10000);
+setInterval(() => {
+  sync()
+    .then(() => console.log("Sync Successfull"))
+    .catch((e) => console.log("Err", e));
+}, 10000);
