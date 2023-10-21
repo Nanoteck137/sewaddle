@@ -112,12 +112,7 @@ app.get("/image/chapter/:mangaId/:chapterIndex/:image", async (req, res) => {
       "chapters",
       params.chapterIndex.toString(),
     );
-    res.sendFile(params.image, { root: p }, (e) => {
-      if (e) {
-        console.log(e);
-        res.status(404).json({ message: "Image not available" });
-      }
-    });
+    res.sendFile(params.image, { root: p });
   } catch (e) {
     if (e instanceof ZodError) {
       res.status(400).json({ message: e.errors[0].message });
