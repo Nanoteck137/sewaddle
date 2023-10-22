@@ -27,12 +27,16 @@ export function getTargetDir() {
   return path.join(env.WORKING_DIR, TARGET_DIR_NAME);
 }
 
-export function getTestDir() {
-  return path.join(env.WORKING_DIR, TEST_DIR_NAME);
+export function getTestDataDir() {
+  return path.join(env.WORKING_DIR, TEST_DIR_NAME, "data");
+}
+
+export function getTestCacheDir() {
+  return path.join(env.WORKING_DIR, TEST_DIR_NAME, "cache");
 }
 
 export function getCollectionDir() {
-  return env.COLLECTION || getTestDir();
+  return env.COLLECTION || getTestDataDir();
 }
 
 export function getDatabaseFile() {

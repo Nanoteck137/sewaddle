@@ -1,11 +1,14 @@
 import { createId } from "../schema";
 import fs from "fs";
 import axios from "axios";
-import { env } from "../env";
+import { env, getTestCacheDir, getTestDataDir } from "../env";
 import path from "path";
 import commander, { Command } from "commander";
 import { ChapterMetadata, MangaMetadata } from "../model/manga";
 import { readMangaMetadataWithId, writeMangaMetadata } from "../util/manga";
+
+fs.mkdirSync(getTestDataDir(), { recursive: true });
+fs.mkdirSync(getTestCacheDir(), { recursive: true });
 
 const names = [
   "JoJo's Bizarre Adventure Part 9: The JoJoLands",
@@ -96,38 +99,37 @@ program
       await addChapter(manga);
       // console.log(manga);
 
-      const dir = path.join(env.TEST_PATH, manga.id.toString());
+      const dir = path.join(getTestDataDir(), manga.id.toString());
       writeMangaMetadata(dir, manga);
     }
   });
 
 program.command("reset").action(() => {
-  const entries = fs.readdirSync(env.TEST_PATH);
+  const entries = fs.readdirSync(getTestDataDir());
   for (let entry of entries) {
-    if (entry === "cache") continue;
-    const p = path.join(env.TEST_PATH, entry);
+    const p = path.join(getTestDataDir(), entry);
     fs.rmSync(p, { recursive: true, force: true });
   }
 });
 
 program.command("change-manga").action(() => {});
 program.command("add-chapters").action(async () => {
-  const entries = fs.readdirSync(env.TEST_PATH).filter((c) => c !== "cache");
+  const entries = fs.readdirSync(getTestDataDir()).filter((c) => c !== "cache");
   const randomMangaId = entries[Math.floor(Math.random() * entries.length)];
-  const manga = readMangaMetadataWithId(env.TEST_PATH, randomMangaId);
+  const manga = readMangaMetadataWithId(getTestDataDir(), randomMangaId);
   await addChapter(manga);
   console.log(manga);
 
-  const dir = path.join(env.TEST_PATH, manga.id.toString());
+  const dir = path.join(getTestDataDir(), manga.id.toString());
   writeMangaMetadata(dir, manga);
 });
 
 program.command("add-pages").action(async () => {
-  const entries = fs.readdirSync(env.TEST_PATH).filter((c) => c !== "cache");
+  const entries = fs.readdirSync(getTestDataDir()).filter((c) => c !== "cache");
   const randomMangaId = entries[Math.floor(Math.random() * entries.length)];
-  const manga = readMangaMetadataWithId(env.TEST_PATH, randomMangaId);
+  const manga = readMangaMetadataWithId(getTestDataDir(), randomMangaId);
 
-  const mangaDir = path.join(env.TEST_PATH, manga.id.toString());
+  const mangaDir = path.join(getTestDataDir(), manga.id.toString());
   const chaptersDir = path.join(mangaDir, "chapters");
 
   const chapter =
@@ -137,7 +139,7 @@ program.command("add-pages").action(async () => {
 
   await addPage(chapter, chapterPath);
 
-  const dir = path.join(env.TEST_PATH, manga.id.toString());
+  const dir = path.join(getTestDataDir(), manga.id.toString());
   writeMangaMetadata(dir, manga);
 });
 
@@ -156,7 +158,7 @@ async function addPage(chapter: ChapterMetadata, dir: string) {
 }
 
 async function addChapter(manga: MangaMetadata) {
-  const mangaDir = path.join(env.TEST_PATH, manga.id.toString());
+  const mangaDir = path.join(getTestDataDir(), manga.id.toString());
   const chaptersDir = path.join(mangaDir, "chapters");
 
   const chapterIndex = manga.chapters.length + 1;
@@ -170,7 +172,6 @@ async function addChapter(manga: MangaMetadata) {
     pages: [],
   };
 
-  const pages = [];
   const numPages = Math.floor(Math.random() * 30) + 6;
   for (let pageIndex = 0; pageIndex < numPages; pageIndex++) {
     await addPage(chapter, chapterPath);
@@ -186,7 +187,7 @@ async function generateManga() {
   let coverImage = await getImage(coverSize[0], coverSize[1]);
 
   const id = createId();
-  const p = path.join(env.TEST_PATH, id);
+  const p = path.join(getTestDataDir(), id);
   fs.mkdirSync(p, { recursive: true });
 
   const chaptersDir = path.join(p, "chapters");
@@ -211,16 +212,12 @@ async function generateManga() {
 }
 
 async function getImage(width: number, height: number) {
-  const cache = path.join(env.TEST_PATH, "cache");
-
   let name = `${width}x${height}.png`;
-  let output = path.join(cache, name);
+  let output = path.join(getTestCacheDir(), name);
 
   if (fs.existsSync(output)) {
     return output;
   }
-
-  fs.mkdirSync(cache, { recursive: true });
 
   let url = `https://dummyimage.com/${name}/9123eb/fff`;
   const result = await axios.get(url, {
