@@ -2,6 +2,7 @@ import Input from "@/components/Input";
 import Button from "@/components/ui/Button";
 import { trpc } from "@/trpc";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { z } from "zod";
@@ -28,6 +29,13 @@ const SetupPage = () => {
   });
 
   const navigate = useNavigate();
+  const needSetup = trpc.needSetup.useQuery();
+
+  useEffect(() => {
+    if (needSetup.data !== undefined && !needSetup.data) {
+      navigate("/");
+    }
+  }, [needSetup.data]);
 
   const setup = trpc.setup.useMutation({
     onSuccess: () => {
