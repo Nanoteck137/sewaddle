@@ -4,29 +4,37 @@ import { authRouter } from "./auth/router";
 import { z } from "zod";
 import { db } from "../db";
 import { users } from "../schema";
-import { eq } from "drizzle-orm";
+import { createConfig } from "../config";
+import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
   auth: authRouter,
   manga: mangaRouter,
 
-  needSetup: publicProcedure.query(async () => {
-    const res = await db.query.users.findFirst({
-      columns: { id: true },
-      where: eq(users.isAdmin, true),
-    });
-
-    return !res;
+  needSetup: publicProcedure.query(async ({ ctx }) => {
+    return !ctx.config;
   }),
 
   setup: publicProcedure
     .input(
       z.object({ username: z.string().min(1), password: z.string().min(8) }),
     )
-    .mutation(async ({ input }) => {
-      await db.insert(users).values({
-        ...input,
-      });
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.config) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Server is already setup",
+        });
+      }
+
+      const [user] = await db
+        .insert(users)
+        .values({
+          ...input,
+        })
+        .returning({ id: users.id });
+
+      createConfig(user.id);
     }),
 });
 

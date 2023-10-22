@@ -16,22 +16,28 @@ import { chapters, mangas } from "./schema";
 import { Context } from "./trpc";
 import { and, eq } from "drizzle-orm";
 import { readMangaMetadataFromDir } from "./util/manga";
+import * as config from "./config";
+
+config.initialize().then(() => console.log("Config Initialized"));
 
 const TokenSchema = z.object({ userId: z.string().cuid2() });
 
-function createContextInner(token: string | null): Context {
-  if (token) {
-    const j = jwt.verify(token, env.JWT_SECRET);
-    const o = TokenSchema.safeParse(j);
-    if (o.success) {
-      return {
-        userId: o.data.userId,
-      };
-    }
+function checkToken(token: string) {
+  const j = jwt.verify(token, env.JWT_SECRET);
+  const o = TokenSchema.safeParse(j);
+  if (o.success) {
+    return o.data.userId;
   }
 
+  return null;
+}
+
+function createContextInner(token: string | null): Context {
+  const userId = token ? checkToken(token) : null;
+
   return {
-    userId: null,
+    config: config.config,
+    userId,
   };
 }
 
@@ -278,7 +284,6 @@ async function syncDatabase() {
   }
 
   for (let manga of missingManga) {
-    console.log(manga);
     await db
       .insert(mangas)
       .values({

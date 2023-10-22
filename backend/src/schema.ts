@@ -132,3 +132,18 @@ export const chaptersRelations = relations(chapters, ({ one }) => ({
     references: [mangas.id],
   }),
 }));
+
+export const serverConfig = sqliteTable("serverConifg", {
+  id: integer("id").primaryKey().default(0),
+  owner: text("owner")
+    .references(() => users.id)
+    .notNull(),
+});
+export type ServerConfig = typeof serverConfig.$inferSelect;
+
+export const serverConfigRelations = relations(serverConfig, ({ one }) => ({
+  owner: one(users, {
+    fields: [serverConfig.owner],
+    references: [users.id],
+  }),
+}));
