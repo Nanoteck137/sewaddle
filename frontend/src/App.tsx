@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import SavedPage from "./pages/SavedPage";
 import SeriesPage from "./pages/SeriesPage";
+import SetupPage from "./pages/SetupPage";
 import ViewPage from "./pages/ViewPage";
 import { trpc } from "./trpc";
 
@@ -32,6 +33,41 @@ const trpcClient = trpc.createClient({
   ],
 });
 
+const AppRoutes = () => {
+  const needSetup = trpc.needSetup.useQuery();
+
+  useEffect(() => {
+    if (needSetup.data) {
+      console.log("Need setup", window.location.pathname);
+      if (window.location.pathname !== "/setup")
+        window.location.pathname = "/setup";
+    }
+  }, [needSetup.data]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/">
+          <Route element={<DefaultLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="series/:id" element={<SeriesPage />} />
+            <Route path="view/:mangaId/:chapterIndex" element={<ViewPage />} />
+
+            <Route path="account" element={<AccountPage />} />
+            <Route path="saved" element={<SavedPage />} />
+          </Route>
+
+          <Route element={<BlankLayout />}>
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
+            <Route path="setup" element={<SetupPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
 const App = () => {
   const { isDarkMode } = useTernaryDarkMode();
 
@@ -48,28 +84,7 @@ const App = () => {
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/">
-                  <Route element={<DefaultLayout />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="series/:id" element={<SeriesPage />} />
-                    <Route
-                      path="view/:mangaId/:chapterIndex"
-                      element={<ViewPage />}
-                    />
-
-                    <Route path="account" element={<AccountPage />} />
-                    <Route path="saved" element={<SavedPage />} />
-                  </Route>
-
-                  <Route element={<BlankLayout />}>
-                    <Route path="login" element={<LoginPage />} />
-                    <Route path="register" element={<RegisterPage />} />
-                  </Route>
-                </Route>
-              </Routes>
-            </BrowserRouter>
+            <AppRoutes />
           </AuthProvider>
         </QueryClientProvider>
       </trpc.Provider>
