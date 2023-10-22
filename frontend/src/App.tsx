@@ -34,7 +34,7 @@ const trpcClient = trpc.createClient({
 });
 
 const AppRoutes = () => {
-  const needSetup = trpc.needSetup.useQuery();
+  const needSetup = trpc.setup.needed.useQuery();
 
   useEffect(() => {
     if (needSetup.data) {

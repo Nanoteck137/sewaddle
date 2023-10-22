@@ -29,7 +29,7 @@ const SetupPage = () => {
   });
 
   const navigate = useNavigate();
-  const needSetup = trpc.needSetup.useQuery();
+  const needSetup = trpc.setup.needed.useQuery();
 
   useEffect(() => {
     if (needSetup.data !== undefined && !needSetup.data) {
@@ -37,7 +37,7 @@ const SetupPage = () => {
     }
   }, [needSetup.data]);
 
-  const setup = trpc.setup.useMutation({
+  const runSetup = trpc.setup.run.useMutation({
     onSuccess: () => {
       navigate("/");
     },
@@ -45,7 +45,7 @@ const SetupPage = () => {
 
   const onSubmit = async (data: SetupSchema) => {
     console.log("Setup", data);
-    setup.mutate(data);
+    runSetup.mutate(data);
   };
 
   return (
