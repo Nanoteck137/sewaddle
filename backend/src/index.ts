@@ -11,7 +11,7 @@ import { createOpenApiExpressMiddleware } from "trpc-openapi";
 import { ZodError, z } from "zod";
 import { appRouter } from "./api/router";
 import { db } from "./db";
-import { env } from "./env";
+import { env, getCollectionDir, getTargetDir } from "./env";
 import { chapters, mangas } from "./schema";
 import { Context } from "./trpc";
 import { and, eq } from "drizzle-orm";
@@ -78,7 +78,7 @@ app.get("/image/manga/:mangaId/:image", async (req, res) => {
   try {
     const params = await FetchMangaImageSchema.parseAsync(req.params);
 
-    const p = path.join(env.TARGET_PATH, params.mangaId, "images");
+    const p = path.join(getTargetDir(), params.mangaId, "images");
     console.log(p);
 
     if (!existsSync(path.join(p, params.image))) {
@@ -86,11 +86,7 @@ app.get("/image/manga/:mangaId/:image", async (req, res) => {
       return;
     }
 
-    res.sendFile(params.image, { root: p, maxAge: 86400 * 30 * 1000 }, (e) => {
-      // if (e) {
-      //   res.status(404).json({ message: "Cover not available" });
-      // }
-    });
+    res.sendFile(params.image, { root: p, maxAge: 86400 * 30 * 1000 });
   } catch (e) {
     if (e instanceof ZodError) {
       res.status(400).json({ message: e.errors[0].message });
@@ -110,7 +106,7 @@ app.get("/image/chapter/:mangaId/:chapterIndex/:image", async (req, res) => {
     const params = await FetchChapterImageSchema.parseAsync(req.params);
 
     const p = path.join(
-      env.TARGET_PATH,
+      getTargetDir(),
       params.mangaId,
       "chapters",
       params.chapterIndex.toString(),
@@ -145,9 +141,10 @@ function isValidEntry(p: string) {
 }
 
 async function syncDatabase() {
-  const entries = (await fs.readdir(env.TARGET_PATH)).filter(
-    (e) => e !== "cache",
-  );
+  const targetDir = getTargetDir();
+
+  // TODO(patrik): We dont need the filter anymore
+  const entries = (await fs.readdir(targetDir)).filter((e) => e !== "cache");
 
   const mangaList = await db.query.mangas.findMany({
     where: eq(mangas.available, true),
@@ -159,7 +156,7 @@ async function syncDatabase() {
   });
 
   const mangaCollection = entries
-    .map((e) => path.join(env.TARGET_PATH, e))
+    .map((e) => path.join(targetDir, e))
     .filter((dir) => {
       return isValidEntry(dir);
     })
@@ -330,23 +327,26 @@ async function syncDatabase() {
 
 // TODO(patrik): Detect deletion
 async function syncTarget() {
-  const entries = (await fs.readdir(env.COLLECTION_PATH)).filter((e) =>
-    isValidEntry(path.join(env.COLLECTION_PATH, e)),
+  const collectionDir = getCollectionDir();
+  const targetDir = getTargetDir();
+
+  const entries = (await fs.readdir(collectionDir)).filter((e) =>
+    isValidEntry(path.join(collectionDir, e)),
   );
   console.log(entries);
 
-  if (existsSync(env.TARGET_PATH)) {
-    (await fs.readdir(env.TARGET_PATH)).forEach((e) => {
-      fs.unlink(path.join(env.TARGET_PATH, e));
+  if (existsSync(targetDir)) {
+    (await fs.readdir(targetDir)).forEach((e) => {
+      fs.unlink(path.join(targetDir, e));
     });
   } else {
-    await fs.mkdir(env.TARGET_PATH, { recursive: true });
+    await fs.mkdir(targetDir, { recursive: true });
   }
 
   entries.forEach((e) => {
-    const src = path.resolve(path.join(env.COLLECTION_PATH, e));
+    const src = path.resolve(path.join(collectionDir, e));
     const metadata = readMangaMetadataFromDir(src);
-    const dest = path.join(env.TARGET_PATH, metadata.id.toString());
+    const dest = path.join(targetDir, metadata.id.toString());
     if (!existsSync(dest)) {
       fs.symlink(src, dest);
     }
