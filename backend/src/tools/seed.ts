@@ -1,11 +1,11 @@
-import { createId } from "./schema";
+import { createId } from "../schema";
 import fs from "fs";
 import axios from "axios";
-import { env } from "./env";
+import { env } from "../env";
 import path from "path";
 import commander, { Command } from "commander";
-import { ChapterMetadata, MangaMetadata } from "./model/manga";
-import { readMangaMetadataWithId, writeMangaMetadata } from "./util/manga";
+import { ChapterMetadata, MangaMetadata } from "../model/manga";
+import { readMangaMetadataWithId, writeMangaMetadata } from "../util/manga";
 
 const names = [
   "JoJo's Bizarre Adventure Part 9: The JoJoLands",
