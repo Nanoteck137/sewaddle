@@ -283,7 +283,10 @@ async function syncDatabase() {
       .values({
         ...manga,
       })
-      .onConflictDoUpdate({ target: mangas.id, set: { available: true } });
+      .onConflictDoUpdate({
+        target: mangas.id,
+        set: { ...manga, available: true },
+      });
   }
 
   for (let chapter of missingChapters) {
@@ -295,7 +298,7 @@ async function syncDatabase() {
       })
       .onConflictDoUpdate({
         target: [chapters.mangaId, chapters.index],
-        set: { available: true },
+        set: { ...chapter, available: true },
       });
   }
 
