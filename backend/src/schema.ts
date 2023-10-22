@@ -27,6 +27,8 @@ export const users = sqliteTable("users", {
   username: text("username").notNull().unique(),
   // TODO(patrik): Hash password
   password: text("password").notNull(),
+
+  isAdmin: integer("isAdmin", { mode: "boolean" }).default(false),
 });
 
 export const userChapterMarked = sqliteTable(

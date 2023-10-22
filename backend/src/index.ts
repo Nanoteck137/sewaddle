@@ -278,6 +278,7 @@ async function syncDatabase() {
   }
 
   for (let manga of missingManga) {
+    console.log(manga);
     await db
       .insert(mangas)
       .values({
@@ -285,7 +286,7 @@ async function syncDatabase() {
       })
       .onConflictDoUpdate({
         target: mangas.id,
-        set: { ...manga, available: true },
+        set: { available: true },
       });
   }
 
