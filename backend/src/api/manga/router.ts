@@ -7,53 +7,70 @@ import {
   userBookmarks,
   userChapterMarked,
   userSavedMangas,
-  userSavedMangasRelations,
-  users,
 } from "../../schema";
-import { and, asc, desc, eq, gt, lt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, lt, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const mangaRouter = router({
-  list: publicProcedure.query(async ({ ctx }) => {
-    const res = await db.query.mangas.findMany({
-      columns: { id: true, title: true, cover: true },
-      where: eq(mangas.available, true),
-      with: {
-        chapters: {
-          columns: { index: true },
-          where: eq(chapters.available, true),
-        },
-      },
-    });
+  list: publicProcedure.query(async ({}) => {
+    const chapterCount = db
+      .select({
+        mangaId: chapters.mangaId,
+        count: sql`COUNT(${chapters.index})`.as("count"),
+      })
+      .from(chapters)
+      .groupBy(chapters.mangaId)
+      .as("chapterCount");
+
+    const res = await db
+      .select({
+        id: mangas.id,
+        title: mangas.title,
+        cover: mangas.cover,
+        chapters: chapterCount.count,
+      })
+      .from(mangas)
+      .where(eq(mangas.available, true))
+      .leftJoin(chapterCount, eq(chapterCount.mangaId, mangas.id))
+      .orderBy(mangas.title);
 
     return res.map((manga) => ({
       ...manga,
-      chapters: manga.chapters.length,
       cover: `/image/manga/${manga.id}/${manga.cover}`,
     }));
   }),
   userSavedList: protectedProcedure.query(async ({ ctx }) => {
-    const res = await db.query.userSavedMangas.findMany({
-      where: eq(userSavedMangas.userId, ctx.user.id),
-      with: {
-        manga: {
-          with: {
-            chapters: {
-              columns: { index: true },
-            },
-          },
-        },
-      },
-    });
+    const mangaMap = db
+      .select()
+      .from(userSavedMangas)
+      .where(eq(userSavedMangas.userId, ctx.user.id))
+      .as("mangaMap");
 
-    return res
-      .filter((m) => m.manga.available)
-      .map((m) => m.manga)
-      .map((manga) => ({
-        ...manga,
-        chapters: manga.chapters.length,
-        cover: `/image/manga/${manga.id}/${manga.cover}`,
-      }));
+    const chapterCount = db
+      .select({
+        mangaId: chapters.mangaId,
+        count: sql`COUNT(${chapters.index})`.as("count"),
+      })
+      .from(chapters)
+      .groupBy(chapters.mangaId)
+      .as("chapterCount");
+
+    const res = await db
+      .select({
+        id: mangas.id,
+        title: mangas.title,
+        cover: mangas.cover,
+        chapters: chapterCount.count,
+      })
+      .from(mangas)
+      .innerJoin(mangaMap, eq(mangaMap.mangaId, mangas.id))
+      .leftJoin(chapterCount, eq(chapterCount.mangaId, mangas.id))
+      .orderBy(mangas.title);
+
+    return res.map((manga) => ({
+      ...manga,
+      cover: `/image/manga/${manga.id}/${manga.cover}`,
+    }));
   }),
   userSaveManga: protectedProcedure
     .input(
