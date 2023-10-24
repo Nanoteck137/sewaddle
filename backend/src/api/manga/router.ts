@@ -6,6 +6,9 @@ import {
   mangas,
   userBookmarks,
   userChapterMarked,
+  userSavedMangas,
+  userSavedMangasRelations,
+  users,
 } from "../../schema";
 import { and, asc, desc, eq, gt, lt } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -25,14 +28,74 @@ export const mangaRouter = router({
 
     return res.map((manga) => ({
       ...manga,
-      test: !!ctx.userId,
       chapters: manga.chapters.length,
       cover: `/image/manga/${manga.id}/${manga.cover}`,
     }));
   }),
+  userSavedList: protectedProcedure.query(async ({ ctx }) => {
+    const res = await db.query.userSavedMangas.findMany({
+      where: eq(userSavedMangas.userId, ctx.user.id),
+      with: {
+        manga: {
+          with: {
+            chapters: {
+              columns: { index: true },
+            },
+          },
+        },
+      },
+    });
+
+    return res
+      .filter((m) => m.manga.available)
+      .map((m) => m.manga)
+      .map((manga) => ({
+        ...manga,
+        chapters: manga.chapters.length,
+        cover: `/image/manga/${manga.id}/${manga.cover}`,
+      }));
+  }),
+  userSaveManga: protectedProcedure
+    .input(
+      z.object({
+        mangaId: z.string().cuid2(),
+        unsave: z.boolean().default(false),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!input.unsave) {
+        await db
+          .insert(userSavedMangas)
+          .values({
+            userId: ctx.user.id,
+            mangaId: input.mangaId,
+          })
+          .onConflictDoNothing();
+      } else {
+        await db
+          .delete(userSavedMangas)
+          .where(
+            and(
+              eq(userSavedMangas.userId, ctx.user.id),
+              eq(userSavedMangas.mangaId, input.mangaId),
+            ),
+          );
+      }
+    }),
   get: publicProcedure
     .input(z.object({ mangaId: z.string().cuid2() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      const user = ctx.userId
+        ? {
+            saved: !!(await db.query.userSavedMangas.findFirst({
+              where: and(
+                eq(userSavedMangas.userId, ctx.userId ?? ""),
+                eq(userSavedMangas.mangaId, input.mangaId),
+              ),
+            })),
+          }
+        : undefined;
+
       const manga = await db.query.mangas.findFirst({
         where: eq(mangas.id, input.mangaId),
         with: {
@@ -49,9 +112,12 @@ export const mangaRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Manga not found" });
       }
 
+      console.log(manga);
+
       return {
         ...manga,
         cover: `/image/manga/${manga.id}/${manga.cover}`,
+        user,
       };
     }),
   getChapters: publicProcedure

@@ -74,6 +74,35 @@ export const userBookmarks = sqliteTable(
   }),
 );
 
+export const userSavedMangas = sqliteTable(
+  "userSavedMangas",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    mangaId: text("mangaId")
+      .notNull()
+      .references(() => mangas.id, { onDelete: "cascade" }),
+  },
+  (userSavedMangas) => ({
+    pk: primaryKey(userSavedMangas.userId, userSavedMangas.mangaId),
+  }),
+);
+
+export const userSavedMangasRelations = relations(
+  userSavedMangas,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [userSavedMangas.userId],
+      references: [users.id],
+    }),
+    manga: one(mangas, {
+      fields: [userSavedMangas.mangaId],
+      references: [mangas.id],
+    }),
+  }),
+);
+
 export const mangas = sqliteTable(
   "mangas",
   {
