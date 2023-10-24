@@ -1,12 +1,14 @@
 import { Popover } from "@headlessui/react";
+import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 import {
   AdjustmentsVerticalIcon,
+  BookOpenIcon,
   BookmarkIcon,
   BookmarkSlashIcon,
-  BookOpenIcon,
   CheckIcon,
   EllipsisVerticalIcon,
   PaperClipIcon,
+  StarIcon as StarSolidIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import parse from "html-react-parser";
@@ -14,7 +16,7 @@ import { forwardRef, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { apiEndpoint } from "@/App";
-import { buttonVarients } from "@/components/ui/Button";
+import Button, { buttonVarients } from "@/components/ui/Button";
 import { cn } from "@/lib/util";
 import { RouterOutput, trpc } from "@/trpc";
 import { useQueryClient } from "@tanstack/react-query";
@@ -202,6 +204,17 @@ const SeriesPage = () => {
     },
   });
 
+  const saveManga = trpc.manga.userSaveManga.useMutation({
+    onSuccess: () => {
+      if (manga.data) {
+        const queryKey = getQueryKey(trpc.manga.get, {
+          mangaId: manga.data.id,
+        });
+        queryClient.invalidateQueries(queryKey);
+      }
+    },
+  });
+
   useEffect(() => {
     if (markChapters.isSuccess || unmarkChapters.isSuccess) {
       setSelectedItems([]);
@@ -250,38 +263,31 @@ const SeriesPage = () => {
               >
                 Anilist
               </Link>
-              {/* {userSavedManga.data && (
-                <Button
-                  className="col-span-2"
-                  onClick={() => {
-                    if (auth.user && id) {
-                      removeUserSavedManga.mutate({
-                        user: auth.user,
-                        mangaId: id,
+              {manga.data.user &&
+                (manga.data.user.saved ? (
+                  <Button
+                    className="col-span-2"
+                    onClick={() => {
+                      saveManga.mutate({
+                        mangaId: manga.data.id,
+                        unsave: true,
                       });
-                    }
-                  }}
-                >
-                  <StarSolidIcon className="h-6 w-6" />
-                  <p>Saved</p>
-                </Button>
-              )}
-              {!userSavedManga.data && (
-                <Button
-                  className="col-span-2"
-                  onClick={() => {
-                    if (auth.user && id) {
-                      addUserSavedManga.mutate({
-                        user: auth.user,
-                        mangaId: id,
-                      });
-                    }
-                  }}
-                >
-                  <StarOutlineIcon className="h-6 w-6" />
-                  <p>Save</p>
-                </Button>
-              )} */}
+                    }}
+                  >
+                    <StarSolidIcon className="h-6 w-6" />
+                    <p>Saved</p>
+                  </Button>
+                ) : (
+                  <Button
+                    className="col-span-2"
+                    onClick={() => {
+                      saveManga.mutate({ mangaId: manga.data.id });
+                    }}
+                  >
+                    <StarOutlineIcon className="h-6 w-6" />
+                    <p>Save</p>
+                  </Button>
+                ))}
             </div>
           </div>
         </div>

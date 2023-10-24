@@ -1,29 +1,19 @@
 import { Navigate } from "react-router-dom";
 
+import MangaList from "@/components/MangaList";
+import { trpc } from "@/trpc";
 import { useAuth } from "../contexts/AuthContext";
 
 const SavedPage = () => {
   const auth = useAuth();
   if (!auth.isLoggedIn) return <Navigate to="/" />;
 
-  return (
-    <p className="font-bold text-xl grid place-items-center">
-      Not implemented yet
-    </p>
-  );
+  const savedMangas = trpc.manga.userSavedList.useQuery();
 
-  // const userSavedMangas = useUserSavedMangas({ user: auth.user });
+  if (savedMangas.error) return <p>{savedMangas.error.message}</p>;
+  if (savedMangas.isLoading) return <p>Loading...</p>;
 
-  // if (userSavedMangas.isError) return <p>Error</p>;
-  // if (userSavedMangas.isLoading) return <p>Loading...</p>;
-
-  // const mangaList = userSavedMangas.data.items.map((i) => i.expand.manga);
-
-  // return (
-  //   <div>
-  //     <MangaList list={mangaList} />
-  //   </div>
-  // );
+  return <MangaList list={savedMangas.data} />;
 };
 
 export default SavedPage;
