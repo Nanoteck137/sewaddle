@@ -22,7 +22,7 @@ const Buttons = (props: { close?: () => void }) => {
 
   const isHome = location.pathname === "/";
   const isAccount = location.pathname === "/account";
-  const isSaved = location.pathname === "/account/saved";
+  const isSaved = location.pathname === "/saved";
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-between p-2">
