@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { ComponentPropsWithRef, forwardRef, PropsWithChildren } from "react";
 
 export const buttonVarients = cva(
-  "flex justify-center items-center gap-2 rounded shadow hover:shadow-md transition-all duration-200 active:scale-95 active:shadow disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:shadow-none",
+  "flex justify-center items-center gap-2 rounded shadow hover:shadow-md transition-transform duration-200 active:scale-95 active:shadow disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:shadow-none",
   {
     variants: {
       variant: {
