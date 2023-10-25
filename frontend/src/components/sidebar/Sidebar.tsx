@@ -69,6 +69,7 @@ const Buttons = (props: { close?: () => void }) => {
               onClick={() => {
                 auth.logout();
                 props.close?.();
+                navigate("/");
               }}
             />
           </>
