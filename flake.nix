@@ -10,9 +10,9 @@
     gitignore.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, flake-utils, nixpkgs, bp, gitignore }: 
-    flake-utils.lib.eachDefaultSystem (system: 
-      let 
+  outputs = { self, flake-utils, nixpkgs, bp, gitignore }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
         # pkgs = import nixpkgs { inherit system; overlays = [ bp.overlays.default ]; };
         pkgs = import nixpkgs { inherit system; };
 
@@ -21,29 +21,34 @@
 
         nodeDeps = node2nixOutput.nodeDependencies;
 
-        sewaddle = pkgs.buildNpmPackage {
-          name = "sewaddle";
+        sewaddleFrontend = pkgs.buildNpmPackage {
+          name = "sewaddle-frontend";
           version = "v0.0.1";
           src = gitignore.lib.gitignoreSource ./.;
-          npmDepsHash = "sha256-hkjrbH1zuaNKsvcQqCWjrMKTGRg9LyGvL+8oVGBApbI=";
-  
-          VITE_TEST = "";
+          npmDepsHash = "sha256-IP3GP1JK8sEec8xTQdFgb5MH7B/IoX/nClTbR8u8lsA=";
+
+          # postPatch = ''
+          #   cp frontend/package-lock.json .
+          # '';
+
+          nativeBuildInputs = [pkgs.python39 pkgs.gcc pkgs.libtool_1_5];
 
           buildPhase = ''
             runHook preBuild
+            cd frontend
             npm run build
             runHook postBuild
           '';
-        
+
           installPhase = ''
             runHook preInstall
-            cp -r dist $out/
+            cp -r frontend/dist $out/
             runHook postInstall
           '';
         };
 
       in with pkgs; {
-        packages.default = sewaddle;
+        packages.default = sewaddleFrontend;
         devShells.default = mkShell { buildInputs = [ pkgs.yarn nodejs node2nix ]; };
       }
     );

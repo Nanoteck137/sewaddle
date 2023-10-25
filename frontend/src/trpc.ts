@@ -1,6 +1,6 @@
 import { createTRPCReact } from "@trpc/react-query";
 import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "../../backend/src/api/router";
+import type { AppRouter } from "sewaddle-backend/src/api/router";
 
 export const trpc = createTRPCReact<AppRouter>();
 
