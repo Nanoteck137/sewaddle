@@ -74,6 +74,7 @@ const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
           className="h-16 w-12 rounded border object-cover dark:border-gray-500"
           src={`${apiEndpoint}${chapter.cover}`}
           alt=""
+          loading="lazy"
         />
         <div className="flex flex-col justify-between">
           <p className="group-hover:underline">{chapter.name}</p>
