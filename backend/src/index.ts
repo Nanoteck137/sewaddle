@@ -1,23 +1,18 @@
+import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
-import { existsSync } from "fs";
 import helmet from "helmet";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
-import path from "path";
 import { createOpenApiExpressMiddleware } from "trpc-openapi";
-import { ZodError, z } from "zod";
+import { z } from "zod";
 import { appRouter } from "./api/router";
-import { db } from "./db";
-import { env, getCollectionDir, getTargetDir } from "./env";
-import { chapters, mangas } from "./schema";
-import { Context } from "./trpc";
-import { and, eq } from "drizzle-orm";
-import { readMangaMetadataFromDir } from "./util/manga";
 import * as config from "./config";
+import { env } from "./env";
 import imageRouter from "./routes/image";
 import { fullSync } from "./sync";
+import { Context } from "./trpc";
 
 config.initialize().then(() => console.log("Config Initialized"));
 
