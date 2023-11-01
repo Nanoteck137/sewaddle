@@ -1,11 +1,11 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import { env, getDatabaseFile } from "./env";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { env } from "./env";
 import * as schema from "./schema";
 
-const sqlite = new Database(getDatabaseFile());
-export const db = drizzle(sqlite, { schema });
+const client = createClient({ url: env.DB_URL, authToken: env.DB_AUTH_TOKEN });
+export const db = drizzle(client, { schema });
 
 if (env.NODE_ENV === "production") {
   migrate(db, { migrationsFolder: "./migrations" });

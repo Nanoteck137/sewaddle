@@ -1,8 +1,8 @@
+import fs from "fs";
+import path from "path";
 import { createEnv } from "@t3-oss/env-core";
 import dotenv from "dotenv";
-import path from "path";
 import { z } from "zod";
-import fs from "fs";
 
 dotenv.config({ path: path.resolve(process.cwd(), "./.env") });
 
@@ -14,6 +14,9 @@ export const env = createEnv({
     }),
     COLLECTION: z.string().optional(),
     JWT_SECRET: z.string(),
+
+    DB_URL: z.string(),
+    DB_AUTH_TOKEN: z.string().optional(),
   },
 
   runtimeEnv: process.env,
