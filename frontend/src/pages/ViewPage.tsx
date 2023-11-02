@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import { apiEndpoint } from "@/App";
 import { trpc } from "@/trpc";
@@ -39,19 +44,38 @@ const ViewPage = () => {
       setState((prev) => ({ ...prev, currentPage: page }));
       setSearch({ page: page.toString() });
     } else {
-      if (chapter.data && chapter.data.nextChapter) {
-        if (state.isLastPage) {
+      if (chapter.data) {
+        if (state.isLastPage && chapter.data.nextChapter) {
           navigate(
             `/view/${chapter.data.mangaId}/${chapter.data.nextChapter}?page=0`,
           );
-        } else {
-          setState((prev) => ({ ...prev, isLastPage: true }));
-          markChapters.mutate({
-            mangaId: chapter.data.mangaId,
-            chapters: [chapter.data.index],
-          });
+          return;
         }
+
+        setState((prev) => ({ ...prev, isLastPage: true }));
+        markChapters.mutate({
+          mangaId: chapter.data.mangaId,
+          chapters: [chapter.data.index],
+        });
       }
+      // if (chapter.data && chapter.data.nextChapter) {
+      //   if (state.isLastPage) {
+      //     navigate(
+      //       `/view/${chapter.data.mangaId}/${chapter.data.nextChapter}?page=0`,
+      //     );
+      //   } else {
+      //     setState((prev) => ({ ...prev, isLastPage: true }));
+      //     markChapters.mutate({
+      //       mangaId: chapter.data.mangaId,
+      //       chapters: [chapter.data.index],
+      //     });
+      //   }
+      // } else if (chapter.data && page >= chapter.data.pages.length) {
+      //   markChapters.mutate({
+      //     mangaId: chapter.data.mangaId,
+      //     chapters: [chapter.data.index],
+      //   });
+      // }
     }
   };
 
@@ -141,8 +165,14 @@ const ViewPage = () => {
       ></button>
 
       {state.isLastPage && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded bg-gray-700/95 p-10 text-xl">
-          Last page
+        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col justify-center gap-2 rounded bg-gray-700/95 p-10 text-xl">
+          <p className="text-center">Last page</p>
+          <Link
+            to={`/series/${chapter.data.mangaId}`}
+            className="text-sm text-blue-400 hover:text-blue-300"
+          >
+            Back to Manga
+          </Link>
         </div>
       )}
     </div>
