@@ -18,7 +18,9 @@ import { trpc } from "./trpc";
 
 const queryClient = new QueryClient();
 
-export const apiEndpoint = "http://10.28.28.6:3000";
+export const apiEndpoint = import.meta.env.PROD
+  ? window.location.origin
+  : import.meta.env.VITE_API_URL;
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
