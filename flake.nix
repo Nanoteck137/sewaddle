@@ -25,13 +25,15 @@
           name = "sewaddle-frontend";
           version = "v0.0.1";
           src = gitignore.lib.gitignoreSource ./.;
-          npmDepsHash = "sha256-IP3GP1JK8sEec8xTQdFgb5MH7B/IoX/nClTbR8u8lsA=";
+          npmDepsHash = "sha256-j4YlPqoIgUsQMOodpyU8r71SIs5W8nxVTFXH7iMgQKE=";
 
           # postPatch = ''
           #   cp frontend/package-lock.json .
           # '';
 
-          nativeBuildInputs = [pkgs.python39 pkgs.gcc pkgs.libtool_1_5];
+          nativeBuildInputs = [pkgs.python39 pkgs.gcc pkgs.libtool pkgs.nodePackages_latest.node-gyp-build];
+
+          CC = "${pkgs.gcc}/bin/gcc";
 
           buildPhase = ''
             runHook preBuild
