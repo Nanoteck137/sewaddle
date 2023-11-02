@@ -7,6 +7,7 @@ import * as schema from "./schema";
 const client = createClient({ url: env.DB_URL, authToken: env.DB_AUTH_TOKEN });
 export const db = drizzle(client, { schema });
 
-if (env.NODE_ENV === "production") {
-  migrate(db, { migrationsFolder: "./migrations" });
+export async function runMigrations() {
+  console.log("Running migrations");
+  await migrate(db, { migrationsFolder: "./migrations" });
 }

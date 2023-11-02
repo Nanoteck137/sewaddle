@@ -9,12 +9,23 @@ import { createOpenApiExpressMiddleware } from "trpc-openapi";
 import { z } from "zod";
 import { appRouter } from "./api/router";
 import * as config from "./config";
+import { runMigrations } from "./db";
 import { env } from "./env";
 import imageRouter from "./routes/image";
 import { fullSync } from "./sync";
 import { Context } from "./trpc";
 
-config.initialize().then(() => console.log("Config Initialized"));
+async function start() {
+  await runMigrations();
+
+  await config.initialize();
+  console.log("Configuration initialized");
+
+  await fullSync();
+  console.log("Sync completed");
+}
+
+start().then(() => console.log("Start run"));
 
 const TokenSchema = z.object({ userId: z.string().cuid2() });
 
@@ -74,7 +85,3 @@ if (env.NODE_ENV !== "development") {
 }
 
 app.listen(3000, () => console.log("Server started on port '3000'"));
-
-fullSync()
-  .then(() => console.log("Sync completed"))
-  .catch(console.error);
