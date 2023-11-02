@@ -19,6 +19,7 @@ const Item = (props: { manga: Manga }) => {
         <img
           className="pointer-events-none absolute flex h-full w-full border-b-2 object-cover dark:border-gray-500"
           src="https://placehold.co/380x500.png?text=Loading..."
+          crossOrigin="anonymous"
           alt=""
         />
         <img

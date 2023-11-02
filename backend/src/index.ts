@@ -50,8 +50,17 @@ function createContextInner(token: string | null): Context {
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(cors({}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        imgSrc: ["'self'", "https://placehold.co/"],
+        scriptSrc: ["'self'"],
+      },
+    },
+  }),
+);
 app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 app.use(express.static(path.join(process.cwd(), "public")));
 
