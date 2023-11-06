@@ -40,6 +40,7 @@ type ChapterProps = {
   setAsCurrent: () => void;
 };
 
+// eslint-disable-next-line react/display-name
 const ChapterItem = forwardRef<HTMLDivElement, ChapterProps>((props, ref) => {
   const {
     chapter,
@@ -234,7 +235,7 @@ const SeriesPage = () => {
 
   return (
     <div className="flex flex-col gap-4 p-2">
-      <p className="text-center text-2xl pb-2 border-b border-gray-500">
+      <p className="border-b border-gray-500 pb-2 text-center text-2xl">
         {manga.data.title}
       </p>
       <div className="grid grid-cols-1 place-items-center md:grid-cols-3 md:place-items-start">
@@ -340,7 +341,7 @@ const SeriesPage = () => {
 
         <div className="flex flex-col">
           {chapters.data.map((item, i) => {
-            let hasReadChapter = !!item.user?.read;
+            const hasReadChapter = !!item.user?.read;
             const isContinue = item.user?.bookmark !== null;
 
             const select = (select: boolean, shift: boolean) => {
@@ -357,13 +358,13 @@ const SeriesPage = () => {
 
                   let last = i;
                   if (first > last) {
-                    let tmp = last;
+                    const tmp = last;
                     last = first;
                     first = tmp;
                   }
 
-                  let items = [];
-                  let numItems = last - first + 1;
+                  const items = [];
+                  const numItems = last - first + 1;
                   for (let i = 0; i < numItems; i++) {
                     items.push(first + i);
                   }
