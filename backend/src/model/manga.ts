@@ -17,7 +17,21 @@ export const MangaMetadata = z.object({
   anilistId: z.number(),
   malId: z.number(),
   status: z.enum(["RELEASING", "FINISHED", "HIATUS"]),
-  startDate: z.string(),
-  endDate: z.string(),
+  startDate: z
+    .string()
+    .transform((arg) => {
+      let date = new Date(arg);
+      if (isNaN(date.getTime())) return null;
+      return date;
+    })
+    .nullable(),
+  endDate: z
+    .string()
+    .transform((arg) => {
+      let date = new Date(arg);
+      if (isNaN(date.getTime())) return null;
+      return date;
+    })
+    .nullable(),
 });
 export type MangaMetadata = z.infer<typeof MangaMetadata>;

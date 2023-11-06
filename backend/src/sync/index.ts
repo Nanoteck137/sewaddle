@@ -1,7 +1,7 @@
-import { and, eq } from "drizzle-orm";
 import { existsSync } from "fs";
 import fs from "fs/promises";
 import path from "path";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { getCollectionDir, getTargetDir } from "../env";
 import { chapters, mangas } from "../schema";
@@ -61,6 +61,18 @@ async function syncDatabase() {
         changes: {
           title: obj && m.title !== obj.title ? obj.title : undefined,
           cover: obj && m.cover !== obj.cover ? obj.cover : undefined,
+
+          description:
+            obj && m.description !== obj.description
+              ? obj.description
+              : undefined,
+          anilistId:
+            obj && m.anilistId !== obj.anilistId ? obj.anilistId : undefined,
+          malId: obj && m.malId !== obj.malId ? obj.malId : undefined,
+          status: obj && m.status !== obj.status ? obj.status : undefined,
+          startDate:
+            obj && m.startDate !== obj.startDate ? obj.startDate : undefined,
+          endDate: obj && m.endDate !== obj.endDate ? obj.endDate : undefined,
         },
       };
     })

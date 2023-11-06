@@ -115,6 +115,13 @@ export const mangas = sqliteTable(
     description: text("description"),
     color: text("color"),
 
+    status: text("status", {
+      mode: "text",
+      enum: ["RELEASING", "FINISHED", "HIATUS"],
+    }),
+    startDate: integer("startDate", { mode: "timestamp" }),
+    endDate: integer("endDate", { mode: "timestamp" }),
+
     cover: text("cover").notNull(),
 
     available: integer("available", { mode: "boolean" })
