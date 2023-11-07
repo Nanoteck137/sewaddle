@@ -1,7 +1,7 @@
 FROM node:18-alpine as builder
 
 WORKDIR /usr/src/app
-COPY package*.json .
+COPY package*.json ./
 COPY backend/package*.json ./
 COPY frontend/package*.json ./
 RUN npm install
