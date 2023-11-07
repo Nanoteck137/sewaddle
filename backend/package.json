@@ -1,7 +1,7 @@
 {
   "name": "sewaddle-backend",
   "description": "Backend for sewaddle",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "Patrik Millvik Rosesntröm",
   "license": "MIT",
   "private": true,

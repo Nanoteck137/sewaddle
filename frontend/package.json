@@ -1,7 +1,7 @@
 {
   "name": "sewaddle-frontend",
   "description": "Frontend for sewaddle",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "Patrik Millvik Rosesntröm",
   "private": true,
   "type": "module",
