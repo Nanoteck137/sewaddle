@@ -1,9 +1,10 @@
-import { z } from "zod";
-import { publicProcedure, router } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import bcrypy from "bcrypt";
+import { z } from "zod";
 import { createConfig } from "../../config";
 import { db } from "../../db";
 import { users } from "../../schema";
+import { publicProcedure, router } from "../../trpc";
 
 export const setupRouter = router({
   needed: publicProcedure.query(async ({ ctx }) => {
@@ -22,10 +23,14 @@ export const setupRouter = router({
         });
       }
 
+      // TODO(patrik): saltRound should be a constant
+      const password = await bcrypy.hash(input.password, 10);
+
       const [user] = await db
         .insert(users)
         .values({
-          ...input,
+          username: input.username,
+          password,
         })
         .returning({ id: users.id });
 
