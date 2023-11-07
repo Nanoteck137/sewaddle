@@ -1,11 +1,12 @@
-import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../../trpc";
-import { db } from "../../db";
-import { users } from "../../schema";
-import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import bcrypt from "bcrypt";
+import { eq } from "drizzle-orm";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
+import { db } from "../../db";
 import { env } from "../../env";
+import { users } from "../../schema";
+import { protectedProcedure, publicProcedure, router } from "../../trpc";
 
 export const authRouter = router({
   login: publicProcedure
@@ -15,7 +16,18 @@ export const authRouter = router({
         where: eq(users.username, input.username),
       });
 
-      if (!user || user.password !== input.password) {
+      if (!user) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      console.log(user);
+
+      const passwordResult = await bcrypt.compare(
+        input.password,
+        user.password,
+      );
+
+      if (!passwordResult) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
@@ -38,9 +50,11 @@ export const authRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
 
+      const result = await bcrypt.hash(input.password, 10);
+
       await db.insert(users).values({
         username: input.username,
-        password: input.password,
+        password: result,
       });
     }),
   changePassword: protectedProcedure
@@ -57,16 +71,23 @@ export const authRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
 
-      if (ctx.user.password !== input.oldPassword) {
+      const oldPasswordMatch = await bcrypt.compare(
+        input.oldPassword,
+        ctx.user.password,
+      );
+
+      if (!oldPasswordMatch) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Old password mismatch",
         });
       }
 
+      const newPassword = await bcrypt.hash(input.newPassword, 10);
+
       await db
         .update(users)
-        .set({ password: input.newPassword })
+        .set({ password: newPassword })
         .where(eq(users.id, ctx.user.id));
     }),
   getProfile: protectedProcedure.query(async ({ ctx }) => {
