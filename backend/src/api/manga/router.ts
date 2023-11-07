@@ -1,6 +1,7 @@
+import { TRPCError } from "@trpc/server";
+import { and, asc, desc, eq, gt, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../../db";
-import { protectedProcedure, publicProcedure, router } from "../../trpc";
 import {
   chapters,
   mangas,
@@ -8,15 +9,14 @@ import {
   userChapterMarked,
   userSavedMangas,
 } from "../../schema";
-import { and, asc, desc, eq, gt, lt, sql } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
+import { protectedProcedure, publicProcedure, router } from "../../trpc";
 
 export const mangaRouter = router({
   list: publicProcedure.query(async ({}) => {
     const chapterCount = db
       .select({
         mangaId: chapters.mangaId,
-        count: sql`COUNT(${chapters.index})`.as("count"),
+        count: sql<number>`COUNT(${chapters.index})`.as("count"),
       })
       .from(chapters)
       .groupBy(chapters.mangaId)
@@ -49,7 +49,7 @@ export const mangaRouter = router({
     const chapterCount = db
       .select({
         mangaId: chapters.mangaId,
-        count: sql`COUNT(${chapters.index})`.as("count"),
+        count: sql<number>`COUNT(${chapters.index})`.as("count"),
       })
       .from(chapters)
       .groupBy(chapters.mangaId)
