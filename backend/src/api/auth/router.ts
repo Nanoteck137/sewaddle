@@ -20,8 +20,6 @@ export const authRouter = router({
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      console.log(user);
-
       const passwordResult = await bcrypt.compare(
         input.password,
         user.password,
