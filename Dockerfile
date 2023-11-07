@@ -2,16 +2,16 @@ FROM node:18-alpine as builder
 
 WORKDIR /usr/src/app
 COPY package*.json ./
-COPY backend/package*.json ./
-COPY frontend/package*.json ./
-RUN npm install
+COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
+RUN npm ci
 
 COPY . .
 
-WORKDIR /usr/src/app/frontend
+WORKDIR /usr/src/app/backend
 RUN npm run build
 
-WORKDIR /usr/src/app/backend
+WORKDIR /usr/src/app/frontend
 RUN npm run build
 
 FROM node:18-alpine as app
@@ -36,4 +36,3 @@ COPY --from=builder /usr/src/app/frontend/dist /app/public
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "index.js"]
-
