@@ -8,5 +8,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": ["src/tools/**/*", "drizzle.config.ts"]
+  "exclude": ["src/tools/seed.ts", "drizzle.config.ts"]
 }
