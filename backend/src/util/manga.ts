@@ -1,6 +1,6 @@
+import fs from "fs";
 import path from "path";
 import { MangaMetadata } from "../model/manga";
-import fs from "fs";
 
 export function writeMangaMetadata(dir: string, manga: MangaMetadata) {
   const metadataFile = path.join(dir, "manga.json");

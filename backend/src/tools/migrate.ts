@@ -1,7 +1,7 @@
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { mangas, userBookmarks, userChapterMarked, users } from "../schema";
-import { and, eq } from "drizzle-orm";
 
 const User = z.object({
   username: z.string(),

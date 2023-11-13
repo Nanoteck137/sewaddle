@@ -1,7 +1,7 @@
-import fs from "fs";
-import path from "path";
 import { createEnv } from "@t3-oss/env-core";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import { z } from "zod";
 
 dotenv.config({ path: path.resolve(process.cwd(), "./.env") });

@@ -1,10 +1,10 @@
-import { createId } from "../schema";
-import fs from "fs";
 import axios from "axios";
-import { env, getTestCacheDir, getTestDataDir } from "../env";
-import path from "path";
 import commander, { Command } from "commander";
+import fs from "fs";
+import path from "path";
+import { getTestCacheDir, getTestDataDir } from "../env";
 import { ChapterMetadata, MangaMetadata } from "../model/manga";
+import { createId } from "../schema";
 import { readMangaMetadataWithId, writeMangaMetadata } from "../util/manga";
 
 fs.mkdirSync(getTestDataDir(), { recursive: true });
@@ -114,7 +114,9 @@ program.command("reset").action(() => {
 
 program.command("change-manga").action(() => {});
 program.command("add-chapters").action(async () => {
-  const entries = fs.readdirSync(getTestDataDir()).filter((c) => c !== "cache");
+  const entries = fs
+    .readdirSync(getTestDataDir())
+    .filter((c) => c !== "cache");
   const randomMangaId = entries[Math.floor(Math.random() * entries.length)];
   const manga = readMangaMetadataWithId(getTestDataDir(), randomMangaId);
   await addChapter(manga);
@@ -125,7 +127,9 @@ program.command("add-chapters").action(async () => {
 });
 
 program.command("add-pages").action(async () => {
-  const entries = fs.readdirSync(getTestDataDir()).filter((c) => c !== "cache");
+  const entries = fs
+    .readdirSync(getTestDataDir())
+    .filter((c) => c !== "cache");
   const randomMangaId = entries[Math.floor(Math.random() * entries.length)];
   const manga = readMangaMetadataWithId(getTestDataDir(), randomMangaId);
 

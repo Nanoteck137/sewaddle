@@ -1,10 +1,10 @@
-import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import jwt from "jsonwebtoken";
 import morgan from "morgan";
+import path from "path";
 import { createOpenApiExpressMiddleware } from "trpc-openapi";
 import { z } from "zod";
 import { appRouter } from "./api/router";

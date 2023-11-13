@@ -1,6 +1,6 @@
 import { router } from "../trpc";
-import { mangaRouter } from "./manga/router";
 import { authRouter } from "./auth/router";
+import { mangaRouter } from "./manga/router";
 import { setupRouter } from "./setup/router";
 
 export const appRouter = router({

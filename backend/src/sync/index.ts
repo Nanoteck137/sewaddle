@@ -1,7 +1,7 @@
+import { and, eq } from "drizzle-orm";
 import { existsSync } from "fs";
 import fs from "fs/promises";
 import path from "path";
-import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { getCollectionDir, getTargetDir } from "../env";
 import { chapters, mangas } from "../schema";
@@ -95,7 +95,8 @@ async function syncDatabase() {
       const exists = mangaList.find((m) => m.id === manga.id);
       return manga.chapters
         .filter(
-          (chapter) => !exists?.chapters.find((c) => c.index === chapter.index),
+          (chapter) =>
+            !exists?.chapters.find((c) => c.index === chapter.index),
         )
         .map((chapter) => ({ mangaId: manga.id, ...chapter }))
         .filter((c) => c !== undefined);
