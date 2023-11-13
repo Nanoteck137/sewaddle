@@ -1,9 +1,6 @@
 {
   "name": "sewaddle-backend",
-  "description": "Backend for sewaddle",
   "version": "0.4.0",
-  "author": "Patrik Millvik Rosesntröm",
-  "license": "MIT",
   "private": true,
   "main": "src/index.ts",
   "scripts": {
