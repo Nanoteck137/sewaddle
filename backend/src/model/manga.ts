@@ -20,7 +20,7 @@ export const MangaMetadata = z.object({
   startDate: z
     .string()
     .transform((arg) => {
-      let date = new Date(arg);
+      const date = new Date(arg);
       if (isNaN(date.getTime())) return null;
       return date;
     })
@@ -28,7 +28,7 @@ export const MangaMetadata = z.object({
   endDate: z
     .string()
     .transform((arg) => {
-      let date = new Date(arg);
+      const date = new Date(arg);
       if (isNaN(date.getTime())) return null;
       return date;
     })

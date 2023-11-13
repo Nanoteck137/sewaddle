@@ -26,7 +26,7 @@ const Expanded = z.object({
 });
 
 async function fetchPage(endpoint: string, collection: string, page: number) {
-  let perPage = 500;
+  const perPage = 500;
   const res = await fetch(
     `${endpoint}/api/collections/${collection}/records?perPage=${perPage}&page=${page}&expand=user,chapter.manga`,
   );

@@ -76,7 +76,7 @@ const pageSizes = [
 
 const program = new Command();
 
-function customParseInt(value: string, prev: number) {
+function customParseInt(value: string) {
   // parseInt takes a string and a radix
   const parsedValue = parseInt(value, 10);
   if (isNaN(parsedValue)) {
@@ -106,12 +106,13 @@ program
 
 program.command("reset").action(() => {
   const entries = fs.readdirSync(getTestDataDir());
-  for (let entry of entries) {
+  for (const entry of entries) {
     const p = path.join(getTestDataDir(), entry);
     fs.rmSync(p, { recursive: true, force: true });
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 program.command("change-manga").action(() => {});
 program.command("add-chapters").action(async () => {
   const entries = fs
@@ -154,8 +155,8 @@ console.log(opts);
 
 async function addPage(chapter: ChapterMetadata, dir: string) {
   const pageIndex = chapter.pages.length;
-  let pageSize = pageSizes[Math.floor(Math.random() * pageSizes.length)];
-  let pageImage = await getImage(pageSize[0], pageSize[1]);
+  const pageSize = pageSizes[Math.floor(Math.random() * pageSizes.length)];
+  const pageImage = await getImage(pageSize[0], pageSize[1]);
   const page = `${pageIndex}.png`;
   fs.copyFileSync(pageImage, path.join(dir, page));
   chapter.pages.push(page);
@@ -188,7 +189,7 @@ async function addChapter(manga: MangaMetadata) {
 
 async function generateManga() {
   const coverSize = coverSizes[Math.floor(Math.random() * coverSizes.length)];
-  let coverImage = await getImage(coverSize[0], coverSize[1]);
+  const coverImage = await getImage(coverSize[0], coverSize[1]);
 
   const id = createId();
   const p = path.join(getTestDataDir(), id);
@@ -216,14 +217,14 @@ async function generateManga() {
 }
 
 async function getImage(width: number, height: number) {
-  let name = `${width}x${height}.png`;
-  let output = path.join(getTestCacheDir(), name);
+  const name = `${width}x${height}.png`;
+  const output = path.join(getTestCacheDir(), name);
 
   if (fs.existsSync(output)) {
     return output;
   }
 
-  let url = `https://dummyimage.com/${name}/9123eb/fff`;
+  const url = `https://dummyimage.com/${name}/9123eb/fff`;
   const result = await axios.get(url, {
     responseType: "arraybuffer",
   });

@@ -165,14 +165,14 @@ async function syncDatabase() {
       );
   }
 
-  for (let manga of deletedManga) {
+  for (const manga of deletedManga) {
     await db
       .update(mangas)
       .set({ available: false })
       .where(eq(mangas.id, manga.id));
   }
 
-  for (let manga of missingManga) {
+  for (const manga of missingManga) {
     await db
       .insert(mangas)
       .values({
@@ -184,7 +184,7 @@ async function syncDatabase() {
       });
   }
 
-  for (let chapter of missingChapters) {
+  for (const chapter of missingChapters) {
     await db
       .insert(chapters)
       .values({

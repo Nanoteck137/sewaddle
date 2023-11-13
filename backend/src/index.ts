@@ -78,7 +78,7 @@ app.use(
   "/trpc",
   createExpressMiddleware({
     router: appRouter,
-    createContext: ({ req, res }) => {
+    createContext: ({ req }) => {
       const auth = req.headers.authorization;
       const token = auth?.split(" ").at(1);
 

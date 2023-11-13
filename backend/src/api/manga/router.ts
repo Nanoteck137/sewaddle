@@ -12,7 +12,7 @@ import {
 import { protectedProcedure, publicProcedure, router } from "../../trpc";
 
 export const mangaRouter = router({
-  list: publicProcedure.query(async ({}) => {
+  list: publicProcedure.query(async () => {
     const chapterCount = db
       .select({
         mangaId: chapters.mangaId,
@@ -296,7 +296,7 @@ export const mangaRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       await db.transaction(async (tx) => {
-        for (let chapter of input.chapters) {
+        for (const chapter of input.chapters) {
           await tx
             .delete(userChapterMarked)
             .where(
