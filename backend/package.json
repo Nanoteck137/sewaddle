@@ -6,12 +6,14 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts -i ./test -i ./target",
+    "devtest": "nodemon src/test.ts -i ./test -i ./target",
     "build": "tsc",
     "push:db": "drizzle-kit push:sqlite",
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@hono/node-server": "^1.2.2",
     "@libsql/client": "^0.3.6",
     "@paralleldrive/cuid2": "^2.2.2",
     "@t3-oss/env-core": "^0.7.1",
@@ -22,6 +24,7 @@
     "drizzle-orm": "^0.29.0",
     "express": "^4.18.2",
     "helmet": "^7.1.0",
+    "hono": "^3.10.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "trpc-openapi": "^1.2.0",
