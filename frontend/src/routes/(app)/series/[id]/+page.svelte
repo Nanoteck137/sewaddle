@@ -1,11 +1,13 @@
 <script lang="ts">
+  export let data;
+
   let test = new Array(100)
     .fill(0)
     .map((_item, index) => ({ index, name: `Chapter ${index}` }));
 </script>
 
 <div class="p-2">
-  <p>Series Pages</p>
+  <p>{data.details.title}</p>
 
   <div class="flex flex-col gap-1">
     {#each test as chapter (chapter.index)}
