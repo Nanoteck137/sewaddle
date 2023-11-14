@@ -2,7 +2,7 @@ import { Router } from "express";
 import { existsSync } from "fs";
 import path from "path";
 import { ZodError, z } from "zod";
-import { getTargetDir } from "../env";
+import { getTargetDir } from "../../env";
 
 const FetchMangaImageSchema = z.object({
   mangaId: z.string().cuid2(),
