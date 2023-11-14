@@ -3,47 +3,18 @@
   import { page } from "$app/stores";
   // import { shortcut, type ShortcutTrigger } from "@svelte-put/shortcut";
 
-  let test = [
-    [1000, 1200],
-    [1112, 1600],
-    [1127, 1600],
-    [1423, 2048],
-    [1428, 2048],
-    [1488, 2100],
-    [1600, 1148],
-    [1693, 1200],
-    [1694, 1200],
-    [1800, 1350],
-    [2133, 1517],
-    [2133, 1586],
-    [2133, 1590],
-    [2560, 1803],
-    [2560, 1805],
-    [700, 1140],
-    [700, 1214],
-    [700, 300],
-    [700, 900],
-    [720, 3096],
-    [720, 3479],
-    [720, 3652],
-    [720, 855],
-    [783, 1000],
-    [825, 1400],
-    [849, 1250],
-    [852, 1250],
-  ];
+  export let data;
 
   function getPageUrl(page: number) {
-    if (page >= test.length) {
+    if (page >= data.chapter.pages.length) {
       return null;
     }
 
-    let pageSize = test[page];
-    return `https://placehold.co/${pageSize[0]}x${pageSize[1]}.png`;
+    return data.chapter.pages[page];
   }
 
   function increment() {
-    if (pageNum + 1 < test.length) {
+    if (pageNum + 1 < data.chapter.pages.length) {
       pageNum++;
     } else {
       // TODO(patrik): Next chapter
@@ -58,7 +29,26 @@
     }
   }
 
-  let pageNum = parseInt($page.url.searchParams.get("page") ?? "0");
+  function getPageNum() {
+    const p = $page.url.searchParams.get("page");
+
+    if (p === null) {
+      return 0;
+    }
+
+    if (p === "") {
+      return data.chapter.pages.length - 1;
+    }
+
+    const res = Number(p);
+    if (isNaN(res)) {
+      return 0;
+    }
+
+    return res;
+  }
+
+  let pageNum = getPageNum();
   $: imageUrl = getPageUrl(pageNum);
   $: nextImageUrl = getPageUrl(pageNum + 1);
   $: {

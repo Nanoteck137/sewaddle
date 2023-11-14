@@ -1,20 +1,20 @@
 <script lang="ts">
   export let data;
-
-  let test = new Array(100)
-    .fill(0)
-    .map((_item, index) => ({ index, name: `Chapter ${index}` }));
 </script>
 
 <div class="p-2">
   <p>{data.details.title}</p>
 
   <div class="flex flex-col gap-1">
-    {#each test as chapter (chapter.index)}
+    {#each data.details.chapters as chapter (chapter.index)}
       <div class="flex justify-between bg-red-200 py-1">
-        <a href="/view/1/1" class="group relative flex flex-grow cursor-pointer gap-2">
-          <p class="w-12 text-right">1</p>
-          <img src="https://placehold.co/48x64.png" alt="" />
+        <a
+          href={`/view/${data.details.id}/${chapter.index}`}
+          class="group relative flex flex-grow cursor-pointer gap-2"
+          draggable="false"
+        >
+          <p class="w-12 text-right">{chapter.index}</p>
+          <img class="h-16 w-12 object-cover" src={chapter.cover} alt="" />
           <p class="group-hover:underline">{chapter.name}</p>
         </a>
 
