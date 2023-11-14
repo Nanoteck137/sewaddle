@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { zValidator } from "@hono/zod-validator";
-import { eq, sql } from "drizzle-orm";
-import { Context, Hono, MiddlewareHandler } from "hono";
+import { and, desc, eq, gt, lt, sql } from "drizzle-orm";
+import { Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getFilePath } from "hono/utils/filepath";
 import { getMimeType } from "hono/utils/mime";
@@ -12,6 +12,14 @@ import { getTargetDir } from "./env";
 import { chapters, mangas } from "./schema";
 
 const app = new Hono();
+
+function jsonValidator(schema: AnyZodObject) {
+  return zValidator("json", schema, (result, c) => {
+    if (!result.success) {
+      return c.json(result.error.flatten().fieldErrors, 400);
+    }
+  });
+}
 
 const createStreamBody = (stream: ReadStream) => {
   const body = new ReadableStream({
@@ -119,8 +127,7 @@ app.get("/api/serie/list", async (c) => {
   );
 });
 
-app.get("/api/serie/:mangaId/details", async (c) => {
-  const mangaId = c.req.param("mangaId");
+async function getMangaDetails(mangaId: string) {
   // const user = ctx.userId
   //   ? {
   //       saved: !!(await db.query.userSavedMangas.findFirst({
@@ -139,6 +146,8 @@ app.get("/api/serie/:mangaId/details", async (c) => {
       chapters: {
         columns: {
           index: true,
+          name: true,
+          cover: true,
         },
         where: eq(chapters.available, true),
       },
@@ -146,39 +155,108 @@ app.get("/api/serie/:mangaId/details", async (c) => {
   });
 
   if (!manga) {
+    return null;
+  }
+
+  return {
+    ...manga,
+    chapters: manga.chapters.map((chapter) => {
+      return {
+        ...chapter,
+        cover: `/image/chapter/${manga.id}/${chapter.index}/${chapter.cover}`,
+      };
+    }),
+    cover: `/image/manga/${manga.id}/${manga.cover}`,
+    user,
+  };
+}
+
+app.get("/api/serie/:mangaId/details", async (c) => {
+  const mangaId = c.req.param("mangaId");
+  const data = await getMangaDetails(mangaId);
+
+  if (!data) {
     return c.json({ message: "Manga not found" }, 404);
   }
 
-  return c.json({
-    ...manga,
-    cover: `/image/manga/${manga.id}/${manga.cover}`,
-    user,
-  });
+  return c.json(data);
 });
 
-function jsonValidator(schema: AnyZodObject) {
-  return zValidator("json", schema, (result, c) => {
-    if (!result.success) {
-      return c.json(result.error.flatten().fieldErrors, 400);
-    }
+async function getChapter(mangaId: string, chapterIndex: number) {
+  const result = await db.query.chapters.findFirst({
+    where: and(
+      eq(chapters.mangaId, mangaId),
+      eq(chapters.index, chapterIndex),
+    ),
   });
+
+  if (!result) {
+    return null;
+  }
+
+  const next = db
+    .select({ index: chapters.index })
+    .from(chapters)
+    .where(
+      and(eq(chapters.mangaId, mangaId), gt(chapters.index, result.index)),
+    )
+    .limit(1);
+  const prev = db
+    .select({ index: chapters.index })
+    .from(chapters)
+    .where(
+      and(eq(chapters.mangaId, mangaId), lt(chapters.index, result.index)),
+    )
+    .orderBy(desc(chapters.index))
+    .limit(1);
+
+  const res = await Promise.all([next, prev]);
+
+  const nextIndex = res[0].at(0);
+  const prevIndex = res[1].at(0);
+
+  return {
+    ...result,
+    pages: result.pages.map(
+      (page) => `/image/chapter/${result.mangaId}/${result.index}/${page}`,
+    ),
+    cover: `/image/chapter/${result.mangaId}/${result.index}/${result.cover}`,
+    nextChapter: nextIndex?.index ?? null,
+    prevChapter: prevIndex?.index ?? null,
+  };
 }
 
-app.post(
-  "/test",
-  jsonValidator(
+app.get(
+  "/api/serie/:mangaId/chapter/:chapterIndex",
+  zValidator(
+    "param",
     z.object({
-      test: z.string({ required_error: "Missing 'test'" }),
+      mangaId: z.string(),
+      chapterIndex: z.string().refine(
+        (val) => {
+          const n = Number(val);
+          return !isNaN(n);
+        },
+        { message: "chapterIndex must be a number" },
+      ),
     }),
+
+    (result, c) => {
+      if (!result.success) {
+        return c.json(result.error.flatten().fieldErrors, 400);
+      }
+    },
   ),
   async (c) => {
-    const body = c.req.valid("json");
-    console.log(body);
-    // const body = await c.req.parseBody();
-    // console.log(body);
-    return c.json({
-      hello: "world",
-    });
+    const mangaId = c.req.param("mangaId");
+    const chapterIndex = parseInt(c.req.param("chapterIndex"));
+    const chapter = await getChapter(mangaId, chapterIndex);
+
+    if (!chapter) {
+      return c.json({ message: "Chapter not found" }, 404);
+    }
+
+    return c.json(chapter);
   },
 );
 
