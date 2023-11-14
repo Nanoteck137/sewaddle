@@ -3,7 +3,7 @@
 </script>
 
 <div
-  class="grid grid-cols-1 place-items-center gap-4 p-2 md:grid-cols-3 lg:grid-cols-4"
+  class="grid grid-cols-1 place-items-center gap-2 p-2 md:grid-cols-3 lg:grid-cols-4"
 >
   {#each test as t}
     <a

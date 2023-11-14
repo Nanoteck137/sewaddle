@@ -10,11 +10,12 @@
   <div class="flex flex-col gap-1">
     {#each test as chapter (chapter.index)}
       <div class="flex justify-between bg-red-200 py-1">
-        <a href="/" class="group relative flex flex-grow cursor-pointer gap-2">
+        <a href="/view/1/1" class="group relative flex flex-grow cursor-pointer gap-2">
           <p class="w-12 text-right">1</p>
           <img src="https://placehold.co/48x64.png" alt="" />
           <p class="group-hover:underline">{chapter.name}</p>
         </a>
+
         <div class="flex items-center gap-4 p-4">
           <button>
             <svg
