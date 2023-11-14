@@ -16,6 +16,7 @@
           class="pointer-events-none absolute flex h-full w-full border-b-2 object-cover"
           src={`${serie.cover}`}
           alt=""
+          loading="lazy"
         />
       </div>
       <p class="w-full p-4 text-center">{serie.title}</p>
