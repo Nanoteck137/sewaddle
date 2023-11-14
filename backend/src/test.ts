@@ -1,10 +1,12 @@
 import { serve } from "@hono/node-server";
+import { zValidator } from "@hono/zod-validator";
 import { eq, sql } from "drizzle-orm";
-import { Context, Hono } from "hono";
+import { Context, Hono, MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getFilePath } from "hono/utils/filepath";
 import { getMimeType } from "hono/utils/mime";
 import { ReadStream, createReadStream, existsSync, lstatSync } from "node:fs";
+import { AnyZodObject, z } from "zod";
 import { db } from "./db";
 import { getTargetDir } from "./env";
 import { chapters, mangas } from "./schema";
@@ -87,7 +89,7 @@ app.get("/image/chapter/:mangaId/:chapterIndex/:image", (c) => {
   return sendFile(c, path);
 });
 
-app.get("/api/series/all", async (c) => {
+app.get("/api/serie/list", async (c) => {
   const chapterCount = db
     .select({
       mangaId: chapters.mangaId,
@@ -116,6 +118,69 @@ app.get("/api/series/all", async (c) => {
     })),
   );
 });
+
+app.get("/api/serie/:mangaId/details", async (c) => {
+  const mangaId = c.req.param("mangaId");
+  // const user = ctx.userId
+  //   ? {
+  //       saved: !!(await db.query.userSavedMangas.findFirst({
+  //         where: and(
+  //           eq(userSavedMangas.userId, ctx.userId ?? ""),
+  //           eq(userSavedMangas.mangaId, input.mangaId),
+  //         ),
+  //       })),
+  //     }
+  //   : undefined;
+  const user = undefined;
+
+  const manga = await db.query.mangas.findFirst({
+    where: eq(mangas.id, mangaId),
+    with: {
+      chapters: {
+        columns: {
+          index: true,
+        },
+        where: eq(chapters.available, true),
+      },
+    },
+  });
+
+  if (!manga) {
+    return c.json({ message: "Manga not found" }, 404);
+  }
+
+  return c.json({
+    ...manga,
+    cover: `/image/manga/${manga.id}/${manga.cover}`,
+    user,
+  });
+});
+
+function jsonValidator(schema: AnyZodObject) {
+  return zValidator("json", schema, (result, c) => {
+    if (!result.success) {
+      return c.json(result.error.flatten().fieldErrors, 400);
+    }
+  });
+}
+
+app.post(
+  "/test",
+  jsonValidator(
+    z.object({
+      test: z.string({ required_error: "Missing 'test'" }),
+    }),
+  ),
+  async (c) => {
+    const body = c.req.valid("json");
+    console.log(body);
+    // const body = await c.req.parseBody();
+    // console.log(body);
+    return c.json({
+      hello: "world",
+    });
+  },
+);
 
 app.showRoutes();
 
