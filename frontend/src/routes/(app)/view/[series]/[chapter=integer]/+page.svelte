@@ -1,9 +1,12 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
+  import { onMount } from "svelte";
   // import { shortcut, type ShortcutTrigger } from "@svelte-put/shortcut";
 
   export let data;
+
+  let showLastPageIndicator = false;
 
   function getPageUrl(page: number) {
     if (page >= data.chapter.pages.length) {
@@ -13,15 +16,24 @@
     return data.chapter.pages[page];
   }
 
-  function increment() {
+  async function increment() {
     if (pageNum + 1 < data.chapter.pages.length) {
       pageNum++;
     } else {
       // TODO(patrik): Next chapter
+      if (lastPage) {
+        if (!showLastPageIndicator) {
+          showLastPageIndicator = true;
+        } else {
+          // TODO(patrik): goto is not working
+          window.location.href = `/view/${data.chapter.mangaId}/${data.chapter.nextChapter}?page=0`;
+        }
+      }
     }
   }
 
   function decrement() {
+    showLastPageIndicator = false;
     if (pageNum - 1 >= 0) {
       pageNum--;
     } else {
@@ -51,6 +63,7 @@
   let pageNum = getPageNum();
   $: imageUrl = getPageUrl(pageNum);
   $: nextImageUrl = getPageUrl(pageNum + 1);
+  $: lastPage = pageNum >= data.chapter.pages.length - 1;
   $: {
     if (browser) {
       $page.url.searchParams.set("page", pageNum.toString());
@@ -97,6 +110,18 @@
     on:click={decrement}
   ></button>
 </div>
+
+{#if showLastPageIndicator}
+  <div
+    class="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col justify-center gap-2 rounded bg-gray-700/95 p-10 text-xl"
+  >
+    <p class="text-center">Last page</p>
+    <a
+      class="text-sm text-blue-400 hover:text-blue-300"
+      href={`/series/${data.chapter.mangaId}`}>Back to Manga</a
+    >
+  </div>
+{/if}
 
 {#if nextImageUrl}
   <img class="hidden" src={nextImageUrl} alt="" />

@@ -14,7 +14,7 @@ const Chapter = z.object({
   prevChapter: z.number().nullish(),
 });
 
-export const load: PageServerLoad = async ({ fetch, params }) => {
+export const load: PageServerLoad = async ({ fetch, params, url }) => {
   const res = await fetch(
     `${API_URL}/api/serie/${params.series}/chapter/${params.chapter}`,
   );
