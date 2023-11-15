@@ -59,6 +59,8 @@ function sendFile(c: Context, path: string): Response {
   }
 
   c.header("Content-Length", size.toString());
+  const maxAge = 86400 * 30 * 1000;
+  c.header("Cache-Control", `public, max-age=${maxAge}`);
   return c.body(createStreamBody(createReadStream(path)), 200);
 }
 
