@@ -16,9 +16,9 @@
           <p class="w-12 text-right">{chapter.index}</p>
           <img
             class="h-16 w-12 object-cover"
+            loading="lazy"
             src={chapter.cover}
             alt=""
-            loading="lazy"
           />
           <p class="group-hover:underline">{chapter.name}</p>
         </a>
