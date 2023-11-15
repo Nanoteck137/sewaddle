@@ -1,12 +1,12 @@
 <script lang="ts">
   import Input from "$lib/TextInput.svelte";
-  import { LoginSchema } from "$lib/schemas/index.js";
+  import { RegisterSchema } from "$lib/schemas/index.js";
   import { superForm } from "sveltekit-superforms/client";
   import SuperDebug from "sveltekit-superforms/client/SuperDebug.svelte";
 
   export let data;
   const { form, errors, enhance } = superForm(data.form, {
-    validators: LoginSchema,
+    validators: RegisterSchema,
     taintedMessage: null,
   });
 </script>
@@ -19,7 +19,7 @@
   >
     <a class="block text-center text-4xl" href="/">Sewaddle</a>
     <div class="h-4"></div>
-    <p class="block text-center text-2xl">Login to Account</p>
+    <p class="block text-center text-2xl">Create Account</p>
     <form class="mt-10 flex flex-col gap-8 md:mt-6" method="post" use:enhance>
       <Input
         type="text"
@@ -37,9 +37,17 @@
         bind:value={$form.password}
         errors={$errors.password}
       />
+      <Input
+        type="password"
+        id="passwordConfirm"
+        name="passwordConfirm"
+        title="Confirm Password"
+        bind:value={$form.passwordConfirm}
+        errors={$errors.passwordConfirm}
+      />
 
       <button class="rounded bg-red-300 py-2" type="submit">Login</button>
     </form>
-    <p>Need an account? <a class="text-blue-400" href="/register">Register</a></p>
+    <p>Already have an account? <a href="/login" class="text-blue-400">Login</a></p>
   </div>
 </div>
