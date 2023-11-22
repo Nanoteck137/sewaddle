@@ -1,6 +1,8 @@
 <script lang="ts">
   import { browser } from "$app/environment";
+  import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { onMount } from "svelte";
   // import { shortcut, type ShortcutTrigger } from "@svelte-put/shortcut";
 
   export let data;
@@ -24,8 +26,14 @@
         if (!showLastPageIndicator) {
           showLastPageIndicator = true;
         } else {
-          // TODO(patrik): goto is not working
-          window.location.href = `/view/${data.chapter.mangaId}/${data.chapter.nextChapter}?page=0`;
+          goto(
+            `/view/${data.chapter.mangaId}/${data.chapter.nextChapter}?page=0`,
+            {
+            },
+          ).then(() => {
+            pageNum = 0;
+            showLastPageIndicator = false;
+          });
         }
       }
     }
@@ -66,7 +74,7 @@
   $: {
     if (browser) {
       $page.url.searchParams.set("page", pageNum.toString());
-      history.replaceState(history.state, "", $page.url);
+      goto(`?${$page.url.searchParams.toString()}`);
     }
   }
 
