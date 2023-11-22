@@ -8,10 +8,10 @@
     errors?: string[];
   }
 
-  export let id: string;
-  export let title: string;
-  export let value: string;
-  export let errors: string[] | undefined = undefined;
+  export let id: $$Props["id"];
+  export let title: $$Props["title"];
+  export let value: $$Props["value"];
+  export let errors: $$Props["errors"] = undefined;
 </script>
 
 <div class="relative">
