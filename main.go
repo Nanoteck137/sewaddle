@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/nanoteck137/sewaddle/cmd"
+)
 
 func main() {
-	fmt.Printf("Hello World\n")
+	cmd.Execute()
 }
