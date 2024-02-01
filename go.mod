@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/kr/pretty v0.3.0
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/nrednav/cuid2 v1.0.0
 	github.com/pressly/goose/v3 v3.18.0
 	github.com/spf13/cobra v1.8.0
 )
