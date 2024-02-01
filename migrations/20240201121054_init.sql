@@ -2,6 +2,7 @@
 CREATE TABLE series (
     id TEXT NOT NULL,
     name TEXT NOT NULL,
+    path TEXT NOT NULL,
 
     CONSTRAINT seriesPk PRIMARY KEY(id)
 );
