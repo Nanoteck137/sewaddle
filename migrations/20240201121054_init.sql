@@ -12,11 +12,13 @@ CREATE TABLE chapters (
     idx INTEGER NOT NULL,
     title TEXT NOT NULL,
 
-    serieId TEXT NOT NULL,
+    serie_id TEXT NOT NULL,
+
+    path TEXT NOT NULL,
 
     CONSTRAINT chaptersPk PRIMARY KEY(id),
 
-    CONSTRAINT chaptersSerieId FOREIGN KEY (serieId)
+    CONSTRAINT chaptersSerieId FOREIGN KEY (serie_id)
         REFERENCES series(id)
 );
 

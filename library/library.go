@@ -3,10 +3,10 @@ package library
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -28,9 +28,16 @@ type SerieMetadata struct {
 	Chapters []ChapterMetadata `json:"chapters"`
 }
 
+type Chapter struct {
+	Path  string
+	Title string
+	Index int
+}
+
 type Serie struct {
 	Path     string
-	Metadata SerieMetadata
+	Title    string
+	Chapters []Chapter
 }
 
 type Library struct {
@@ -66,10 +73,21 @@ func ReadFromDir(dir string) (*Library, error) {
 			return nil, err
 		}
 
-		pretty.Println(metadata)
+		var chapters []Chapter
+
+		for _, chapter := range metadata.Chapters {
+			chapters = append(chapters, Chapter{
+				Path:  path.Join(p, strconv.Itoa(chapter.Index)),
+				Title: chapter.Name,
+				Index: chapter.Index,
+			})
+		}
+
+		// pretty.Println(metadata)
 		series = append(series, Serie{
 			Path:     p,
-			Metadata: metadata,
+			Title:    metadata.Title,
+			Chapters: chapters,
 		})
 	}
 
@@ -83,75 +101,123 @@ func ReadFromDir(dir string) (*Library, error) {
 
 var dialect = goqu.Dialect("postgres")
 
+func GetByPath[T any](db *pgxpool.Pool, table, path string) (*T, error) {
+	sql, params, err := dialect.From(table).Select().Where(goqu.C("path").Eq(path)).Limit(1).Prepared(true).ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.Query(context.Background(), sql, params...)
+	if err != nil {
+		return nil, err
+	}
+
+	var res T
+	err = pgxscan.ScanOne(&res, rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func Create[T any](db *pgxpool.Pool, tableName string, record goqu.Record) (*T, error) {
+	sql, params, err := dialect.Insert(tableName).Rows(record).Returning(goqu.C("*")).Prepared(true).ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	// fmt.Printf("sql: %v\n", sql)
+	// fmt.Printf("params: %v\n", params)
+
+	rows, err := db.Query(context.Background(), sql, params...)
+	if err != nil {
+		return nil, err
+	}
+
+	var res T
+	err = pgxscan.ScanOne(&res, rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 type DbSerie struct {
 	Id   string
 	Name string
 	Path string
 }
 
-func GetSerieByPath(db *pgxpool.Pool, path string) (DbSerie, error) {
-	sql, params, err := dialect.From("series").Select().Where(goqu.C("path").Eq(path)).Limit(1).Prepared(true).ToSQL()
-	if err != nil {
-		return DbSerie{}, err
-	}
-
-	rows, err := db.Query(context.Background(), sql, params...)
-	if err != nil {
-		return DbSerie{}, err
-	}
-
-	var res DbSerie
-	err = pgxscan.ScanOne(&res, rows)
-	if err != nil {
-		return DbSerie{}, err
-	}
-
-	return res, nil
+func GetSerieByPath(db *pgxpool.Pool, path string) (*DbSerie, error) {
+	return GetByPath[DbSerie](db, "series", path)
 }
 
-func CreateSerie(db *pgxpool.Pool, name, path string) (DbSerie, error) {
-	sql, params, err := dialect.Insert("series").Rows(goqu.Record{
-		"id":   utils.CreateId(),
+func CreateSerie(db *pgxpool.Pool, name, path string) (*DbSerie, error) {
+	return Create[DbSerie](db, "series", goqu.Record{
+		"id": utils.CreateId(),
 		"name": name,
 		"path": path,
-	}).Returning(goqu.C("*")).Prepared(true).ToSQL()
-	if err != nil {
-		return DbSerie{}, err
-	}
-
-	fmt.Printf("sql: %v\n", sql)
-	fmt.Printf("params: %v\n", params)
-
-	rows, err := db.Query(context.Background(), sql, params...)
-	if err != nil {
-		return DbSerie{}, err
-	}
-
-	var res DbSerie
-	err = pgxscan.ScanOne(&res, rows)
-	if err != nil {
-		return DbSerie{}, err
-	}
-
-	return res, nil
+	})
 }
 
-func GetOrCreateSerie(db *pgxpool.Pool, serie *Serie) (DbSerie, error) {
+func GetOrCreateSerie(db *pgxpool.Pool, serie *Serie) (*DbSerie, error) {
 	dbSerie, err := GetSerieByPath(db, serie.Path)
 	if err != nil {
 		if pgxscan.NotFound(err) {
-			dbSerie, err := CreateSerie(db, serie.Metadata.Title, serie.Path)
+			dbSerie, err := CreateSerie(db, serie.Title, serie.Path)
 			if err != nil {
-				return DbSerie{}, err
+				return nil, err
 			}
 
 			return dbSerie, nil
 		} else {
-			return DbSerie{}, err
+			return nil, err
 		}
 	}
 
 	return dbSerie, nil
+}
+
+type DbChapter struct {
+	Id      string
+	Idx     int
+	Title   string
+	SerieId string `db:"serie_id"`
+	Path string 
+}
+
+func GetChapterByPath(db *pgxpool.Pool, path string) (*DbChapter, error) {
+	return GetByPath[DbChapter](db, "chapters", path)
+}
+
+func CreateChapter(db *pgxpool.Pool, index int, title, serieId string, path string) (*DbChapter, error) {
+	return Create[DbChapter](db, "chapters", goqu.Record{
+		"id": utils.CreateId(),
+		"idx": index,
+		"title": title,
+		"serie_id": serieId,
+		"path": path,
+	})
+}
+
+func GetOrCreateChapter(db *pgxpool.Pool, chapter *Chapter, serie *DbSerie) (*DbChapter, error) {
+	dbChapter, err := GetChapterByPath(db, chapter.Path)
+	if err != nil {
+		if pgxscan.NotFound(err) {
+			dbChapter, err := CreateChapter(db, chapter.Index, chapter.Title, serie.Id, chapter.Path)
+			if err != nil {
+				return nil, err
+			}
+
+			return dbChapter, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	return dbChapter, nil
 }
 
 func (lib *Library) Sync(db *pgxpool.Pool) {
@@ -160,6 +226,15 @@ func (lib *Library) Sync(db *pgxpool.Pool) {
 		if err != nil {
 			log.Println("Err:", err)
 			continue
+		}
+
+		for _, chapter := range serie.Chapters {
+			dbChapter, err := GetOrCreateChapter(db, &chapter, dbSerie)
+			if err != nil {
+				log.Println("Err:", err)
+			}
+
+			_ = dbChapter
 		}
 
 		_ = dbSerie
