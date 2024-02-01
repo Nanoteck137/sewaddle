@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/doug-martin/goqu/v9"
 	"github.com/georgysavva/scany/v2/pgxscan"
-	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
 )
@@ -15,30 +12,18 @@ func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
 		From("chapters").
 		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("id")).As("count")).
 		GroupBy("chapters.serie_id").
-		As("chapterCount")
+		As("chapter_count")
 
-	fmt.Println(chapterCount.ToSQL())
-
-	sql, _, err := chapterCount.ToSQL()
-	rows, err := api.db.Query(c.Request().Context(), sql) 
-
-	var i []map[string]any
-	err = pgxscan.ScanAll(&i, rows)
-
-	pretty.Println(i)
-
-	sql, _, err = api.dialect.
+	sql, _, err := api.dialect.
 		From("series").
-		Select("series.id", "series.name", goqu.C("chapterCount.count").As("count")).
-		LeftJoin(chapterCount, goqu.On(goqu.Ex{"series.id": "chapterCount.serie_id"})).
+		Select("series.id", "series.name", "chapter_count.count").
+		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
 		ToSQL()
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("sql: %v\n", sql)
-
-	rows, err = api.db.Query(c.Request().Context(), sql)
+	rows, err := api.db.Query(c.Request().Context(), sql)
 	if err != nil {
 		return err
 	}
