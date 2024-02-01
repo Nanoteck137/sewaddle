@@ -35,14 +35,14 @@ func New(db *pgxpool.Pool) *echo.Echo {
 	})
 
 	e.GET("/api/v1/series", func(c echo.Context) error {
-		sql, _, err := dialect.From("series").Select("id").ToSQL()
+		sql, _, err := dialect.From("series").Select("id", "name").ToSQL()
 		if err != nil {
 			return err
 		}
 
 		type Result struct {
-			Name string
 			Id string
+			Name string
 		}
 
 		rows, err := db.Query(c.Request().Context(), sql)
@@ -50,7 +50,7 @@ func New(db *pgxpool.Pool) *echo.Echo {
 			return err
 		}
 
-		var res []Result
+		var res []*Result
 		err = pgxscan.ScanAll(&res, rows)
 		if err != nil {
 			return err
@@ -58,7 +58,7 @@ func New(db *pgxpool.Pool) *echo.Echo {
 
 		pretty.Println(res)
 
-		return nil
+		return c.JSON(200, res)
 	})
 
 	return e
