@@ -156,7 +156,7 @@ func GetSerieByPath(db *pgxpool.Pool, path string) (*DbSerie, error) {
 
 func CreateSerie(db *pgxpool.Pool, name, path string) (*DbSerie, error) {
 	return Create[DbSerie](db, "series", goqu.Record{
-		"id": utils.CreateId(),
+		"id":   utils.CreateId(),
 		"name": name,
 		"path": path,
 	})
@@ -184,8 +184,8 @@ type DbChapter struct {
 	Id      string
 	Idx     int
 	Title   string
-	SerieId string `db:"serie_id"`
-	Path string 
+	SerieId string `db:"serieId"`
+	Path    string
 }
 
 func GetChapterByPath(db *pgxpool.Pool, path string) (*DbChapter, error) {
@@ -194,11 +194,11 @@ func GetChapterByPath(db *pgxpool.Pool, path string) (*DbChapter, error) {
 
 func CreateChapter(db *pgxpool.Pool, index int, title, serieId string, path string) (*DbChapter, error) {
 	return Create[DbChapter](db, "chapters", goqu.Record{
-		"id": utils.CreateId(),
-		"idx": index,
-		"title": title,
-		"serie_id": serieId,
-		"path": path,
+		"id":      utils.CreateId(),
+		"idx":     index,
+		"title":   title,
+		"serieId": serieId,
+		"path":    path,
 	})
 }
 

@@ -1,35 +1,35 @@
 -- +goose Up
 CREATE TABLE series (
-    id TEXT NOT NULL,
-    name TEXT NOT NULL,
-    path TEXT NOT NULL,
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "path" TEXT NOT NULL,
 
-    CONSTRAINT seriesPk PRIMARY KEY(id)
+    CONSTRAINT "seriesPk" PRIMARY KEY("id")
 );
 
 CREATE TABLE chapters (
-    id TEXT NOT NULL,
-    idx INTEGER NOT NULL,
-    title TEXT NOT NULL,
+    "id" TEXT NOT NULL,
+    "idx" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
 
-    serie_id TEXT NOT NULL,
+    "serieId" TEXT NOT NULL,
 
-    path TEXT NOT NULL,
+    "path" TEXT NOT NULL,
 
-    CONSTRAINT chaptersPk PRIMARY KEY(id),
+    CONSTRAINT "chaptersPk" PRIMARY KEY("id"),
 
-    CONSTRAINT chaptersSerieId FOREIGN KEY (serie_id)
-        REFERENCES series(id)
+    CONSTRAINT "chaptersSerieId" FOREIGN KEY ("serieId")
+        REFERENCES series("id")
 );
 
 CREATE TABLE pages (
-    page INTEGER NOT NULL,
-    chapterId TEXT NOT NULL,
+    "page" INTEGER NOT NULL,
+    "chapterId" TEXT NOT NULL,
 
-    CONSTRAINT pagesPk PRIMARY KEY(page, chapterId),
+    CONSTRAINT "pagesPk" PRIMARY KEY("page", "chapterId"),
 
-    CONSTRAINT pagesChapterIdFk FOREIGN KEY (chapterId)
-        REFERENCES chapters(id)
+    CONSTRAINT "pagesChapterIdFk" FOREIGN KEY ("chapterId")
+        REFERENCES chapters("id")
 );
 
 -- +goose Down

@@ -10,14 +10,14 @@ import (
 func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
 	chapterCount := api.dialect.
 		From("chapters").
-		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("id")).As("count")).
-		GroupBy("chapters.serie_id").
-		As("chapter_count")
+		Select(goqu.C("serieId"), goqu.COUNT(goqu.C("id")).As("count")).
+		GroupBy("chapters.serieId").
+		As("chapterCount")
 
 	sql, _, err := api.dialect.
 		From("series").
-		Select("series.id", "series.name", "chapter_count.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
+		Select("series.id", "series.name", "chapterCount.count").
+		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")})).
 		ToSQL()
 	if err != nil {
 		return err
