@@ -1,54 +1,25 @@
 package handlers
 
 import (
-	"github.com/doug-martin/goqu/v9"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
 )
 
 func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
-	chapterCount := api.dialect.
-		From("chapters").
-		Select(goqu.C("serieId"), goqu.COUNT(goqu.C("id")).As("count")).
-		GroupBy("chapters.serieId").
-		As("chapterCount")
-
-	sql, _, err := api.dialect.
-		From("series").
-		Select("series.id", "series.name", "chapterCount.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")})).
-		ToSQL()
-	if err != nil {
-		return err
-	}
-
-	rows, err := api.db.Query(c.Request().Context(), sql)
-	if err != nil {
-		return err
-	}
-
-	type DbItem struct {
-		Id    string
-		Name  string
-		Count int
-	}
-
-	var dbItems []DbItem
-	err = pgxscan.ScanAll(&dbItems, rows)
+	items, err := api.database.GetAllSeries(c.Request().Context())
 	if err != nil {
 		return err
 	}
 
 	result := types.ApiGetSeries{
-		Series: make([]types.ApiGetSeriesItem, len(dbItems)),
+		Series: make([]types.ApiGetSeriesItem, len(items)),
 	}
 
-	for i, item := range dbItems {
+	for i, item := range items {
 		result.Series[i] = types.ApiGetSeriesItem{
 			Id:           item.Id,
 			Name:         item.Name,
-			ChapterCount: item.Count,
+			ChapterCount: item.ChapterCount,
 		}
 	}
 

@@ -1,19 +1,15 @@
 package handlers
 
 import (
-	"github.com/doug-martin/goqu/v9"
-	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nanoteck137/sewaddle/database"
 )
 
 type ApiConfig struct {
-	db *pgxpool.Pool
-	dialect goqu.DialectWrapper
+	database *database.Database
 }
 
-func New(db *pgxpool.Pool) *ApiConfig {
+func New(database *database.Database) *ApiConfig {
 	return &ApiConfig{
-		db: db,
-		dialect: goqu.Dialect("postgres"),
+		database: database,
 	}
 }

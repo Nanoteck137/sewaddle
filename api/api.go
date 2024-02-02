@@ -5,10 +5,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/handlers"
 )
 
-func New(db *pgxpool.Pool) *echo.Echo {
+func New(conn *pgxpool.Pool) *echo.Echo {
 	e := echo.New()
 
 	e.Debug = true
@@ -16,6 +17,7 @@ func New(db *pgxpool.Pool) *echo.Echo {
 	e.Use(echolog.LoggerWithName("Sewaddle"))
 	e.Use(middleware.Recover())
 
+	db := database.New(conn)
 	apiConfig := handlers.New(db)
 
 	apiGroup := e.Group("/api/v1")
