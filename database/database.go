@@ -87,3 +87,58 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 
 	return item, nil
 }
+
+type Chapter struct {
+	Id      string
+	Index   int `db:"idx"`
+	Title   string
+	SerieId string `db:"serieId"`
+}
+
+func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
+	sql, _, err := Dialect.
+		From("chapters").
+		Select("id", "idx", "title", "serieId").
+		ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.conn.Query(ctx, sql)
+	if err != nil {
+		return nil, err
+	}
+
+	var items []Chapter
+	err = pgxscan.ScanAll(&items, rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (db *Database) GetChapterById(ctx context.Context, id string) (Chapter, error) {
+	sql, _, err := Dialect.
+		From("chapters").
+		Select("id", "idx", "title", "serieId").
+		Where(goqu.C("id").Eq(id)).
+		Limit(1).
+		ToSQL()
+	if err != nil {
+		return Chapter{}, err
+	}
+
+	rows, err := db.conn.Query(ctx, sql)
+	if err != nil {
+		return Chapter{}, err
+	}
+
+	var item Chapter
+	err = pgxscan.ScanOne(&item, rows)
+	if err != nil {
+		return Chapter{}, err
+	}
+
+	return item, nil
+}

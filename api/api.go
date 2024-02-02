@@ -22,6 +22,7 @@ func New(conn *pgxpool.Pool) *echo.Echo {
 
 	apiGroup := e.Group("/api/v1")
 	handlers.InstallSerieHandlers(apiGroup, apiConfig)
+	handlers.InstallChapterHandlers(apiGroup, apiConfig)
 
 	return e
 }
