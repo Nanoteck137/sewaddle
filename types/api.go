@@ -55,7 +55,7 @@ type ApiGetChaptersItem struct {
 }
 
 type ApiGetChapters struct {
-	Chapters []ApiGetChaptersItem
+	Chapters []ApiGetChaptersItem `json:"chapters"`
 }
 
 type ApiGetChapterById struct {
