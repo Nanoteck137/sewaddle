@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
@@ -16,10 +18,15 @@ func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
 		Series: make([]types.ApiGetSeriesItem, len(items)),
 	}
 
+	host := c.Request().Host
+
+	url := fmt.Sprintf("http://%s", host)
+
 	for i, item := range items {
 		result.Series[i] = types.ApiGetSeriesItem{
 			Id:           item.Id,
 			Name:         item.Name,
+			Cover:        url + "/images/" + item.Cover,
 			ChapterCount: item.ChapterCount,
 		}
 	}
