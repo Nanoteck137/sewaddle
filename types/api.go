@@ -45,8 +45,19 @@ type ApiGetSeries struct {
 type ApiGetSerieById struct {
 	Id           string `json:"id"`
 	Name         string `json:"name"`
-	Cover         string `json:"cover"`
+	Cover        string `json:"cover"`
 	ChapterCount int    `json:"chapterCount"`
+}
+
+type ApiGetSerieChaptersByIdItem struct {
+	Id      string `json:"id"`
+	Index   int    `json:"index"`
+	Title   string `json:"title"`
+	SerieId string `json:"serieId"`
+}
+
+type ApiGetSerieChaptersById struct {
+	Chapters []ApiGetSerieChaptersByIdItem `json:"chapters"`
 }
 
 type ApiGetChaptersItem struct {

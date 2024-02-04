@@ -59,7 +59,32 @@ func (api *ApiConfig) HandleGetSerieById(c echo.Context) error {
 	return c.JSON(200, types.CreateResponse(result))
 }
 
+func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
+	id := c.Param("id")
+
+	items, err := api.database.GetSerieChaptersById(c.Request().Context(), id)
+	if err != nil {
+		return err
+	}
+
+	result := types.ApiGetSerieChaptersById{
+		Chapters: make([]types.ApiGetSerieChaptersByIdItem, len(items)),
+	}
+
+	for i, item := range items {
+		result.Chapters[i] = types.ApiGetSerieChaptersByIdItem{
+			Id:      item.Id,
+			Index:   item.Index,
+			Title:   item.Title,
+			SerieId: item.SerieId,
+		} 
+	}
+
+	return c.JSON(200, types.CreateResponse(result))
+}
+
 func InstallSerieHandlers(g *echo.Group, api *ApiConfig) {
 	g.GET("/series", api.HandleGetSeries)
 	g.GET("/series/:id", api.HandleGetSerieById)
+	g.GET("/series/:id/chapters", api.HandleGetSerieChaptersById)
 }

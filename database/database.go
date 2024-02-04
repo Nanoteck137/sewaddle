@@ -143,3 +143,28 @@ func (db *Database) GetChapterById(ctx context.Context, id string) (Chapter, err
 
 	return item, nil
 }
+
+func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([]Chapter, error) {
+	sql, _, err := Dialect.
+		From("chapters").
+		Select("id", "idx", "title", "serieId").
+		Where(goqu.C("serieId").Eq(serieId)).
+		Order(goqu.C("idx").Asc()).
+		ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := db.conn.Query(ctx, sql)
+	if err != nil {
+		return nil, err
+	}
+
+	var items []Chapter
+	err = pgxscan.ScanAll(&items, rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
