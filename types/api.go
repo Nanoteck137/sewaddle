@@ -34,6 +34,7 @@ func CreateResponse[T any](data ...T) ApiResponse[T] {
 type ApiGetSeriesItem struct {
 	Id           string `json:"id"`
 	Name         string `json:"name"`
+	Cover        string `json:"cover"`
 	ChapterCount int    `json:"chapterCount"`
 }
 
