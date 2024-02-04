@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 
 	"github.com/doug-martin/goqu/v9"
@@ -151,10 +152,10 @@ func Create[T any](db *pgxpool.Pool, tableName string, record goqu.Record) (*T, 
 }
 
 type DbSerie struct {
-	Id   string
-	Name string
+	Id    string
+	Name  string
 	Cover string
-	Path string
+	Path  string
 }
 
 func GetSerieByPath(db *pgxpool.Pool, path string) (*DbSerie, error) {
@@ -163,16 +164,16 @@ func GetSerieByPath(db *pgxpool.Pool, path string) (*DbSerie, error) {
 
 func CreateSerie(db *pgxpool.Pool, name, path string) (*DbSerie, error) {
 	return Create[DbSerie](db, "series", goqu.Record{
-		"id":   utils.CreateId(),
-		"name": name,
+		"id":    utils.CreateId(),
+		"name":  name,
 		"cover": "",
-		"path": path,
+		"path":  path,
 	})
 }
 
 func UpdateSerieCover(db *pgxpool.Pool, id, coverPath string) error {
 	sql, params, err := dialect.Update("series").
-		Set(goqu.Record{ "cover": coverPath}).
+		Set(goqu.Record{"cover": coverPath}).
 		Where(goqu.C("id").Eq(id)).
 		Prepared(true).
 		ToSQL()
@@ -267,14 +268,17 @@ func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
 			continue
 		}
 
-		coverPath := path.Join(lib.Base, serie.CoverPath)
-		fmt.Printf("coverPath: %v\n", coverPath)
-
-		ext := path.Ext(coverPath)
-		name := fmt.Sprintf("%v%v", dbSerie.Id, ext)
+		ext := path.Ext(serie.CoverPath)
+		name := dbSerie.Id + ext
 		dst := path.Join(imagesDir, name)
 
-		err = os.Symlink(coverPath, dst)
+		src, err := filepath.Abs(path.Join(lib.Base, serie.CoverPath))
+		if err != nil {
+			// TODO(patrik): Remove
+			log.Fatal(err)
+		}
+
+		err = os.Symlink(src, dst)
 		if err != nil {
 			if os.IsExist(err) {
 				err := os.Remove(dst)
@@ -283,7 +287,7 @@ func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
 					log.Fatal(err)
 				}
 
-				err = os.Symlink(coverPath, dst)
+				err = os.Symlink(src, dst)
 				if err != nil {
 					// TODO(patrik): Remove
 					log.Fatal(err)
