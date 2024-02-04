@@ -45,6 +45,7 @@ type ApiGetSeries struct {
 type ApiGetSerieById struct {
 	Id           string `json:"id"`
 	Name         string `json:"name"`
+	Cover         string `json:"cover"`
 	ChapterCount int    `json:"chapterCount"`
 }
 

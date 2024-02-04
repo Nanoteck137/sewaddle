@@ -8,6 +8,12 @@ import (
 	"github.com/nanoteck137/sewaddle/types"
 )
 
+func ConvertURL(c echo.Context, path string) string {
+	host := c.Request().Host
+
+	return fmt.Sprintf("http://%s%s", host, path)
+}
+
 func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
 	items, err := api.database.GetAllSeries(c.Request().Context())
 	if err != nil {
@@ -18,15 +24,11 @@ func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
 		Series: make([]types.ApiGetSeriesItem, len(items)),
 	}
 
-	host := c.Request().Host
-
-	url := fmt.Sprintf("http://%s", host)
-
 	for i, item := range items {
 		result.Series[i] = types.ApiGetSeriesItem{
 			Id:           item.Id,
 			Name:         item.Name,
-			Cover:        url + "/images/" + item.Cover,
+			Cover:        ConvertURL(c, "/images/" + item.Cover),
 			ChapterCount: item.ChapterCount,
 		}
 	}
@@ -50,6 +52,7 @@ func (api *ApiConfig) HandleGetSerieById(c echo.Context) error {
 	result := types.ApiGetSerieById{
 		Id:           serie.Id,
 		Name:         serie.Name,
+		Cover:        ConvertURL(c, "/images/" + serie.Cover),
 		ChapterCount: serie.ChapterCount,
 	}
 

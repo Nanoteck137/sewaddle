@@ -66,7 +66,7 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 
 	sql, _, err := Dialect.
 		From("series").
-		Select("series.id", "series.name", "chapterCount.count").
+		Select("series.id", "series.name", "series.cover", "chapterCount.count").
 		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")})).
 		Where(goqu.C("id").Eq(id)).
 		Limit(1).
