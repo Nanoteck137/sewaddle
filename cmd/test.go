@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/nanoteck137/sewaddle/library"
+	"github.com/nanoteck137/sewaddle/types"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +32,8 @@ var testCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		lib.Sync(db)
+		workDir := types.WorkDir("./work")
+		lib.Sync(db, workDir)
 	},
 }
 
