@@ -23,6 +23,7 @@ func New(conn *pgxpool.Pool) *Database {
 type Serie struct {
 	Id           string
 	Name         string
+	Cover        string
 	ChapterCount int `db:"count"`
 }
 
@@ -35,7 +36,7 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 
 	sql, _, err := Dialect.
 		From("series").
-		Select("series.id", "series.name", "chapterCount.count").
+		Select("series.id", "series.name", "series.cover", "chapterCount.count").
 		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")})).
 		ToSQL()
 	if err != nil {
