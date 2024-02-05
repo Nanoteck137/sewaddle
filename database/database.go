@@ -169,3 +169,55 @@ func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([
 
 	return items, nil
 }
+
+func (db *Database) GetNextChapter(ctx context.Context, serieId string, currentIndex int) (string, error) {
+	sql, _, err := Dialect.
+		From("chapters").
+		Select("id").
+		Where(goqu.And(goqu.C("serieId").Eq(serieId), goqu.C("idx").Gt(currentIndex))).
+		Limit(1).
+		Order(goqu.C("idx").Asc()).
+		ToSQL()
+	if err != nil {
+		return "", err
+	}
+
+	rows, err := db.conn.Query(ctx, sql)
+	if err != nil {
+		return "", err
+	}
+
+	var item string
+	err = pgxscan.ScanOne(&item, rows)
+	if err != nil {
+		return "", err
+	}
+
+	return item, nil
+}
+
+func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentIndex int) (string, error) {
+	sql, _, err := Dialect.
+		From("chapters").
+		Select("id").
+		Where(goqu.And(goqu.C("serieId").Eq(serieId), goqu.C("idx").Lt(currentIndex))).
+		Limit(1).
+		Order(goqu.C("idx").Desc()).
+		ToSQL()
+	if err != nil {
+		return "", err
+	}
+
+	rows, err := db.conn.Query(ctx, sql)
+	if err != nil {
+		return "", err
+	}
+
+	var item string
+	err = pgxscan.ScanOne(&item, rows)
+	if err != nil {
+		return "", err
+	}
+
+	return item, nil
+}

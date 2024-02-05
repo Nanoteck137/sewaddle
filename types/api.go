@@ -72,9 +72,11 @@ type ApiGetChapters struct {
 }
 
 type ApiGetChapterById struct {
-	Id      string   `json:"id"`
-	Index   int      `json:"index"`
-	Title   string   `json:"title"`
-	SerieId string   `json:"serieId"`
-	Pages   []string `json:"pages"`
+	Id            string   `json:"id"`
+	Index         int      `json:"index"`
+	Title         string   `json:"title"`
+	SerieId       string   `json:"serieId"`
+	NextChapterId string   `json:"nextChapterId,omitempty"`
+	PrevChapterId string   `json:"prevChapterId,omitempty"`
+	Pages         []string `json:"pages"`
 }

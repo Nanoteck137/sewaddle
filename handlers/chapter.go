@@ -44,17 +44,22 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		}
 	}
 
+	nextId, err := api.database.GetNextChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
+	prevId, err := api.database.GetPrevChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
+
 	pages := strings.Split(chapter.Pages, ",")
 	for i, page := range pages {
 		pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%s", chapter.Id, page))
 	}
 
 	result := types.ApiGetChapterById{
-		Id:      chapter.Id,
-		Index:   chapter.Index,
-		Title:   chapter.Title,
-		SerieId: chapter.SerieId,
-		Pages:   pages,
+		Id:            chapter.Id,
+		Index:         chapter.Index,
+		Title:         chapter.Title,
+		SerieId:       chapter.SerieId,
+		NextChapterId: nextId,
+		PrevChapterId: prevId,
+		Pages:         pages,
 	}
 
 	return c.JSON(200, types.CreateResponse(result))
