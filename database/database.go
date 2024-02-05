@@ -94,6 +94,7 @@ type Chapter struct {
 	Index   int `db:"idx"`
 	Title   string
 	SerieId string `db:"serieId"`
+	Pages string
 }
 
 func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
@@ -122,7 +123,7 @@ func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
 func (db *Database) GetChapterById(ctx context.Context, id string) (Chapter, error) {
 	sql, _, err := Dialect.
 		From("chapters").
-		Select("id", "idx", "title", "serieId").
+		Select("id", "idx", "title", "serieId", "pages").
 		Where(goqu.C("id").Eq(id)).
 		Limit(1).
 		ToSQL()

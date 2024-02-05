@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
@@ -41,11 +44,17 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		}
 	}
 
+	pages := strings.Split(chapter.Pages, ",")
+	for i, page := range pages {
+		pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%s", chapter.Id, page))
+	}
+
 	result := types.ApiGetChapterById{
 		Id:      chapter.Id,
 		Index:   chapter.Index,
 		Title:   chapter.Title,
 		SerieId: chapter.SerieId,
+		Pages:   pages,
 	}
 
 	return c.JSON(200, types.CreateResponse(result))

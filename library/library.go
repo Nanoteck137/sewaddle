@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -34,6 +35,8 @@ type Chapter struct {
 	Path  string
 	Title string
 	Index int
+
+	Pages []string
 }
 
 type Serie struct {
@@ -82,10 +85,18 @@ func ReadFromDir(dir string) (*Library, error) {
 		var chapters []Chapter
 
 		for _, chapter := range metadata.Chapters {
+			chapterPath := path.Join(p, "chapters", strconv.Itoa(chapter.Index))
+
+			pages := make([]string, len(chapter.Pages))
+			for i, page := range chapter.Pages {
+				pages[i] = path.Join(chapterPath, page)
+			}
+
 			chapters = append(chapters, Chapter{
-				Path:  path.Join(p, strconv.Itoa(chapter.Index)),
+				Path:  chapterPath,
 				Title: chapter.Name,
 				Index: chapter.Index,
+				Pages: pages,
 			})
 		}
 
@@ -219,6 +230,7 @@ type DbChapter struct {
 	Title   string
 	SerieId string `db:"serieId"`
 	Path    string
+	Pages   string
 }
 
 func GetChapterByPath(db *pgxpool.Pool, path string) (*DbChapter, error) {
@@ -232,6 +244,7 @@ func CreateChapter(db *pgxpool.Pool, index int, title, serieId string, path stri
 		"title":   title,
 		"serieId": serieId,
 		"path":    path,
+		"pages":   "",
 	})
 }
 
@@ -253,9 +266,39 @@ func GetOrCreateChapter(db *pgxpool.Pool, chapter *Chapter, serie *DbSerie) (*Db
 	return dbChapter, nil
 }
 
+func UpdateChapter(db *pgxpool.Pool, id, pages string) error {
+	sql, params, err := dialect.Update("chapters").
+		Set(goqu.Record{"pages": pages}).
+		Where(goqu.C("id").Eq(id)).
+		Prepared(true).
+		ToSQL()
+	if err != nil {
+		return err
+	}
+	// fmt.Printf("sql: %v\n", sql)
+	// fmt.Printf("params: %v\n", params)
+
+	tag, err := db.Exec(context.Background(), sql, params...)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("tag: %v\n", tag)
+
+	return nil
+
+}
+
 func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
 	imagesDir := workDir.ImagesDir()
 	err := os.MkdirAll(imagesDir, 0755)
+	if err != nil {
+		// TODO(patrik): Remove
+		log.Fatal(err)
+	}
+
+	chaptersDir := workDir.ChaptersDir()
+	err = os.MkdirAll(chaptersDir, 0755)
 	if err != nil {
 		// TODO(patrik): Remove
 		log.Fatal(err)
@@ -307,11 +350,54 @@ func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
 			dbChapter, err := GetOrCreateChapter(db, &chapter, dbSerie)
 			if err != nil {
 				log.Println("Err:", err)
+				continue
 			}
 
-			_ = dbChapter
-		}
+			dir := path.Join(chaptersDir, dbChapter.Id)
 
-		_ = dbSerie
+			err = os.MkdirAll(dir, 0755)
+			if err != nil {
+				// TODO(patrik): Remove
+				log.Fatal(err)
+			}
+
+			var pages []string
+
+			for _, page := range chapter.Pages {
+				name := path.Base(page)
+				dst := path.Join(dir, name)
+
+				src, err := filepath.Abs(page)
+				if err != nil {
+					// TODO(patrik): Remove
+					log.Fatal(err)
+				}
+
+				err = os.Symlink(src, dst)
+				if err != nil {
+					if os.IsExist(err) {
+						err := os.Remove(dst)
+						if err != nil {
+							// TODO(patrik): Remove
+							log.Fatal(err)
+						}
+
+						err = os.Symlink(src, dst)
+						if err != nil {
+							// TODO(patrik): Remove
+							log.Fatal(err)
+						}
+					} else {
+						// TODO(patrik): Remove
+						log.Fatal(err)
+					}
+				}
+
+				pages = append(pages, name)
+			}
+
+			pagesStr := strings.Join(pages, ",")
+			UpdateChapter(db, dbChapter.Id, pagesStr)
+		}
 	}
 }

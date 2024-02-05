@@ -16,8 +16,10 @@ func New(conn *pgxpool.Pool) *echo.Echo {
 
 	e.Use(echolog.LoggerWithName("Sewaddle"))
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	e.Static("/images", "./work/images")
+	e.Static("/chapters", "./work/chapters")
 
 	db := database.New(conn)
 	apiConfig := handlers.New(db)
