@@ -94,7 +94,7 @@ type Chapter struct {
 	Index   int `db:"idx"`
 	Title   string
 	SerieId string `db:"serieId"`
-	Pages string
+	Pages   string
 }
 
 func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
@@ -221,3 +221,34 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentI
 
 	return item, nil
 }
+
+type User struct {
+	Id       string
+	Username string
+	Password string
+}
+
+func (db *Database) GetUserById(ctx context.Context, id string) (User, error) {
+	sql, params, err := Dialect.
+		From("users").
+		Select("id", "username", "password").
+		Where(goqu.C("id").Eq(id)).
+		ToSQL()
+	if err != nil {
+		return User{}, err
+	}
+
+	rows, err := db.conn.Query(ctx, sql, params...)
+	if err != nil {
+		return User{}, err
+	}
+
+	var item User
+	err = pgxscan.ScanOne(&item, rows)
+	if err != nil {
+		return User{}, err
+	}
+
+	return item, nil
+}
+
