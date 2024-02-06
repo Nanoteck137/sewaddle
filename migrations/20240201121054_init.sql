@@ -25,6 +25,15 @@ CREATE TABLE chapters (
         REFERENCES series("id")
 );
 
+CREATE TABLE users (
+    "id" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+
+    CONSTRAINT "usersPk" PRIMARY KEY("id"),
+);
+
 -- +goose Down
+DROP TABLE users;
 DROP TABLE chapters;
 DROP TABLE series;
