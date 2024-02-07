@@ -82,9 +82,9 @@ type ApiGetChapterById struct {
 }
 
 type ApiPostRegisterBody struct {
-	Username        string `json:"username"`
-	Password        string `json:"password"`
-	PasswordConfirm string `json:"passwordConfirm"`
+	Username        string `json:"username" validate:"required"`
+	Password        string `json:"password" validate:"required"`
+	PasswordConfirm string `json:"passwordConfirm" validate:"required"`
 }
 
 type ApiPostRegister struct {
