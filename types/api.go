@@ -80,3 +80,12 @@ type ApiGetChapterById struct {
 	PrevChapterId string   `json:"prevChapterId,omitempty"`
 	Pages         []string `json:"pages"`
 }
+
+type ApiPostRegisterBody struct {
+	Username        string `json:"username"`
+	Password        string `json:"password"`
+	PasswordConfirm string `json:"passwordConfirm"`
+}
+
+type ApiPostRegister struct {
+}
