@@ -30,7 +30,7 @@ CREATE TABLE users (
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
 
-    CONSTRAINT "usersPk" PRIMARY KEY("id"),
+    CONSTRAINT "usersPk" PRIMARY KEY("id")
 );
 
 -- +goose Down
