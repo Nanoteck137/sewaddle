@@ -98,4 +98,5 @@ type ApiPostLoginBody struct {
 }
 
 type ApiPostLogin struct {
+	Token string `json:"token"`
 }

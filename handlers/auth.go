@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
@@ -116,12 +118,20 @@ func (api *ApiConfig) HandlePostLogin(c echo.Context) error {
 		})
 	}
 
-	// user, err := api.database.CreateUser(c.Request().Context(), body.Username, body.Password)
-	// if err != nil {
-	// 	return err
-	// }
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"foo": "bar",
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Add(10 * time.Second).Unix(),
+	})
 
-	return c.JSON(200, types.CreateResponse(types.ApiPostLogin{}))
+	tokenString, err := token.SignedString(([]byte)("SOME SECRET"))
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, types.CreateResponse(types.ApiPostLogin{
+		Token: tokenString,
+	}))
 }
 
 func InstallAuthHandlers(g *echo.Group, api *ApiConfig) {
