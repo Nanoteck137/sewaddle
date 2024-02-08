@@ -88,4 +88,14 @@ type ApiPostRegisterBody struct {
 }
 
 type ApiPostRegister struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+}
+
+type ApiPostLoginBody struct {
+	Username        string `json:"username" validate:"required"`
+	Password        string `json:"password" validate:"required"`
+}
+
+type ApiPostLogin struct {
 }

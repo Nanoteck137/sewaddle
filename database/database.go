@@ -6,6 +6,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type Database struct {
@@ -228,11 +229,66 @@ type User struct {
 	Password string
 }
 
+func (db *Database) CreateUser(ctx context.Context, username, password string) (User, error) {
+	sql, params, err := Dialect.
+		Insert("users").
+		Rows(goqu.Record{
+			"id": utils.CreateId(),
+			"username": username,
+			"password": password,
+		}).
+		Returning(goqu.C("*")).
+		ToSQL()
+	if err != nil {
+		return User{}, err
+	}
+
+	rows, err := db.conn.Query(ctx, sql, params...)
+	if err != nil {
+		return User{}, err
+	}
+
+	var item User
+	err = pgxscan.ScanOne(&item, rows)
+	if err != nil {
+		return User{}, err
+	}
+
+	return item, nil
+
+
+	return User{}, nil
+}
+
 func (db *Database) GetUserById(ctx context.Context, id string) (User, error) {
 	sql, params, err := Dialect.
 		From("users").
 		Select("id", "username", "password").
 		Where(goqu.C("id").Eq(id)).
+		ToSQL()
+	if err != nil {
+		return User{}, err
+	}
+
+	rows, err := db.conn.Query(ctx, sql, params...)
+	if err != nil {
+		return User{}, err
+	}
+
+	var item User
+	err = pgxscan.ScanOne(&item, rows)
+	if err != nil {
+		return User{}, err
+	}
+
+	return item, nil
+}
+
+func (db *Database) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	sql, params, err := Dialect.
+		From("users").
+		Select("id", "username", "password").
+		Where(goqu.C("username").Eq(username)).
 		ToSQL()
 	if err != nil {
 		return User{}, err
