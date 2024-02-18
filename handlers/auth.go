@@ -14,7 +14,7 @@ import (
 )
 
 // TODO(patrik): Check confirmPassword
-func (api *ApiConfig) HandlePostRegister(c echo.Context) error {
+func (api *ApiConfig) HandlePostSignup(c echo.Context) error {
 	var body types.ApiPostRegisterBody
 	err := c.Bind(&body)
 	if err != nil {
@@ -66,7 +66,7 @@ func (api *ApiConfig) HandlePostRegister(c echo.Context) error {
 	}))
 }
 
-func (api *ApiConfig) HandlePostLogin(c echo.Context) error {
+func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
 	var body types.ApiPostLoginBody
 	err := c.Bind(&body)
 	if err != nil {
@@ -191,7 +191,7 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 }
 
 func InstallAuthHandlers(g *echo.Group, api *ApiConfig) {
-	g.POST("/register", api.HandlePostRegister)
-	g.POST("/login", api.HandlePostLogin)
+	g.POST("/signup", api.HandlePostSignup)
+	g.POST("/signin", api.HandlePostSignin)
 	g.GET("/me", api.HandleGetMe)
 }
