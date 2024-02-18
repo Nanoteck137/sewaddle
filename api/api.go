@@ -1,6 +1,11 @@
 package api
 
 import (
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+
 	"github.com/MadAppGang/httplog/echolog"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -24,12 +29,14 @@ func New(conn *pgxpool.Pool) *echo.Echo {
 	db := database.New(conn)
 	apiConfig := handlers.New(db)
 
-	apiGroup := e.Group("/api/v1")
-	handlers.InstallSerieHandlers(apiGroup, apiConfig)
-	handlers.InstallChapterHandlers(apiGroup, apiConfig)
+	apiGroup := e.Group("/api")
 
-	apiGroup = apiGroup.Group("/auth")
-	handlers.InstallAuthHandlers(apiGroup, apiConfig)
+	v1Group := apiGroup.Group("/v1")
+	handlers.InstallSerieHandlers(v1Group, apiConfig)
+	handlers.InstallChapterHandlers(v1Group, apiConfig)
+
+	authGroup := apiGroup.Group("/auth")
+	handlers.InstallAuthHandlers(authGroup, apiConfig)
 
 	return e
 }

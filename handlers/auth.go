@@ -119,9 +119,9 @@ func (api *ApiConfig) HandlePostLogin(c echo.Context) error {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"foo": "bar",
-		"iat": time.Now().Unix(),
-		"nbf": time.Now().Add(10 * time.Second).Unix(),
+		"userId": user.Id,
+		"iat":    time.Now().Unix(),
+		"exp":    time.Now().Add(100 * time.Second).Unix(),
 	})
 
 	tokenString, err := token.SignedString(([]byte)("SOME SECRET"))
@@ -134,7 +134,64 @@ func (api *ApiConfig) HandlePostLogin(c echo.Context) error {
 	}))
 }
 
+func (api *ApiConfig) HandleGetMe(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	splits := strings.Split(authHeader, " ")
+	if len(splits) != 2 {
+		return c.JSON(401, map[string]any{
+			"message": "Invalid 'Authorization' header",
+		})
+	}
+
+	if splits[0] != "Bearer" {
+		return c.JSON(401, map[string]any{
+			"message": "Invalid 'Authorization' header",
+		})
+	}
+
+	fmt.Printf("splits[1]: %v\n", splits[1])
+
+	tokenString := splits[1]
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte("SOME SECRET"), nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	validator := jwt.NewValidator(jwt.WithExpirationRequired(), jwt.WithIssuedAt())
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if err := validator.Validate(token.Claims); err != nil {
+			return c.JSON(401, map[string]any{
+				"message": "Invalid token",
+			})
+		}
+
+		userId := claims["userId"].(string)
+		user, err := api.database.GetUserById(c.Request().Context(), userId)
+		if err != nil {
+			return err
+		}
+
+		pretty.Println(user)
+		return nil
+	}
+
+	return c.JSON(401, map[string]any{
+		"message": "Invalid token",
+	})
+
+}
+
 func InstallAuthHandlers(g *echo.Group, api *ApiConfig) {
 	g.POST("/register", api.HandlePostRegister)
 	g.POST("/login", api.HandlePostLogin)
+	g.GET("/me", api.HandleGetMe)
 }
