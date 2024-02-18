@@ -1,11 +1,6 @@
 package api
 
 import (
-	"encoding/json"
-	"errors"
-	"io"
-	"net/http"
-
 	"github.com/MadAppGang/httplog/echolog"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
