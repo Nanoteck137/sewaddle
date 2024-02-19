@@ -162,16 +162,14 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 	})
 
 	if err != nil {
-		return err
+		return types.ErrInvalidToken
 	}
 
 	validator := jwt.NewValidator(jwt.WithExpirationRequired(), jwt.WithIssuedAt())
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		if err := validator.Validate(token.Claims); err != nil {
-			return c.JSON(401, map[string]any{
-				"message": "Invalid token",
-			})
+			return types.ErrInvalidToken
 		}
 
 		userId := claims["userId"].(string)
@@ -181,12 +179,17 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 		}
 
 		pretty.Println(user)
-		return nil
+		// return c.JSON(200, map[string]any{
+		// 	"id": user.Id,
+		// 	"username": user.Username,
+		// })
+		return c.JSON(200, types.CreateResponse(types.ApiGetMe{
+			Id:       user.Id,
+			Username: user.Username,
+		}))
 	}
 
-	return c.JSON(401, map[string]any{
-		"message": "Invalid token",
-	})
+	return types.ErrInvalidToken
 
 }
 
