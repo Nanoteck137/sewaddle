@@ -255,9 +255,6 @@ func (db *Database) CreateUser(ctx context.Context, username, password string) (
 	}
 
 	return item, nil
-
-
-	return User{}, nil
 }
 
 func (db *Database) GetUserById(ctx context.Context, id string) (User, error) {
