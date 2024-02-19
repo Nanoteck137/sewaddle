@@ -14,6 +14,8 @@ func New(conn *pgxpool.Pool) *echo.Echo {
 
 	e.Debug = true
 
+	e.HTTPErrorHandler = handlers.ErrorHandler
+
 	e.Use(echolog.LoggerWithName("Sewaddle"))
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())

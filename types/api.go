@@ -1,5 +1,11 @@
 package types
 
+import "errors"
+
+var (
+	ErrInvalidToken = errors.New("Invalid Token")
+)
+
 type ApiResponse[T any] struct {
 	Message string `json:"message,omitempty"`
 	Data    T      `json:"data,omitempty"`
@@ -99,4 +105,9 @@ type ApiPostLoginBody struct {
 
 type ApiPostLogin struct {
 	Token string `json:"token"`
+}
+
+type ApiGetMe struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
 }
