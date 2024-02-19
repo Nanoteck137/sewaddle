@@ -233,7 +233,7 @@ func (db *Database) CreateUser(ctx context.Context, username, password string) (
 	sql, params, err := Dialect.
 		Insert("users").
 		Rows(goqu.Record{
-			"id": utils.CreateId(),
+			"id":       utils.CreateId(),
 			"username": username,
 			"password": password,
 		}).
@@ -304,4 +304,3 @@ func (db *Database) GetUserByUsername(ctx context.Context, username string) (Use
 
 	return item, nil
 }
-
