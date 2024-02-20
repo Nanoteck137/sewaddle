@@ -10,7 +10,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
+	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
+	"github.com/nanoteck137/sewaddle/utils"
 )
 
 // TODO(patrik): Check confirmPassword
@@ -134,20 +136,12 @@ func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
 	}))
 }
 
-func (api *ApiConfig) HandleGetMe(c echo.Context) error {
+func (api *ApiConfig) User(c echo.Context) (database.User, error) {
 	authHeader := c.Request().Header.Get("Authorization")
-	splits := strings.Split(authHeader, " ")
-	if len(splits) != 2 {
-		return types.ErrInvalidAuthHeader
+	tokenString, err := utils.ParseAuthHeader(authHeader)
+	if err != nil {
+		return database.User{}, err
 	}
-
-	if splits[0] != "Bearer" {
-		return types.ErrInvalidAuthHeader
-	}
-
-	fmt.Printf("splits[1]: %v\n", splits[1])
-
-	tokenString := splits[1]
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -158,35 +152,36 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 	})
 
 	if err != nil {
-		return types.ErrInvalidToken
+		return database.User{}, types.ErrInvalidToken
 	}
 
-	validator := jwt.NewValidator(jwt.WithExpirationRequired(), jwt.WithIssuedAt())
-
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		if err := validator.Validate(token.Claims); err != nil {
-			return types.ErrInvalidToken
+		if err := api.jwtValidator.Validate(token.Claims); err != nil {
+			return database.User{}, types.ErrInvalidToken
 		}
 
 		userId := claims["userId"].(string)
 		user, err := api.database.GetUserById(c.Request().Context(), userId)
 		if err != nil {
-			return err
+			return database.User{}, err
 		}
 
-		pretty.Println(user)
-		// return c.JSON(200, map[string]any{
-		// 	"id": user.Id,
-		// 	"username": user.Username,
-		// })
-		return c.JSON(200, types.CreateResponse(types.ApiGetMe{
-			Id:       user.Id,
-			Username: user.Username,
-		}))
+		return user, nil
 	}
 
-	return types.ErrInvalidToken
+	return database.User{}, types.ErrInvalidToken
+}
 
+func (api *ApiConfig) HandleGetMe(c echo.Context) error {
+	user, err := api.User(c)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, types.CreateResponse(types.ApiGetMe{
+		Id:       user.Id,
+		Username: user.Username,
+	}))
 }
 
 func InstallAuthHandlers(g *echo.Group, api *ApiConfig) {
