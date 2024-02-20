@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -9,15 +8,14 @@ import (
 )
 
 func ErrorHandler(err error, c echo.Context) {
-	switch {
-	case errors.Is(err, types.ErrInvalidToken):
-		c.JSON(http.StatusUnauthorized, map[string]any{
-			"error": err.Error(),
-		})
-	default:
-		c.JSON(http.StatusInternalServerError, map[string]any{
-			"error": err.Error(),
-		})
+	code := http.StatusInternalServerError
+
+	if apiError, ok := err.(*types.ApiError); ok {
+		code = apiError.Code
 	}
+
+	c.JSON(code, map[string]any{
+		"error": err.Error(),
+	})
 
 }

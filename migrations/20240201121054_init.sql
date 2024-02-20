@@ -33,7 +33,21 @@ CREATE TABLE users (
     CONSTRAINT "usersPk" PRIMARY KEY("id")
 );
 
+CREATE TABLE user_chapter_marked(
+    user_id TEXT NOT NULL,
+    chapter_id TEXT NOT NULL,
+
+    CONSTRAINT user_chapter_marked_pk PRIMARY KEY(user_id, chapter_id),
+
+    CONSTRAINT user_chapter_marked_user_id FOREIGN KEY (user_id)
+        REFERENCES users("id"),
+
+    CONSTRAINT user_chapter_marked_chapter_id FOREIGN KEY (chapter_id)
+        REFERENCES chapters("id")
+);
+
 -- +goose Down
+DROP TABLE user_chapter_marked;
 DROP TABLE users;
 DROP TABLE chapters;
 DROP TABLE series;

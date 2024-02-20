@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -221,6 +223,49 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentI
 	}
 
 	return item, nil
+}
+
+func (db *Database) MarkChapter(ctx context.Context, user_id, chapter_id string, mark bool) error {
+	if mark {
+		ds := Dialect.Insert("user_chapter_marked").Rows(goqu.Record{
+			"user_id": user_id,
+			"chapter_id": chapter_id,
+		}).Prepared(true)
+
+		sql, params, err := ds.ToSQL()
+		if err != nil {
+			return err
+		}
+
+		tag, err := db.conn.Exec(ctx, sql, params...)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("tag: %v\n", tag)
+	} else {
+		ds := Dialect.Delete("user_chapter_marked").
+			Where(goqu.And(goqu.C("user_id").Eq(user_id), goqu.C("chapter_id").Eq(chapter_id))).
+			Prepared(true)
+
+		sql, params, err := ds.ToSQL()
+		if err != nil {
+			return err
+		}
+
+		tag, err := db.conn.Exec(ctx, sql, params...)
+		if err != nil {
+			return err
+		}
+
+		if tag.RowsAffected() == 0 {
+			return errors.New("No chapter to unmark")
+		}
+
+		fmt.Printf("tag: %v\n", tag)
+	}
+
+	return nil
 }
 
 type User struct {

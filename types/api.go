@@ -1,9 +1,28 @@
 package types
 
-import "errors"
+import (
+	"net/http"
+)
+
+type ApiError struct {
+	Code    int
+	Message string
+}
+
+func (err *ApiError) Error() string {
+	return err.Message
+}
+
+func NewApiError(code int, message string) *ApiError {
+	return &ApiError{
+		Code:    code,
+		Message: message,
+	}
+}
 
 var (
-	ErrInvalidToken = errors.New("Invalid Token")
+	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
+	ErrInvalidAuthHeader = NewApiError(http.StatusUnauthorized, "Invalid Authorization Header")
 )
 
 type ApiResponse[T any] struct {
