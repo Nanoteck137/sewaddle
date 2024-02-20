@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
 )
@@ -70,100 +70,30 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 func (api *ApiConfig) HandlePostChapterMarkById(c echo.Context) error {
 	id := c.Param("id")
 
-	authHeader := c.Request().Header.Get("Authorization")
-	splits := strings.Split(authHeader, " ")
-	if len(splits) != 2 {
-		return types.ErrInvalidAuthHeader
-	}
-
-	if splits[0] != "Bearer" {
-		return types.ErrInvalidAuthHeader
-	}
-
-	fmt.Printf("splits[1]: %v\n", splits[1])
-
-	tokenString := splits[1]
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return []byte("SOME SECRET"), nil
-	})
-
+	user, err := api.User(c)
 	if err != nil {
-		return types.ErrInvalidToken
+		return err
 	}
 
-	validator := jwt.NewValidator(jwt.WithExpirationRequired(), jwt.WithIssuedAt())
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		if err := validator.Validate(token.Claims); err != nil {
-			return types.ErrInvalidToken
-		}
-
-		userId := claims["userId"].(string)
-		// user, err := api.database.GetUserById(c.Request().Context(), userId)
-		// if err != nil {
-		// 	return err
-		// }
-
-		err := api.database.MarkChapter(c.Request().Context(), userId, id, true)
-		if err != nil {
-			return err
-		}
+	err = api.database.MarkChapter(c.Request().Context(), user.Id, id, true)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
 	id := c.Param("id")
 
-	authHeader := c.Request().Header.Get("Authorization")
-	splits := strings.Split(authHeader, " ")
-	if len(splits) != 2 {
-		return types.ErrInvalidAuthHeader
-	}
-
-	if splits[0] != "Bearer" {
-		return types.ErrInvalidAuthHeader
-	}
-
-	fmt.Printf("splits[1]: %v\n", splits[1])
-
-	tokenString := splits[1]
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return []byte("SOME SECRET"), nil
-	})
-
+	user, err := api.User(c)
 	if err != nil {
-		return types.ErrInvalidToken
+		return err
 	}
 
-	validator := jwt.NewValidator(jwt.WithExpirationRequired(), jwt.WithIssuedAt())
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		if err := validator.Validate(token.Claims); err != nil {
-			return types.ErrInvalidToken
-		}
-
-		userId := claims["userId"].(string)
-		// user, err := api.database.GetUserById(c.Request().Context(), userId)
-		// if err != nil {
-		// 	return err
-		// }
-
-		err := api.database.MarkChapter(c.Request().Context(), userId, id, false)
-		if err != nil {
-			return err
-		}
+	err = api.database.MarkChapter(c.Request().Context(), user.Id, id, false)
+	if err != nil {
+		return err
 	}
 
 	return nil
