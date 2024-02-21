@@ -9,16 +9,13 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
-	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type ChapterMetadata struct {
@@ -121,88 +118,6 @@ func ReadFromDir(dir string) (*Library, error) {
 
 var dialect = goqu.Dialect("postgres")
 
-func GetByPath[T any](db *pgxpool.Pool, table, path string) (*T, error) {
-	sql, params, err := dialect.From(table).Select().Where(goqu.C("path").Eq(path)).Limit(1).Prepared(true).ToSQL()
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := db.Query(context.Background(), sql, params...)
-	if err != nil {
-		return nil, err
-	}
-
-	var res T
-	err = pgxscan.ScanOne(&res, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-func Create[T any](db *pgxpool.Pool, tableName string, record goqu.Record) (*T, error) {
-	sql, params, err := dialect.Insert(tableName).
-		Rows(record).
-		Returning(goqu.C("*")).
-		Prepared(true).
-		ToSQL()
-	if err != nil {
-		return nil, err
-	}
-
-	// fmt.Printf("sql: %v\n", sql)
-	// fmt.Printf("params: %v\n", params)
-
-	rows, err := db.Query(context.Background(), sql, params...)
-	if err != nil {
-		return nil, err
-	}
-
-	var res T
-	err = pgxscan.ScanOne(&res, rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-type DbSerie struct {
-	Id    string
-	Name  string
-	Cover string
-	Path  string
-}
-
-func GetSerieByPath(db *pgxpool.Pool, path string) (*DbSerie, error) {
-	return GetByPath[DbSerie](db, "series", path)
-}
-
-func UpdateSerieCover(db *pgxpool.Pool, id, coverPath string) error {
-	sql, params, err := dialect.Update("series").
-		Set(goqu.Record{"cover": coverPath}).
-		Where(goqu.C("id").Eq(id)).
-		Prepared(true).
-		ToSQL()
-	if err != nil {
-		return err
-	}
-
-	// fmt.Printf("sql: %v\n", sql)
-	// fmt.Printf("params: %v\n", params)
-
-	tag, err := db.Exec(context.Background(), sql, params...)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("tag: %v\n", tag)
-
-	return nil
-
-}
-
 func GetOrCreateSerie(ctx context.Context, db *database.Database, serie *Serie) (database.Serie, error) {
 	dbSerie, err := db.GetSerieByPath(ctx, serie.Path)
 	if err != nil {
@@ -221,69 +136,22 @@ func GetOrCreateSerie(ctx context.Context, db *database.Database, serie *Serie) 
 	return dbSerie, nil
 }
 
-type DbChapter struct {
-	Id      string
-	Idx     int
-	Title   string
-	SerieId string `db:"serieId"`
-	Path    string
-	Pages   string
-}
-
-func GetChapterByPath(db *pgxpool.Pool, path string) (*DbChapter, error) {
-	return GetByPath[DbChapter](db, "chapters", path)
-}
-
-func CreateChapter(db *pgxpool.Pool, index int, title, serieId string, path string) (*DbChapter, error) {
-	return Create[DbChapter](db, "chapters", goqu.Record{
-		"id":      utils.CreateId(),
-		"idx":     index,
-		"title":   title,
-		"serieId": serieId,
-		"path":    path,
-		"pages":   "",
-	})
-}
-
-func GetOrCreateChapter(db *pgxpool.Pool, chapter *Chapter, serie *DbSerie) (*DbChapter, error) {
-	dbChapter, err := GetChapterByPath(db, chapter.Path)
+func GetOrCreateChapter(ctx context.Context, db *database.Database, chapter *Chapter, serie *database.Serie) (database.Chapter, error) {
+	dbChapter, err := db.GetChapterByPath(ctx, chapter.Path)
 	if err != nil {
-		if pgxscan.NotFound(err) {
-			dbChapter, err := CreateChapter(db, chapter.Index, chapter.Title, serie.Id, chapter.Path)
+		if err == pgx.ErrNoRows {
+			dbChapter, err := db.CreateChapter(ctx, chapter.Index, chapter.Title, serie.Id, chapter.Path)
 			if err != nil {
-				return nil, err
+				return database.Chapter{}, err
 			}
 
 			return dbChapter, nil
 		} else {
-			return nil, err
+			return database.Chapter{}, err
 		}
 	}
 
 	return dbChapter, nil
-}
-
-func UpdateChapter(db *pgxpool.Pool, id, pages string) error {
-	sql, params, err := dialect.Update("chapters").
-		Set(goqu.Record{"pages": pages}).
-		Where(goqu.C("id").Eq(id)).
-		Prepared(true).
-		ToSQL()
-	if err != nil {
-		return err
-	}
-	// fmt.Printf("sql: %v\n", sql)
-	// fmt.Printf("params: %v\n", params)
-
-	tag, err := db.Exec(context.Background(), sql, params...)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("tag: %v\n", tag)
-
-	return nil
-
 }
 
 func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
@@ -341,13 +209,13 @@ func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
 			}
 		}
 
-		err = UpdateSerieCover(conn, dbSerie.Id, name)
+		err = db.UpdateSerieCover(ctx, dbSerie.Id, name)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		for _, chapter := range serie.Chapters {
-			dbChapter, err := GetOrCreateChapter(conn, &chapter, dbSerie)
+			dbChapter, err := GetOrCreateChapter(ctx, db, &chapter, &dbSerie)
 			if err != nil {
 				log.Println("Err:", err)
 				continue
@@ -362,7 +230,6 @@ func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
 			}
 
 			var pages []string
-
 			for _, page := range chapter.Pages {
 				name := path.Base(page)
 				dst := path.Join(dir, name)
@@ -396,8 +263,7 @@ func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
 				pages = append(pages, name)
 			}
 
-			pagesStr := strings.Join(pages, ",")
-			UpdateChapter(conn, dbChapter.Id, pagesStr)
+			db.UpdateChapterPages(ctx, dbChapter.Id, pages)
 		}
 	}
 }

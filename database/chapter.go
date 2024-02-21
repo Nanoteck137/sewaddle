@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jackc/pgx/v5"
+	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type Chapter struct {
@@ -15,6 +17,7 @@ type Chapter struct {
 	Title   string
 	SerieId string
 	Pages   string
+	Path    string
 }
 
 func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
@@ -99,7 +102,7 @@ func (db *Database) GetNextChapter(ctx context.Context, serieId string, currentI
 	if err != nil {
 		if err != pgx.ErrNoRows {
 			return "", nil
-		} 
+		}
 
 		return "", err
 	}
@@ -118,7 +121,7 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentI
 	if err != nil {
 		if err != pgx.ErrNoRows {
 			return "", nil
-		} 
+		}
 
 		return "", err
 	}
@@ -165,4 +168,66 @@ func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string, m
 	}
 
 	return nil
+}
+
+func (db *Database) GetChapterByPath(ctx context.Context, path string) (Chapter, error) {
+	ds := dialect.
+		From("chapter").
+		Select("id", "idx", "title", "serieId", "path", "pages").
+		Where(goqu.C("path").Eq(path))
+
+	row, err := db.QueryRow(ctx, ds)
+	if err != nil {
+		return Chapter{}, err
+	}
+
+	var item Chapter
+	err = row.Scan(&item.Id, &item.Index, &item.Title, &item.SerieId, &item.Path, &item.Pages)
+	if err != nil {
+		return Chapter{}, err
+	}
+
+	return item, nil
+}
+
+func (db *Database) CreateChapter(ctx context.Context, index int, title, serieId, path string) (Chapter, error) {
+	ds := dialect.Insert("serie").
+		Rows(goqu.Record{
+			"id":      utils.CreateId(),
+			"idx":     index,
+			"title":   title,
+			"serieId": serieId,
+			"path":    path,
+			"pages":   "",
+		}).
+		Returning("id", "idx", "title", "serieId", "path", "pages").
+		Prepared(true)
+
+	row, err := db.QueryRow(ctx, ds)
+	if err != nil {
+		return Chapter{}, err
+	}
+
+	var item Chapter
+	err = row.Scan(&item.Id, &item.Index, &item.Title, &item.SerieId, &item.Path, &item.Pages)
+	if err != nil {
+		return Chapter{}, err
+	}
+
+	return item, nil
+}
+
+func (db *Database) UpdateChapterPages(ctx context.Context, id string, pages []string) error {
+	ds := dialect.Update("chapters").
+		Set(goqu.Record{"pages": strings.Join(pages, ",")}).
+		Where(goqu.C("id").Eq(id)).
+		Prepared(true)
+
+	_, err := db.Exec(ctx, ds)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }

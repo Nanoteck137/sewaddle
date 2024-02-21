@@ -113,3 +113,18 @@ func (db *Database) CreateSerie(ctx context.Context, name, path string) (Serie, 
 
 	return item, nil
 }
+
+func (db *Database) UpdateSerieCover(ctx context.Context, id, coverPath string) error {
+	ds := dialect.Update("series").
+		Set(goqu.Record{"cover": coverPath}).
+		Where(goqu.C("id").Eq(id)).
+		Prepared(true)
+
+	_, err := db.Exec(context.Background(), ds)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
