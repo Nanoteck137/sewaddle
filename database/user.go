@@ -43,7 +43,7 @@ func (db *Database) GetUserById(ctx context.Context, id string) (User, error) {
 		Select("id", "username", "password").
 		Where(goqu.C("id").Eq(id))
 
-	row, err := db.Query(ctx, ds)
+	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
 		return User{}, err
 	}
