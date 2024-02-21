@@ -90,7 +90,7 @@ func (db *Database) GetSerieByPath(ctx context.Context, path string) (Serie, err
 }
 
 func (db *Database) CreateSerie(ctx context.Context, name, path string) (Serie, error) {
-	ds := dialect.Insert("serie").
+	ds := dialect.Insert("series").
 		Rows(goqu.Record{
 			"id": utils.CreateId(),
 			"name": name,

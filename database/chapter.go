@@ -172,7 +172,7 @@ func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string, m
 
 func (db *Database) GetChapterByPath(ctx context.Context, path string) (Chapter, error) {
 	ds := dialect.
-		From("chapter").
+		From("chapters").
 		Select("id", "idx", "title", "serieId", "path", "pages").
 		Where(goqu.C("path").Eq(path))
 
@@ -191,7 +191,7 @@ func (db *Database) GetChapterByPath(ctx context.Context, path string) (Chapter,
 }
 
 func (db *Database) CreateChapter(ctx context.Context, index int, title, serieId, path string) (Chapter, error) {
-	ds := dialect.Insert("serie").
+	ds := dialect.Insert("chapters").
 		Rows(goqu.Record{
 			"id":      utils.CreateId(),
 			"idx":     index,
