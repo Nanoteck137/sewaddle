@@ -98,8 +98,10 @@ func (db *Database) GetNextChapter(ctx context.Context, serieId string, currentI
 	err = row.Scan(&item)
 	if err != nil {
 		if err != pgx.ErrNoRows {
-			return "", err
-		}
+			return "", nil
+		} 
+
+		return "", err
 	}
 
 	return item, nil
@@ -114,6 +116,10 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentI
 
 	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
+		if err != pgx.ErrNoRows {
+			return "", nil
+		} 
+
 		return "", err
 	}
 
