@@ -6,13 +6,14 @@ import (
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/jackc/pgx/v5"
 )
 
 type Chapter struct {
 	Id      string
-	Index   int `db:"idx"`
+	Index   int
 	Title   string
-	SerieId string `db:"serieId"`
+	SerieId string
 	Pages   string
 }
 
@@ -96,7 +97,9 @@ func (db *Database) GetNextChapter(ctx context.Context, serieId string, currentI
 	var item string
 	err = row.Scan(&item)
 	if err != nil {
-		return "", err
+		if err != pgx.ErrNoRows {
+			return "", err
+		}
 	}
 
 	return item, nil
@@ -117,7 +120,9 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentI
 	var item string
 	err = row.Scan(&item)
 	if err != nil {
-		return "", err
+		if err != pgx.ErrNoRows {
+			return "", err
+		}
 	}
 
 	return item, nil

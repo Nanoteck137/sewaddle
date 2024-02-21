@@ -46,9 +46,15 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		}
 	}
 
-	// TODO(patrik): Handle Errors
 	nextId, err := api.database.GetNextChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
+	if err != nil {
+		return err
+	}
+
 	prevId, err := api.database.GetPrevChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
+	if err != nil {
+		return err
+	}
 
 	pages := strings.Split(chapter.Pages, ",")
 	for i, page := range pages {
