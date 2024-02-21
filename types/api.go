@@ -23,6 +23,8 @@ func NewApiError(code int, message string) *ApiError {
 var (
 	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
 	ErrInvalidAuthHeader = NewApiError(http.StatusUnauthorized, "Invalid Authorization Header")
+
+	ErrChapterNotFound = NewApiError(http.StatusNotFound, "Chapter not found")
 )
 
 type ApiResponse[T any] struct {
