@@ -37,6 +37,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 	chapter, err := api.database.GetChapterById(c.Request().Context(), id)
 	if err != nil {
 		if pgxscan.NotFound(err) {
+			// TODO(patrik): Replace error
 			return c.JSON(404, map[string]any{
 				"message": "No chapter with id: " + id,
 			})
@@ -45,6 +46,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		}
 	}
 
+	// TODO(patrik): Handle Errors
 	nextId, err := api.database.GetNextChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
 	prevId, err := api.database.GetPrevChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
 
