@@ -14,7 +14,9 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
@@ -140,7 +142,11 @@ func GetByPath[T any](db *pgxpool.Pool, table, path string) (*T, error) {
 }
 
 func Create[T any](db *pgxpool.Pool, tableName string, record goqu.Record) (*T, error) {
-	sql, params, err := dialect.Insert(tableName).Rows(record).Returning(goqu.C("*")).Prepared(true).ToSQL()
+	sql, params, err := dialect.Insert(tableName).
+		Rows(record).
+		Returning(goqu.C("*")).
+		Prepared(true).
+		ToSQL()
 	if err != nil {
 		return nil, err
 	}
@@ -173,15 +179,6 @@ func GetSerieByPath(db *pgxpool.Pool, path string) (*DbSerie, error) {
 	return GetByPath[DbSerie](db, "series", path)
 }
 
-func CreateSerie(db *pgxpool.Pool, name, path string) (*DbSerie, error) {
-	return Create[DbSerie](db, "series", goqu.Record{
-		"id":    utils.CreateId(),
-		"name":  name,
-		"cover": "",
-		"path":  path,
-	})
-}
-
 func UpdateSerieCover(db *pgxpool.Pool, id, coverPath string) error {
 	sql, params, err := dialect.Update("series").
 		Set(goqu.Record{"cover": coverPath}).
@@ -206,18 +203,18 @@ func UpdateSerieCover(db *pgxpool.Pool, id, coverPath string) error {
 
 }
 
-func GetOrCreateSerie(db *pgxpool.Pool, serie *Serie) (*DbSerie, error) {
-	dbSerie, err := GetSerieByPath(db, serie.Path)
+func GetOrCreateSerie(ctx context.Context, db *database.Database, serie *Serie) (database.Serie, error) {
+	dbSerie, err := db.GetSerieByPath(ctx, serie.Path)
 	if err != nil {
-		if pgxscan.NotFound(err) {
-			dbSerie, err := CreateSerie(db, serie.Title, serie.Path)
+		if err == pgx.ErrNoRows {
+			dbSerie, err := db.CreateSerie(ctx, serie.Title, serie.Path)
 			if err != nil {
-				return nil, err
+				return database.Serie{}, err
 			}
 
 			return dbSerie, nil
 		} else {
-			return nil, err
+			return database.Serie{}, err
 		}
 	}
 
@@ -289,7 +286,10 @@ func UpdateChapter(db *pgxpool.Pool, id, pages string) error {
 
 }
 
-func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
+func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
+	db := database.New(conn)
+	ctx := context.Background()
+
 	imagesDir := workDir.ImagesDir()
 	err := os.MkdirAll(imagesDir, 0755)
 	if err != nil {
@@ -305,7 +305,7 @@ func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
 	}
 
 	for _, serie := range lib.Series {
-		dbSerie, err := GetOrCreateSerie(db, &serie)
+		dbSerie, err := GetOrCreateSerie(ctx, db, &serie)
 		if err != nil {
 			log.Println("Err:", err)
 			continue
@@ -341,13 +341,13 @@ func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
 			}
 		}
 
-		err = UpdateSerieCover(db, dbSerie.Id, name)
+		err = UpdateSerieCover(conn, dbSerie.Id, name)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		for _, chapter := range serie.Chapters {
-			dbChapter, err := GetOrCreateChapter(db, &chapter, dbSerie)
+			dbChapter, err := GetOrCreateChapter(conn, &chapter, dbSerie)
 			if err != nil {
 				log.Println("Err:", err)
 				continue
@@ -397,7 +397,7 @@ func (lib *Library) Sync(db *pgxpool.Pool, workDir types.WorkDir) {
 			}
 
 			pagesStr := strings.Join(pages, ",")
-			UpdateChapter(db, dbChapter.Id, pagesStr)
+			UpdateChapter(conn, dbChapter.Id, pagesStr)
 		}
 	}
 }

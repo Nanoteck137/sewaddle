@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type Serie struct {
 	Id           string
 	Name         string
 	Cover        string
+	Path         string
 	ChapterCount int `db:"count"`
 }
 
@@ -60,6 +62,51 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 
 	var item Serie
 	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
+	if err != nil {
+		return Serie{}, err
+	}
+
+	return item, nil
+}
+
+func (db *Database) GetSerieByPath(ctx context.Context, path string) (Serie, error) {
+	ds := dialect.
+		From("series").
+		Select("id", "name", "cover", "path").
+		Where(goqu.C("path").Eq(path))
+
+	row, err := db.QueryRow(ctx, ds)
+	if err != nil {
+		return Serie{}, err
+	}
+
+	var item Serie
+	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.Path)
+	if err != nil {
+		return Serie{}, err
+	}
+
+	return item, nil
+}
+
+func (db *Database) CreateSerie(ctx context.Context, name, path string) (Serie, error) {
+	ds := dialect.Insert("serie").
+		Rows(goqu.Record{
+			"id": utils.CreateId(),
+			"name": name,
+			"cover": "",
+			"path": path,
+		}).
+		Returning("id", "name", "cover", "path").
+		Prepared(true)
+
+	row, err := db.QueryRow(ctx, ds)
+	if err != nil {
+		return Serie{}, err
+	}
+
+	var item Serie
+	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.Path)
 	if err != nil {
 		return Serie{}, err
 	}
