@@ -170,6 +170,32 @@ func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string, m
 	return nil
 }
 
+func (db *Database) IsChapterMarked(ctx context.Context, userId, chapterId string) (bool, error) {
+	ds := dialect.From("user_chapter_marked").
+		Select(goqu.L("1")).
+		Where(goqu.And(goqu.C("user_id").Eq(userId), goqu.C("chapter_id").Eq(chapterId))).
+		Prepared(true)
+
+	row, err := db.QueryRow(ctx, ds)
+	if err != nil {
+		return false, err
+	}
+
+	var i int
+	err = row.Scan(&i)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	fmt.Printf("i: %v\n", i)
+
+	return true, nil
+}
+
 func (db *Database) GetChapterByPath(ctx context.Context, path string) (Chapter, error) {
 	ds := dialect.
 		From("chapters").

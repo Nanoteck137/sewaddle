@@ -98,6 +98,10 @@ type ApiGetChapters struct {
 	Chapters []ApiGetChaptersItem `json:"chapters"`
 }
 
+type ApiGetChapterByIdUser struct {
+	IsMarked bool `json:"isMarked"`
+}
+
 type ApiGetChapterById struct {
 	Id            string   `json:"id"`
 	Index         int      `json:"index"`
@@ -106,6 +110,8 @@ type ApiGetChapterById struct {
 	NextChapterId string   `json:"nextChapterId,omitempty"`
 	PrevChapterId string   `json:"prevChapterId,omitempty"`
 	Pages         []string `json:"pages"`
+
+	User *ApiGetChapterByIdUser `json:"user,omitempty"` 
 }
 
 type ApiPostRegisterBody struct {

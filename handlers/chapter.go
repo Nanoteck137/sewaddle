@@ -53,6 +53,21 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		return err
 	}
 
+	var userData *types.ApiGetChapterByIdUser
+
+	user, err := api.User(c)
+	fmt.Printf("err: %v\n", err)
+	if err == nil {
+		isMarked, err := api.database.IsChapterMarked(c.Request().Context(), user.Id, chapter.Id)
+		if err != nil {
+			return err
+		}
+
+		userData = &types.ApiGetChapterByIdUser{
+			IsMarked: isMarked,
+		}
+	}
+
 	pages := strings.Split(chapter.Pages, ",")
 	for i, page := range pages {
 		pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%s", chapter.Id, page))
@@ -66,6 +81,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		NextChapterId: nextId,
 		PrevChapterId: prevId,
 		Pages:         pages,
+		User:          userData,
 	}
 
 	return c.JSON(200, types.CreateResponse(result))
