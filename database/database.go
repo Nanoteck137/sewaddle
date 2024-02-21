@@ -6,13 +6,46 @@ import (
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
+type ToSQL interface {
+	ToSQL() (string, []interface{}, error)
+}
+
 type Database struct {
 	conn *pgxpool.Pool
+}
+
+func (db *Database) Query(ctx context.Context, s ToSQL) (pgx.Rows, error) {
+	sql, params, err := s.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	return db.conn.Query(ctx, sql, params...)
+}
+
+func (db *Database) QueryRow(ctx context.Context, s ToSQL) (pgx.Row, error) {
+	sql, params, err := s.ToSQL()
+	if err != nil {
+		return nil, err
+	}
+
+	row := db.conn.QueryRow(ctx, sql, params...)
+	return row, nil
+}
+
+func (db *Database) Exec(ctx context.Context, s ToSQL) (pgconn.CommandTag, error) {
+	sql, params, err := s.ToSQL()
+	if err != nil {
+		return pgconn.NewCommandTag(""), err
+	}
+
+	return db.conn.Exec(ctx, sql, params...)
 }
 
 var Dialect = goqu.Dialect("postgres")
@@ -37,24 +70,21 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 		GroupBy("chapters.serieId").
 		As("chapterCount")
 
-	sql, _, err := Dialect.
+	ds := Dialect.
 		From("series").
 		Select("series.id", "series.name", "series.cover", "chapterCount.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")})).
-		ToSQL()
-	if err != nil {
-		return nil, err
-	}
+		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")}))
 
-	rows, err := db.conn.Query(ctx, sql)
+	rows, err := db.Query(ctx, ds)
 	if err != nil {
 		return nil, err
 	}
 
 	var items []Serie
-	err = pgxscan.ScanAll(&items, rows)
-	if err != nil {
-		return nil, err
+	for rows.Next() {
+		var item Serie
+		rows.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
+		items = append(items, item)
 	}
 
 	return items, nil
@@ -67,24 +97,19 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 		GroupBy("chapters.serieId").
 		As("chapterCount")
 
-	sql, _, err := Dialect.
+	ds := Dialect.
 		From("series").
 		Select("series.id", "series.name", "series.cover", "chapterCount.count").
 		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")})).
-		Where(goqu.C("id").Eq(id)).
-		Limit(1).
-		ToSQL()
-	if err != nil {
-		return Serie{}, err
-	}
+		Where(goqu.C("id").Eq(id))
 
-	rows, err := db.conn.Query(ctx, sql)
+	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
 		return Serie{}, err
 	}
 
 	var item Serie
-	err = pgxscan.ScanOne(&item, rows)
+	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
 	if err != nil {
 		return Serie{}, err
 	}
@@ -101,46 +126,40 @@ type Chapter struct {
 }
 
 func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
-	sql, _, err := Dialect.
+	ds := Dialect.
 		From("chapters").
-		Select("id", "idx", "title", "serieId").
-		ToSQL()
-	if err != nil {
-		return nil, err
-	}
+		Select("id", "idx", "title", "serieId")
 
-	rows, err := db.conn.Query(ctx, sql)
+	rows, err := db.Query(ctx, ds)
 	if err != nil {
 		return nil, err
 	}
 
 	var items []Chapter
-	err = pgxscan.ScanAll(&items, rows)
-	if err != nil {
-		return nil, err
+	for rows.Next() {
+		var item Chapter
+		rows.Scan(&item.Id, &item.Index, &item.Title, &item.SerieId)
+
+		items = append(items, item)
 	}
 
 	return items, nil
 }
 
 func (db *Database) GetChapterById(ctx context.Context, id string) (Chapter, error) {
-	sql, _, err := Dialect.
+	ds := Dialect.
 		From("chapters").
 		Select("id", "idx", "title", "serieId", "pages").
 		Where(goqu.C("id").Eq(id)).
-		Limit(1).
-		ToSQL()
-	if err != nil {
-		return Chapter{}, err
-	}
+		Prepared(true)
 
-	rows, err := db.conn.Query(ctx, sql)
+	row, err := db.Query(ctx, ds)
 	if err != nil {
 		return Chapter{}, err
 	}
 
 	var item Chapter
-	err = pgxscan.ScanOne(&item, rows)
+	err = row.Scan(&item.Id, &item.Index, &item.SerieId, &item.Pages)
 	if err != nil {
 		return Chapter{}, err
 	}
@@ -149,49 +168,42 @@ func (db *Database) GetChapterById(ctx context.Context, id string) (Chapter, err
 }
 
 func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([]Chapter, error) {
-	sql, _, err := Dialect.
+	ds := Dialect.
 		From("chapters").
 		Select("id", "idx", "title", "serieId").
 		Where(goqu.C("serieId").Eq(serieId)).
-		Order(goqu.C("idx").Asc()).
-		ToSQL()
-	if err != nil {
-		return nil, err
-	}
+		Order(goqu.C("idx").Asc())
 
-	rows, err := db.conn.Query(ctx, sql)
+	rows, err := db.Query(ctx, ds)
 	if err != nil {
 		return nil, err
 	}
 
 	var items []Chapter
-	err = pgxscan.ScanAll(&items, rows)
-	if err != nil {
-		return nil, err
+	for rows.Next() {
+		var item Chapter
+		rows.Scan(&item.Id, &item.Index, &item.Title, &item.SerieId)
+
+		items = append(items, item)
 	}
 
 	return items, nil
 }
 
 func (db *Database) GetNextChapter(ctx context.Context, serieId string, currentIndex int) (string, error) {
-	sql, _, err := Dialect.
+	ds := Dialect.
 		From("chapters").
 		Select("id").
 		Where(goqu.And(goqu.C("serieId").Eq(serieId), goqu.C("idx").Gt(currentIndex))).
-		Limit(1).
-		Order(goqu.C("idx").Asc()).
-		ToSQL()
-	if err != nil {
-		return "", err
-	}
+		Order(goqu.C("idx").Asc())
 
-	rows, err := db.conn.Query(ctx, sql)
+	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
 		return "", err
 	}
 
 	var item string
-	err = pgxscan.ScanOne(&item, rows)
+	err = row.Scan(&item)
 	if err != nil {
 		return "", err
 	}
@@ -200,24 +212,19 @@ func (db *Database) GetNextChapter(ctx context.Context, serieId string, currentI
 }
 
 func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentIndex int) (string, error) {
-	sql, _, err := Dialect.
+	ds := Dialect.
 		From("chapters").
 		Select("id").
 		Where(goqu.And(goqu.C("serieId").Eq(serieId), goqu.C("idx").Lt(currentIndex))).
-		Limit(1).
-		Order(goqu.C("idx").Desc()).
-		ToSQL()
-	if err != nil {
-		return "", err
-	}
+		Order(goqu.C("idx").Desc())
 
-	rows, err := db.conn.Query(ctx, sql)
+	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
 		return "", err
 	}
 
 	var item string
-	err = pgxscan.ScanOne(&item, rows)
+	err = row.Scan(&item)
 	if err != nil {
 		return "", err
 	}
@@ -228,16 +235,11 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentI
 func (db *Database) MarkChapter(ctx context.Context, user_id, chapter_id string, mark bool) error {
 	if mark {
 		ds := Dialect.Insert("user_chapter_marked").Rows(goqu.Record{
-			"user_id": user_id,
+			"user_id":    user_id,
 			"chapter_id": chapter_id,
 		}).Prepared(true)
 
-		sql, params, err := ds.ToSQL()
-		if err != nil {
-			return err
-		}
-
-		tag, err := db.conn.Exec(ctx, sql, params...)
+		tag, err := db.Exec(ctx, ds)
 		if err != nil {
 			return err
 		}
@@ -248,12 +250,7 @@ func (db *Database) MarkChapter(ctx context.Context, user_id, chapter_id string,
 			Where(goqu.And(goqu.C("user_id").Eq(user_id), goqu.C("chapter_id").Eq(chapter_id))).
 			Prepared(true)
 
-		sql, params, err := ds.ToSQL()
-		if err != nil {
-			return err
-		}
-
-		tag, err := db.conn.Exec(ctx, sql, params...)
+		tag, err := db.Exec(ctx, ds)
 		if err != nil {
 			return err
 		}
@@ -275,26 +272,22 @@ type User struct {
 }
 
 func (db *Database) CreateUser(ctx context.Context, username, password string) (User, error) {
-	sql, params, err := Dialect.
+	ds := Dialect.
 		Insert("users").
 		Rows(goqu.Record{
 			"id":       utils.CreateId(),
 			"username": username,
 			"password": password,
 		}).
-		Returning(goqu.C("*")).
-		ToSQL()
-	if err != nil {
-		return User{}, err
-	}
+		Returning("id", "username", "password")
 
-	rows, err := db.conn.Query(ctx, sql, params...)
+	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
 		return User{}, err
 	}
 
 	var item User
-	err = pgxscan.ScanOne(&item, rows)
+	err = row.Scan(&item.Id, &item.Username, &item.Password)
 	if err != nil {
 		return User{}, err
 	}
@@ -303,22 +296,18 @@ func (db *Database) CreateUser(ctx context.Context, username, password string) (
 }
 
 func (db *Database) GetUserById(ctx context.Context, id string) (User, error) {
-	sql, params, err := Dialect.
+	ds := Dialect.
 		From("users").
 		Select("id", "username", "password").
-		Where(goqu.C("id").Eq(id)).
-		ToSQL()
-	if err != nil {
-		return User{}, err
-	}
+		Where(goqu.C("id").Eq(id))
 
-	rows, err := db.conn.Query(ctx, sql, params...)
+	row, err := db.Query(ctx, ds)
 	if err != nil {
 		return User{}, err
 	}
 
 	var item User
-	err = pgxscan.ScanOne(&item, rows)
+	err = row.Scan(&item.Id, &item.Username, &item.Password)
 	if err != nil {
 		return User{}, err
 	}
@@ -327,22 +316,18 @@ func (db *Database) GetUserById(ctx context.Context, id string) (User, error) {
 }
 
 func (db *Database) GetUserByUsername(ctx context.Context, username string) (User, error) {
-	sql, params, err := Dialect.
+	ds := Dialect.
 		From("users").
 		Select("id", "username", "password").
-		Where(goqu.C("username").Eq(username)).
-		ToSQL()
-	if err != nil {
-		return User{}, err
-	}
+		Where(goqu.C("username").Eq(username))
 
-	rows, err := db.conn.Query(ctx, sql, params...)
+	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
 		return User{}, err
 	}
 
 	var item User
-	err = pgxscan.ScanOne(&item, rows)
+	err = row.Scan(&item.Id, &item.Username, &item.Password)
 	if err != nil {
 		return User{}, err
 	}
