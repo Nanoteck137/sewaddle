@@ -16,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
+	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type ChapterMetadata struct {
@@ -189,24 +190,9 @@ func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
 			log.Fatal(err)
 		}
 
-		err = os.Symlink(src, dst)
+		err = utils.SymlinkReplace(src, dst)
 		if err != nil {
-			if os.IsExist(err) {
-				err := os.Remove(dst)
-				if err != nil {
-					// TODO(patrik): Remove
-					log.Fatal(err)
-				}
-
-				err = os.Symlink(src, dst)
-				if err != nil {
-					// TODO(patrik): Remove
-					log.Fatal(err)
-				}
-			} else {
-				// TODO(patrik): Remove
-				log.Fatal(err)
-			}
+			log.Fatal(err)
 		}
 
 		err = db.UpdateSerieCover(ctx, dbSerie.Id, name)
@@ -240,24 +226,9 @@ func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
 					log.Fatal(err)
 				}
 
-				err = os.Symlink(src, dst)
+				err = utils.SymlinkReplace(src, dst)
 				if err != nil {
-					if os.IsExist(err) {
-						err := os.Remove(dst)
-						if err != nil {
-							// TODO(patrik): Remove
-							log.Fatal(err)
-						}
-
-						err = os.Symlink(src, dst)
-						if err != nil {
-							// TODO(patrik): Remove
-							log.Fatal(err)
-						}
-					} else {
-						// TODO(patrik): Remove
-						log.Fatal(err)
-					}
+					log.Fatal(err)
 				}
 
 				pages = append(pages, name)
