@@ -44,13 +44,13 @@ func (db *Database) GetChapterById(ctx context.Context, id string) (Chapter, err
 		Where(goqu.C("id").Eq(id)).
 		Prepared(true)
 
-	row, err := db.Query(ctx, ds)
+	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
 		return Chapter{}, err
 	}
 
 	var item Chapter
-	err = row.Scan(&item.Id, &item.Index, &item.SerieId, &item.Pages)
+	err = row.Scan(&item.Id, &item.Index, &item.Title, &item.SerieId, &item.Pages)
 	if err != nil {
 		return Chapter{}, err
 	}
