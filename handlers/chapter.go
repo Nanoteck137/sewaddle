@@ -29,7 +29,7 @@ func (api *ApiConfig) HandleGetChapters(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(200, types.CreateResponse(result))
+	return c.JSON(200, types.NewApiSuccessResponse(result))
 }
 
 func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
@@ -84,7 +84,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		User:          userData,
 	}
 
-	return c.JSON(200, types.CreateResponse(result))
+	return c.JSON(200, types.NewApiSuccessResponse(result))
 
 }
 
@@ -117,6 +117,7 @@ func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
 		return err
 	}
 
+	// TODO(patrik): NoContent
 	return nil
 }
 

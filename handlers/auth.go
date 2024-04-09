@@ -62,7 +62,7 @@ func (api *ApiConfig) HandlePostSignup(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.CreateResponse(types.ApiPostRegister{
+	return c.JSON(200, types.NewApiSuccessResponse(types.ApiPostRegister{
 		Id:       user.Id,
 		Username: user.Username,
 	}))
@@ -131,7 +131,7 @@ func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.CreateResponse(types.ApiPostLogin{
+	return c.JSON(200, types.NewApiSuccessResponse(types.ApiPostLogin{
 		Token: tokenString,
 	}))
 }
@@ -178,7 +178,7 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.CreateResponse(types.ApiGetMe{
+	return c.JSON(200, types.NewApiSuccessResponse(types.ApiGetMe{
 		Id:       user.Id,
 		Username: user.Username,
 	}))

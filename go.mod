@@ -6,6 +6,8 @@ require (
 	github.com/MadAppGang/httplog/echolog v1.3.0
 	github.com/doug-martin/goqu/v9 v9.19.0
 	github.com/georgysavva/scany/v2 v2.1.0
+	github.com/go-playground/validator/v10 v10.17.0
+	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/jackc/pgx/v5 v5.5.2
 	github.com/joho/godotenv v1.5.1
 	github.com/kr/pretty v0.3.0
@@ -23,9 +25,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.17.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

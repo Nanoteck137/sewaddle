@@ -4,57 +4,50 @@ import (
 	"net/http"
 )
 
+var (
+	ErrInvalidAuthHeader = NewApiError(http.StatusUnauthorized, "Invalid Auth Header")
+	ErrChapterNotFound = NewApiError(http.StatusNotFound, "Chapter not found")
+	ErrInvalidToken = NewApiError(http.StatusUnauthorized, "Invalid Token")
+)
+
+const (
+	StatusSuccess = "success"
+	StatusError   = "error"
+)
+
 type ApiError struct {
-	Code    int
-	Message string
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Errors  any    `json:"errors,omitempty"`
 }
 
 func (err *ApiError) Error() string {
 	return err.Message
 }
 
-func NewApiError(code int, message string) *ApiError {
+func NewApiError(code int, message string, errors ...any) *ApiError {
+	var e any
+	if len(errors) > 0 {
+		e = errors[0]
+	}
+
 	return &ApiError{
 		Code:    code,
 		Message: message,
+		Errors:  e,
 	}
 }
 
-var (
-	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
-	ErrInvalidAuthHeader = NewApiError(http.StatusUnauthorized, "Invalid Authorization Header")
-
-	ErrChapterNotFound = NewApiError(http.StatusNotFound, "Chapter not found")
-)
-
-type ApiResponse[T any] struct {
-	Message string `json:"message,omitempty"`
-	Data    T      `json:"data,omitempty"`
+type ApiResponse struct {
+	Status string    `json:"status"`
+	Data   any       `json:"data,omitempty"`
+	Error  *ApiError `json:"error,omitempty"`
 }
 
-func CreateResponseWithMessage[T any](message string, data ...T) ApiResponse[T] {
-	var d T
-
-	if data != nil && len(data) > 0 {
-		d = data[0]
-	}
-
-	return ApiResponse[T]{
-		Message: message,
-		Data:    d,
-	}
-}
-
-func CreateResponse[T any](data ...T) ApiResponse[T] {
-	var d T
-
-	if data != nil && len(data) > 0 {
-		d = data[0]
-	}
-
-	return ApiResponse[T]{
-		Message: "",
-		Data:    d,
+func NewApiSuccessResponse(data any) ApiResponse {
+	return ApiResponse{
+		Status: StatusSuccess,
+		Data:   data,
 	}
 }
 

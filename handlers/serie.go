@@ -20,12 +20,12 @@ func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
 		return err
 	}
 
-	result := types.ApiGetSeries{
-		Series: make([]types.ApiGetSeriesItem, len(items)),
+	result := types.GetSeries{
+		Series: make([]types.Serie, len(items)),
 	}
 
 	for i, item := range items {
-		result.Series[i] = types.ApiGetSeriesItem{
+		result.Series[i] = types.Serie{
 			Id:           item.Id,
 			Name:         item.Name,
 			Cover:        ConvertURL(c, "/images/" + item.Cover),
@@ -33,7 +33,7 @@ func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(200, types.CreateResponse(result))
+	return c.JSON(200, types.NewApiSuccessResponse(result))
 }
 
 func (api *ApiConfig) HandleGetSerieById(c echo.Context) error {
@@ -49,14 +49,14 @@ func (api *ApiConfig) HandleGetSerieById(c echo.Context) error {
 		}
 	}
 
-	result := types.ApiGetSerieById{
+	result := types.Serie{
 		Id:           serie.Id,
 		Name:         serie.Name,
 		Cover:        ConvertURL(c, "/images/" + serie.Cover),
 		ChapterCount: serie.ChapterCount,
 	}
 
-	return c.JSON(200, types.CreateResponse(result))
+	return c.JSON(200, types.NewApiSuccessResponse(result))
 }
 
 func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
@@ -67,12 +67,12 @@ func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
 		return err
 	}
 
-	result := types.ApiGetSerieChaptersById{
-		Chapters: make([]types.ApiGetSerieChaptersByIdItem, len(items)),
+	result := types.GetSerieChaptersById{
+		Chapters: make([]types.Chapter, len(items)),
 	}
 
 	for i, item := range items {
-		result.Chapters[i] = types.ApiGetSerieChaptersByIdItem{
+		result.Chapters[i] = types.Chapter{
 			Id:      item.Id,
 			Index:   item.Index,
 			Title:   item.Title,
@@ -80,7 +80,7 @@ func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
 		} 
 	}
 
-	return c.JSON(200, types.CreateResponse(result))
+	return c.JSON(200, types.NewApiSuccessResponse(result))
 }
 
 func InstallSerieHandlers(g *echo.Group, api *ApiConfig) {

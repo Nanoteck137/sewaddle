@@ -1,0 +1,23 @@
+Serie {
+    id string;
+    name string;
+    cover string;
+    chapterCount int;
+}
+
+Chapter {
+    id string;
+    index int;
+    title string;
+    serieId string;
+}
+
+GetSeries {
+    series []Serie;
+}
+
+GetSerieById :: Serie {}
+
+GetSerieChaptersById {
+    chapters []Chapter
+}
