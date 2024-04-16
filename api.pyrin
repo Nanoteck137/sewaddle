@@ -12,6 +12,10 @@ Chapter {
     serieId string;
 }
 
+ChapterUserData {
+    isMarked bool;
+}
+
 GetSeries {
     series []Serie;
 }
@@ -19,5 +23,17 @@ GetSeries {
 GetSerieById :: Serie {}
 
 GetSerieChaptersById {
-    chapters []Chapter
+    chapters []Chapter;
+}
+
+GetChapters {
+    chapters []Chapter;
+}
+
+GetChapterById :: Chapter {
+    nextChapterId string; 
+    prevChapterId string;
+    pages []string;
+
+    user *ChapterUserData;
 }
