@@ -46,7 +46,16 @@ CREATE TABLE user_chapter_marked(
         REFERENCES chapters("id")
 );
 
+CREATE TABLE user_bookmark(
+    user_id TEXT NOT NULL,
+    serie_id TEXT NOT NULL,
+    chapter_id TEXT NOT NULL,
+
+    CONSTRAINT user_bookmark_pk PRIMARY KEY(user_id, serie_id)
+);
+
 -- +goose Down
+DROP TABLE user_bookmark;
 DROP TABLE user_chapter_marked;
 DROP TABLE users;
 DROP TABLE chapters;

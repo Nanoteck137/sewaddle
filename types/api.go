@@ -6,8 +6,8 @@ import (
 
 var (
 	ErrInvalidAuthHeader = NewApiError(http.StatusUnauthorized, "Invalid Auth Header")
-	ErrChapterNotFound = NewApiError(http.StatusNotFound, "Chapter not found")
-	ErrInvalidToken = NewApiError(http.StatusUnauthorized, "Invalid Token")
+	ErrChapterNotFound   = NewApiError(http.StatusNotFound, "Chapter not found")
+	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
 )
 
 const (
@@ -78,4 +78,9 @@ type ApiPostLogin struct {
 type ApiGetMe struct {
 	Id       string `json:"id"`
 	Username string `json:"username"`
+}
+
+type ApiPostSerieUpdateBody struct {
+	SerieId   string `json:"serieId"`
+	ChapterId string `json:"chapterId"`
 }
