@@ -16,12 +16,12 @@ func (api *ApiConfig) HandleGetChapters(c echo.Context) error {
 		return err
 	}
 
-	result := types.ApiGetChapters{
-		Chapters: make([]types.ApiGetChaptersItem, len(chapters)),
+	result := types.GetChapters{
+		Chapters: make([]types.Chapter, len(chapters)),
 	}
 
 	for i, chapter := range chapters {
-		result.Chapters[i] = types.ApiGetChaptersItem{
+		result.Chapters[i] = types.Chapter{
 			Id:      chapter.Id,
 			Index:   chapter.Index,
 			Title:   chapter.Title,
@@ -53,7 +53,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		return err
 	}
 
-	var userData *types.ApiGetChapterByIdUser
+	var userData *types.ChapterUserData
 
 	user, err := api.User(c)
 	fmt.Printf("err: %v\n", err)
@@ -63,7 +63,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 			return err
 		}
 
-		userData = &types.ApiGetChapterByIdUser{
+		userData = &types.ChapterUserData{
 			IsMarked: isMarked,
 		}
 	}
@@ -73,7 +73,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%s", chapter.Id, page))
 	}
 
-	result := types.ApiGetChapterById{
+	result := types.GetChapterById{
 		Id:            chapter.Id,
 		Index:         chapter.Index,
 		Title:         chapter.Title,
@@ -85,7 +85,6 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 	}
 
 	return c.JSON(200, types.NewApiSuccessResponse(result))
-
 }
 
 func (api *ApiConfig) HandlePostChapterMarkById(c echo.Context) error {
