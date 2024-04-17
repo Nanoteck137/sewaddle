@@ -141,8 +141,7 @@ func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
 		return err
 	}
 
-	// TODO(patrik): NoContent
-	return nil
+	return c.NoContent(http.StatusNoContent)
 }
 
 func InstallChapterHandlers(g *echo.Group, api *ApiConfig) {
