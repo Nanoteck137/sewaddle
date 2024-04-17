@@ -85,9 +85,9 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 	}
 
 	pages := strings.Split(chapter.Pages, ",")
-	// for i, page := range pages {
-	// 	pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%s", chapter.Id, page))
-	// }
+	for i, page := range pages {
+		pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%v/%s", chapter.SerieId, chapter.Number, page))
+	}
 
 	result := types.GetChapterById{
 		SerieId:     chapter.SerieId,
