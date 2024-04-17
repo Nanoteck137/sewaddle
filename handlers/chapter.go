@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -22,10 +23,9 @@ func (api *ApiConfig) HandleGetChapters(c echo.Context) error {
 
 	for i, chapter := range chapters {
 		result.Chapters[i] = types.Chapter{
-			Id:      chapter.Id,
-			Index:   chapter.Index,
-			Title:   chapter.Title,
 			SerieId: chapter.SerieId,
+			Number:  chapter.Number,
+			Title:   chapter.Title,
 		}
 	}
 
@@ -33,8 +33,14 @@ func (api *ApiConfig) HandleGetChapters(c echo.Context) error {
 }
 
 func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
-	id := c.Param("id")
-	chapter, err := api.database.GetChapterById(c.Request().Context(), id)
+	serieId := c.Param("serieId")
+	chapterNumber, err := strconv.Atoi(c.Param("chapterNumber"))
+	if err != nil {
+		// TODO(patrik): Custom error
+		return err
+	}
+
+	chapter, err := api.database.GetChapter(c.Request().Context(), serieId, chapterNumber)
 	if err != nil {
 		if pgxscan.NotFound(err) {
 			return types.ErrChapterNotFound
@@ -43,14 +49,25 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		}
 	}
 
-	nextId, err := api.database.GetNextChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
+	nextChapterNumber, err := api.database.GetNextChapter(c.Request().Context(), chapter.SerieId, chapter.Number)
 	if err != nil {
 		return err
 	}
 
-	prevId, err := api.database.GetPrevChapter(c.Request().Context(), chapter.SerieId, chapter.Index)
+	var nextChapter *int
+	if nextChapterNumber != -1 {
+		nextChapter = &nextChapterNumber
+	}
+
+
+	prevChapterNumber, err := api.database.GetPrevChapter(c.Request().Context(), chapter.SerieId, chapter.Number)
 	if err != nil {
 		return err
+	}
+
+	var prevChapter *int
+	if prevChapterNumber != -1 {
+		prevChapter = &prevChapterNumber
 	}
 
 	var userData *types.ChapterUserData
@@ -58,7 +75,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 	user, err := api.User(c)
 	fmt.Printf("err: %v\n", err)
 	if err == nil {
-		isMarked, err := api.database.IsChapterMarked(c.Request().Context(), user.Id, chapter.Id)
+		isMarked, err := api.database.IsChapterMarked(c.Request().Context(), user.Id, chapter.SerieId, chapter.Number)
 		if err != nil {
 			return err
 		}
@@ -69,19 +86,18 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 	}
 
 	pages := strings.Split(chapter.Pages, ",")
-	for i, page := range pages {
-		pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%s", chapter.Id, page))
-	}
+	// for i, page := range pages {
+	// 	pages[i] = ConvertURL(c, fmt.Sprintf("/chapters/%s/%s", chapter.Id, page))
+	// }
 
 	result := types.GetChapterById{
-		Id:            chapter.Id,
-		Index:         chapter.Index,
-		Title:         chapter.Title,
-		SerieId:       chapter.SerieId,
-		NextChapterId: nextId,
-		PrevChapterId: prevId,
-		Pages:         pages,
-		User:          userData,
+		SerieId:     chapter.SerieId,
+		Number:      chapter.Number,
+		Title:       chapter.Title,
+		NextChapter: nextChapter,
+		PrevChapter: prevChapter,
+		Pages:       pages,
+		User:        userData,
 	}
 
 	return c.JSON(200, types.NewApiSuccessResponse(result))
@@ -122,7 +138,7 @@ func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
 
 func InstallChapterHandlers(g *echo.Group, api *ApiConfig) {
 	g.GET("/chapters", api.HandleGetChapters)
-	g.GET("/chapters/:id", api.HandleGetChapterById)
+	g.GET("/chapters/:serieId/:chapterNumber", api.HandleGetChapterById)
 	g.POST("/chapters/:id/mark", api.HandlePostChapterMarkById)
 	g.POST("/chapters/:id/unmark", api.HandlePostChapterUnmarkById)
 }

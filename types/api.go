@@ -81,6 +81,6 @@ type ApiGetMe struct {
 }
 
 type ApiPostSerieUpdateBody struct {
-	SerieId   string `json:"serieId"`
-	ChapterId string `json:"chapterId"`
+	SerieId       string `json:"serieId"`
+	ChapterNumber int    `json:"chapterNumber"`
 }

@@ -74,10 +74,9 @@ func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
 
 	for i, item := range items {
 		result.Chapters[i] = types.Chapter{
-			Id:      item.Id,
-			Index:   item.Index,
-			Title:   item.Title,
 			SerieId: item.SerieId,
+			Number:  item.Number,
+			Title:   item.Title,
 		}
 	}
 
@@ -106,7 +105,7 @@ func (api *ApiConfig) HandlePostSerieUpdate(c echo.Context) error {
 		return err
 	}
 
-	chapter, err := api.database.GetChapterById(ctx, body.ChapterId)
+	chapter, err := api.database.GetChapter(ctx, body.SerieId, body.ChapterNumber)
 	if err != nil {
 		return err
 	}
@@ -119,21 +118,21 @@ func (api *ApiConfig) HandlePostSerieUpdate(c echo.Context) error {
 	}
 
 	fmt.Printf("chapterId: %v\n", chapterId)
-	fmt.Printf("chapter.Id: %v\n", chapter.Id)
+	fmt.Printf("chapter.Id: %v\n", chapter.Number)
 
-	if !has {
-		err := api.database.CreateBookmark(ctx, user.Id, serie.Id, chapter.Id)
-		if err != nil {
-			return err
-		}
-	} else {
-		if chapterId != chapter.Id {
-			err := api.database.UpdateBookmark(ctx, user.Id, serie.Id, chapter.Id)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	// if !has {
+	// 	err := api.database.CreateBookmark(ctx, user.Id, serie.Id, chapter.Id)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	if chapterId != chapter.Id {
+	// 		err := api.database.UpdateBookmark(ctx, user.Id, serie.Id, chapter.Id)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
 
 	fmt.Printf("has: %v\n", has)
 

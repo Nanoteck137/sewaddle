@@ -6,10 +6,9 @@ Serie {
 }
 
 Chapter {
-    id string;
-    index int;
-    title string;
     serieId string;
+    number int;
+    title string;
 }
 
 ChapterUserData {
@@ -31,8 +30,8 @@ GetChapters {
 }
 
 GetChapterById :: Chapter {
-    nextChapterId string; 
-    prevChapterId string;
+    nextChapter *int; 
+    prevChapter *int;
     pages []string;
 
     user *ChapterUserData;

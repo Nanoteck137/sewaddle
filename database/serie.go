@@ -18,14 +18,14 @@ type Serie struct {
 func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 	chapterCount := dialect.
 		From("chapters").
-		Select(goqu.C("serieId"), goqu.COUNT(goqu.C("id")).As("count")).
-		GroupBy("chapters.serieId").
-		As("chapterCount")
+		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("number")).As("count")).
+		GroupBy("chapters.serie_id").
+		As("chapter_count")
 
 	ds := dialect.
 		From("series").
-		Select("series.id", "series.name", "series.cover", "chapterCount.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")}))
+		Select("series.id", "series.name", "series.cover", "chapter_count.count").
+		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")}))
 
 	rows, err := db.Query(ctx, ds)
 	if err != nil {
@@ -45,14 +45,14 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) {
 	chapterCount := dialect.
 		From("chapters").
-		Select(goqu.C("serieId"), goqu.COUNT(goqu.C("id")).As("count")).
-		GroupBy("chapters.serieId").
-		As("chapterCount")
+		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("number")).As("count")).
+		GroupBy("chapters.serie_id").
+		As("chapter_count")
 
 	ds := dialect.
 		From("series").
-		Select("series.id", "series.name", "series.cover", "chapterCount.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serieId").Table("chapterCount")})).
+		Select("series.id", "series.name", "series.cover", "chapter_count.count").
+		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
 		Where(goqu.C("id").Eq(id))
 
 	row, err := db.QueryRow(ctx, ds)

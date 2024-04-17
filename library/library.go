@@ -207,7 +207,7 @@ func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
 				continue
 			}
 
-			dir := path.Join(chaptersDir, dbChapter.Id)
+			dir := path.Join(chaptersDir, dbChapter.SerieId, strconv.Itoa(dbChapter.Number))
 
 			err = os.MkdirAll(dir, 0755)
 			if err != nil {
@@ -234,7 +234,7 @@ func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
 				pages = append(pages, name)
 			}
 
-			db.UpdateChapterPages(ctx, dbChapter.Id, pages)
+			db.UpdateChapterPages(ctx, dbChapter.SerieId, dbChapter.Number, pages)
 		}
 	}
 }
