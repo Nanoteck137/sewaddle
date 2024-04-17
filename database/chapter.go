@@ -149,11 +149,12 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentC
 }
 
 // TODO(patrik): Fix
-func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string, mark bool) error {
+func (db *Database) MarkChapter(ctx context.Context, userId, serieId string, chapterNumber int, mark bool) error {
 	if mark {
 		ds := dialect.Insert("user_chapter_marked").Rows(goqu.Record{
-			"user_id":    userId,
-			"chapter_id": chapterId,
+			"user_id":        userId,
+			"serie_id":       serieId,
+			"chapter_number": chapterNumber,
 		}).Prepared(true)
 
 		tag, err := db.Exec(ctx, ds)
@@ -164,7 +165,13 @@ func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string, m
 		fmt.Printf("tag: %v\n", tag)
 	} else {
 		ds := dialect.Delete("user_chapter_marked").
-			Where(goqu.And(goqu.C("user_id").Eq(userId), goqu.C("chapter_id").Eq(chapterId))).
+			Where(
+				goqu.And(
+					goqu.C("user_id").Eq(userId),
+					goqu.C("serie_id").Eq(serieId),
+					goqu.C("chapter_number").Eq(chapterNumber),
+				),
+			).
 			Prepared(true)
 
 		tag, err := db.Exec(ctx, ds)

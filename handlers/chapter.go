@@ -59,7 +59,6 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 		nextChapter = &nextChapterNumber
 	}
 
-
 	prevChapterNumber, err := api.database.GetPrevChapter(c.Request().Context(), chapter.SerieId, chapter.Number)
 	if err != nil {
 		return err
@@ -104,14 +103,19 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 }
 
 func (api *ApiConfig) HandlePostChapterMarkById(c echo.Context) error {
-	id := c.Param("id")
+	serieId := c.Param("serieId")
+	chapterNumber, err := strconv.Atoi(c.Param("chapterNumber"))
+	if err != nil {
+		// TODO(patrik): Custom error
+		return err
+	}
 
 	user, err := api.User(c)
 	if err != nil {
 		return err
 	}
 
-	err = api.database.MarkChapter(c.Request().Context(), user.Id, id, true)
+	err = api.database.MarkChapter(c.Request().Context(), user.Id, serieId, chapterNumber, true)
 	if err != nil {
 		return err
 	}
@@ -120,14 +124,19 @@ func (api *ApiConfig) HandlePostChapterMarkById(c echo.Context) error {
 }
 
 func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
-	id := c.Param("id")
+	serieId := c.Param("serieId")
+	chapterNumber, err := strconv.Atoi(c.Param("chapterNumber"))
+	if err != nil {
+		// TODO(patrik): Custom error
+		return err
+	}
 
 	user, err := api.User(c)
 	if err != nil {
 		return err
 	}
 
-	err = api.database.MarkChapter(c.Request().Context(), user.Id, id, false)
+	err = api.database.MarkChapter(c.Request().Context(), user.Id, serieId, chapterNumber, false)
 	if err != nil {
 		return err
 	}
@@ -139,6 +148,6 @@ func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
 func InstallChapterHandlers(g *echo.Group, api *ApiConfig) {
 	g.GET("/chapters", api.HandleGetChapters)
 	g.GET("/chapters/:serieId/:chapterNumber", api.HandleGetChapterById)
-	g.POST("/chapters/:id/mark", api.HandlePostChapterMarkById)
-	g.POST("/chapters/:id/unmark", api.HandlePostChapterUnmarkById)
+	g.POST("/chapters/:serieId/:chapterNumber/mark", api.HandlePostChapterMarkById)
+	g.POST("/chapters/:serieId/:chapterNumber/unmark", api.HandlePostChapterUnmarkById)
 }
