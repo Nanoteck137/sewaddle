@@ -123,7 +123,7 @@ func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userId": user.Id,
 		"iat":    time.Now().Unix(),
-		"exp":    time.Now().Add(1000 * time.Second).Unix(),
+		// "exp":    time.Now().Add(1000 * time.Second).Unix(),
 	})
 
 	tokenString, err := token.SignedString(([]byte)("SOME SECRET"))
