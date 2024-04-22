@@ -68,7 +68,7 @@ func (db *Database) GetChapter(ctx context.Context, serieId string, chapterNumbe
 func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([]Chapter, error) {
 	ds := dialect.
 		From("chapters").
-		Select("serie_id", "number", "title").
+		Select("serie_id", "number", "title", "pages").
 		Where(goqu.C("serie_id").Eq(serieId)).
 		Order(goqu.C("number").Asc())
 
@@ -80,7 +80,7 @@ func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([
 	var items []Chapter
 	for rows.Next() {
 		var item Chapter
-		rows.Scan(&item.SerieId, &item.Number, &item.Title)
+		rows.Scan(&item.SerieId, &item.Number, &item.Title, &item.Pages)
 
 		items = append(items, item)
 	}

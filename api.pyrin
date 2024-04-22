@@ -9,6 +9,7 @@ Chapter {
     serieId string;
     number int;
     title string;
+    coverArt string;
 }
 
 ChapterUserData {

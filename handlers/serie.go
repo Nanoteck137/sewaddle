@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/kr/pretty"
@@ -73,10 +74,14 @@ func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
 	}
 
 	for i, item := range items {
+		pages := strings.Split(item.Pages, ",")
+		coverArt := ConvertURL(c, fmt.Sprintf("/chapters/%s/%v/%s", item.SerieId, item.Number, pages[0]))
+
 		result.Chapters[i] = types.Chapter{
-			SerieId: item.SerieId,
-			Number:  item.Number,
-			Title:   item.Title,
+			SerieId:  item.SerieId,
+			Number:   item.Number,
+			Title:    item.Title,
+			CoverArt: coverArt,
 		}
 	}
 

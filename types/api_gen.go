@@ -9,9 +9,10 @@ type Serie struct {
 }
 
 type Chapter struct {
-	SerieId string `json:"serieId"`
-	Number  int    `json:"number"`
-	Title   string `json:"title"`
+	SerieId  string `json:"serieId"`
+	Number   int    `json:"number"`
+	Title    string `json:"title"`
+	CoverArt string `json:"coverArt"`
 }
 
 type ChapterUserData struct {
@@ -36,6 +37,7 @@ type GetChapterById struct {
 	SerieId     string           `json:"serieId"`
 	Number      int              `json:"number"`
 	Title       string           `json:"title"`
+	CoverArt    string           `json:"coverArt"`
 	NextChapter *int             `json:"nextChapter,omitempty"`
 	PrevChapter *int             `json:"prevChapter,omitempty"`
 	Pages       []string         `json:"pages"`
