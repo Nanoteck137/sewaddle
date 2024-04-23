@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 
@@ -120,7 +119,7 @@ func (api *ApiConfig) HandlePostChapterMarkById(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.JSON(200, types.NewApiSuccessResponse(nil))
 }
 
 func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
@@ -141,7 +140,7 @@ func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.JSON(200, types.NewApiSuccessResponse(nil))
 }
 
 func InstallChapterHandlers(g *echo.Group, api *ApiConfig) {
