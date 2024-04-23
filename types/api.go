@@ -85,3 +85,19 @@ type ApiPostSerieUpdateBody struct {
 	SerieId       string `json:"serieId"`
 	ChapterNumber int    `json:"chapterNumber"`
 }
+
+type ApiPostUserMarkChapters struct {
+	SerieId  string `json:"serieId"`
+	Chapters []int  `json:"chapters"`
+}
+
+type ApiPostUserUnmarkChapters struct {
+	SerieId  string `json:"serieId"`
+	Chapters []int  `json:"chapters"`
+}
+
+type ApiPostUserUpdateBookmark struct {
+	SerieId string `json:"serieId"`
+	Chapter int    `json:"chapter"`
+	Page    int    `json:"page"`
+}
