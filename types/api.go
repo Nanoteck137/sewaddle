@@ -8,6 +8,7 @@ var (
 	ErrInvalidAuthHeader = NewApiError(http.StatusUnauthorized, "Invalid Auth Header")
 	ErrChapterNotFound   = NewApiError(http.StatusNotFound, "Chapter not found")
 	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
+	ErrIncorrectCreds    = NewApiError(http.StatusUnauthorized, "Incorrect credentials")
 )
 
 const (

@@ -115,9 +115,7 @@ func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
 	}
 
 	if user.Password != body.Password {
-		return c.JSON(400, map[string]any{
-			"message": "Password mismatch",
-		})
+		return types.ErrIncorrectCreds
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -136,11 +134,11 @@ func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
 	}))
 }
 
-func (api *ApiConfig) User(c echo.Context) (database.User, error) {
+func (api *ApiConfig) User(c echo.Context) (*database.User, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	tokenString, err := utils.ParseAuthHeader(authHeader)
 	if err != nil {
-		return database.User{}, err
+		return nil, err
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -152,24 +150,24 @@ func (api *ApiConfig) User(c echo.Context) (database.User, error) {
 	})
 
 	if err != nil {
-		return database.User{}, types.ErrInvalidToken
+		return nil, types.ErrInvalidToken
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		if err := api.jwtValidator.Validate(token.Claims); err != nil {
-			return database.User{}, types.ErrInvalidToken
+			return nil, types.ErrInvalidToken
 		}
 
 		userId := claims["userId"].(string)
 		user, err := api.database.GetUserById(c.Request().Context(), userId)
 		if err != nil {
-			return database.User{}, err
+			return nil, err
 		}
 
-		return user, nil
+		return &user, nil
 	}
 
-	return database.User{}, types.ErrInvalidToken
+	return nil, types.ErrInvalidToken
 }
 
 func (api *ApiConfig) HandleGetMe(c echo.Context) error {
