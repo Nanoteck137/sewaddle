@@ -31,6 +31,7 @@ func New(conn *pgxpool.Pool) *echo.Echo {
 	v1Group := apiGroup.Group("/v1")
 	handlers.InstallSerieHandlers(v1Group, apiConfig)
 	handlers.InstallChapterHandlers(v1Group, apiConfig)
+	handlers.InstallUserHandlers(v1Group, apiConfig)
 
 	authGroup := apiGroup.Group("/auth")
 	handlers.InstallAuthHandlers(authGroup, apiConfig)
