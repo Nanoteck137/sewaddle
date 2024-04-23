@@ -8,15 +8,16 @@ type Serie struct {
 	ChapterCount int    `json:"chapterCount"`
 }
 
-type Chapter struct {
-	SerieId  string `json:"serieId"`
-	Number   int    `json:"number"`
-	Title    string `json:"title"`
-	CoverArt string `json:"coverArt"`
-}
-
 type ChapterUserData struct {
 	IsMarked bool `json:"isMarked"`
+}
+
+type Chapter struct {
+	SerieId  string           `json:"serieId"`
+	Number   int              `json:"number"`
+	Title    string           `json:"title"`
+	CoverArt string           `json:"coverArt"`
+	User     *ChapterUserData `json:"user,omitempty"`
 }
 
 type GetSeries struct {
@@ -38,8 +39,8 @@ type GetChapterById struct {
 	Number      int              `json:"number"`
 	Title       string           `json:"title"`
 	CoverArt    string           `json:"coverArt"`
+	User        *ChapterUserData `json:"user,omitempty"`
 	NextChapter *int             `json:"nextChapter,omitempty"`
 	PrevChapter *int             `json:"prevChapter,omitempty"`
 	Pages       []string         `json:"pages"`
-	User        *ChapterUserData `json:"user,omitempty"`
 }

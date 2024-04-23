@@ -10,6 +10,8 @@ Chapter {
     number int;
     title string;
     coverArt string;
+
+    user *ChapterUserData;
 }
 
 ChapterUserData {
@@ -34,6 +36,4 @@ GetChapterById :: Chapter {
     nextChapter *int; 
     prevChapter *int;
     pages []string;
-
-    user *ChapterUserData;
 }
