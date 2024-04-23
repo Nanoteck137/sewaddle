@@ -51,11 +51,35 @@ func (api *ApiConfig) HandleGetSerieById(c echo.Context) error {
 		}
 	}
 
-	result := types.Serie{
+	var userData *types.SerieUserData
+
+	user, err := api.User(c);
+	if user != nil {
+		var bookmark *types.Bookmark
+
+		dbBookmark, err := api.database.GetBookmark(c.Request().Context(), user.Id, serie.Id)
+		if err != nil && err != types.ErrNoBookmark {
+			return err
+		}
+
+		if err != types.ErrNoBookmark {
+			bookmark = &types.Bookmark{
+				ChapterNumber: dbBookmark.ChapterNumber,
+				Page:          dbBookmark.Page,
+			}
+		}
+
+		userData = &types.SerieUserData{
+			Bookmark: bookmark,
+		}
+	}
+
+	result := types.GetSerieById{
 		Id:           serie.Id,
 		Name:         serie.Name,
 		Cover:        ConvertURL(c, "/images/"+serie.Cover),
 		ChapterCount: serie.ChapterCount,
+		User:         userData,
 	}
 
 	return c.JSON(200, types.NewApiSuccessResponse(result))

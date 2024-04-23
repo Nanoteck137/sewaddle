@@ -9,6 +9,7 @@ var (
 	ErrChapterNotFound   = NewApiError(http.StatusNotFound, "Chapter not found")
 	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
 	ErrIncorrectCreds    = NewApiError(http.StatusUnauthorized, "Incorrect credentials")
+	ErrNoBookmark = NewApiError(http.StatusNotFound, "Bookmark not found")
 )
 
 const (

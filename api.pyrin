@@ -1,3 +1,12 @@
+Bookmark {
+    chapterNumber int;
+    page int;
+}
+
+SerieUserData {
+    bookmark *Bookmark;
+}
+
 Serie {
     id string;
     name string;
@@ -22,7 +31,9 @@ GetSeries {
     series []Serie;
 }
 
-GetSerieById :: Serie {}
+GetSerieById :: Serie {
+    user *SerieUserData;
+}
 
 GetSerieChaptersById {
     chapters []Chapter;
