@@ -151,12 +151,11 @@ func (api *ApiConfig) HandlePostSerieUpdate(c echo.Context) error {
 
 	// TODO(patrik): Check chapter.serieId
 
-	has, chapterId, err := api.database.HasBookmark(ctx, user.Id, serie.Id)
+	has, err := api.database.HasBookmark(ctx, user.Id, serie.Id)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("chapterId: %v\n", chapterId)
 	fmt.Printf("chapter.Id: %v\n", chapter.Number)
 
 	// if !has {

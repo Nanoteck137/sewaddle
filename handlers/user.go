@@ -91,6 +91,8 @@ func (api *ApiConfig) HandlePostUserUpdateBookmark(c echo.Context) error {
 
 	pretty.Println(body)
 
+	// TODO(patrik): Check body.Page
+
 	serie, err := api.database.GetSerieById(ctx, body.SerieId)
 	if err != nil {
 		return err
@@ -101,18 +103,18 @@ func (api *ApiConfig) HandlePostUserUpdateBookmark(c echo.Context) error {
 		return err
 	}
 
-	hasBookmark, _, err := api.database.HasBookmark(ctx, user.Id, serie.Id)
+	hasBookmark, err := api.database.HasBookmark(ctx, user.Id, serie.Id)
 	if err != nil {
 		return err
 	}
 
 	if hasBookmark {
-		err := api.database.UpdateBookmark(ctx, user.Id, serie.Id, chapter.Number)
+		err := api.database.UpdateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := api.database.CreateBookmark(ctx, user.Id, serie.Id, chapter.Number)
+		err := api.database.CreateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
 		if err != nil {
 			return err
 		}

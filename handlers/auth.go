@@ -161,7 +161,7 @@ func (api *ApiConfig) User(c echo.Context) (*database.User, error) {
 		userId := claims["userId"].(string)
 		user, err := api.database.GetUserById(c.Request().Context(), userId)
 		if err != nil {
-			return nil, err
+			return nil, types.ErrInvalidToken
 		}
 
 		return &user, nil
