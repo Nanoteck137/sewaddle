@@ -189,6 +189,33 @@ func (db *Database) MarkChapter(ctx context.Context, userId, serieId string, cha
 	return nil
 }
 
+func (db *Database) GetAllMarkedChapters(ctx context.Context, userId, serieId string) ([]int, error) {
+	ds := dialect.From("user_chapter_marked").
+		Select("chapter_number").
+		Where(
+			goqu.And(
+				goqu.C("user_id").Eq(userId),
+				goqu.C("serie_id").Eq(serieId),
+			),
+		).
+		Prepared(true)
+
+	rows, err := db.Query(ctx, ds)
+	if err != nil {
+		return nil, err
+	}
+
+	var items []int
+	for rows.Next() {
+		var item int
+		rows.Scan(&item)
+
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
 func (db *Database) IsChapterMarked(ctx context.Context, userId, serieId string, chapterNumber int) (bool, error) {
 	ds := dialect.From("user_chapter_marked").
 		Select(goqu.L("1")).
