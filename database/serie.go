@@ -69,6 +69,33 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 	return item, nil
 }
 
+func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, error) {
+	chapterCount := dialect.
+		From("chapters").
+		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("number")).As("count")).
+		GroupBy("chapters.serie_id").
+		As("chapter_count")
+
+	ds := dialect.
+		From("series").
+		Select("series.id", "series.name", "series.cover", "chapter_count.count").
+		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
+		Where(goqu.I("series.name").Eq(name))
+
+	row, err := db.QueryRow(ctx, ds)
+	if err != nil {
+		return Serie{}, err
+	}
+
+	var item Serie
+	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
+	if err != nil {
+		return Serie{}, err
+	}
+
+	return item, nil
+}
+
 func (db *Database) GetSerieByPath(ctx context.Context, path string) (Serie, error) {
 	ds := dialect.
 		From("series").
