@@ -73,15 +73,49 @@ func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
 		Chapters: make([]types.Chapter, len(items)),
 	}
 
+	var markedChapters []int
+
+	user, _ := api.User(c)
+	if user != nil {
+		markedChapters, err = api.database.GetAllMarkedChapters(c.Request().Context(), user.Id, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	isChapterMarked := func(chapterNumber int) bool {
+		if markedChapters == nil {
+			return false
+		}
+
+		for _, item := range markedChapters {
+			if item == chapterNumber {
+				return true
+			}
+		}
+
+		return false
+	}
+
 	for i, item := range items {
 		pages := strings.Split(item.Pages, ",")
 		coverArt := ConvertURL(c, fmt.Sprintf("/chapters/%s/%v/%s", item.SerieId, item.Number, pages[0]))
+
+		var userData *types.ChapterUserData
+		if user != nil {
+			isMarked := isChapterMarked(item.Number)
+
+			userData = &types.ChapterUserData{
+				IsMarked: isMarked,
+			}
+		}
 
 		result.Chapters[i] = types.Chapter{
 			SerieId:  item.SerieId,
 			Number:   item.Number,
 			Title:    item.Title,
 			CoverArt: coverArt,
+			User:     userData,
 		}
 	}
 
