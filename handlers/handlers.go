@@ -13,6 +13,6 @@ type ApiConfig struct {
 func New(database *database.Database) *ApiConfig {
 	return &ApiConfig{
 		database:     database,
-		jwtValidator: jwt.NewValidator(jwt.WithExpirationRequired(), jwt.WithIssuedAt()),
+		jwtValidator: jwt.NewValidator(jwt.WithIssuedAt()),
 	}
 }
