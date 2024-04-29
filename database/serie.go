@@ -46,13 +46,17 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 	chapterCount := dialect.
 		From("chapters").
 		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("number")).As("count")).
-		GroupBy("chapters.serie_id").
+		GroupBy(goqu.I("chapters.serie_id")).
 		As("chapter_count")
 
 	ds := dialect.
 		From("series").
 		Select("series.id", "series.name", "series.cover", "chapter_count.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
+		Join(chapterCount, 
+			goqu.On(
+				goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")},
+			),
+		).
 		Where(goqu.C("id").Eq(id))
 
 	row, err := db.QueryRow(ctx, ds)

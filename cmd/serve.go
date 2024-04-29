@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"context"
+	"database/sql"
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/nanoteck137/sewaddle/api"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,12 @@ var serveCmd = &cobra.Command{
 			log.Fatal("DB_URL not set")
 		}
 
-		db, err := pgxpool.New(context.Background(), dbUrl)
+		// db, err := pgxpool.New(context.Background(), dbUrl)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+
+		db, err := sql.Open("sqlite3", dbUrl);
 		if err != nil {
 			log.Fatal(err)
 		}

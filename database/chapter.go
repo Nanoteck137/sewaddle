@@ -2,12 +2,12 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/jackc/pgx/v5"
 )
 
 type Chapter struct {
@@ -108,7 +108,7 @@ func (db *Database) GetNextChapter(ctx context.Context, serieId string, currentC
 	var item int
 	err = row.Scan(&item)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == sql.ErrNoRows {
 			return -1, nil
 		}
 
@@ -138,7 +138,7 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentC
 	var item int
 	err = row.Scan(&item)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == sql.ErrNoRows {
 			return -1, nil
 		}
 
@@ -179,7 +179,8 @@ func (db *Database) MarkChapter(ctx context.Context, userId, serieId string, cha
 			return err
 		}
 
-		if tag.RowsAffected() == 0 {
+		rowsAffected, err := tag.RowsAffected()
+		if rowsAffected == 0 {
 			return errors.New("No chapter to unmark")
 		}
 
@@ -236,7 +237,7 @@ func (db *Database) IsChapterMarked(ctx context.Context, userId, serieId string,
 	var i int
 	err = row.Scan(&i)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == sql.ErrNoRows {
 			return false, nil
 		}
 

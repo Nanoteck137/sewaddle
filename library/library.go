@@ -2,6 +2,7 @@ package library
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,8 +13,6 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
@@ -122,7 +121,7 @@ var dialect = goqu.Dialect("postgres")
 func GetOrCreateSerie(ctx context.Context, db *database.Database, serie *Serie) (database.Serie, error) {
 	dbSerie, err := db.GetSerieByPath(ctx, serie.Path)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == sql.ErrNoRows {
 			dbSerie, err := db.CreateSerie(ctx, serie.Title, serie.Path)
 			if err != nil {
 				return database.Serie{}, err
@@ -140,7 +139,7 @@ func GetOrCreateSerie(ctx context.Context, db *database.Database, serie *Serie) 
 func GetOrCreateChapter(ctx context.Context, db *database.Database, chapter *Chapter, serie *database.Serie) (database.Chapter, error) {
 	dbChapter, err := db.GetChapterByPath(ctx, chapter.Path)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == sql.ErrNoRows {
 			dbChapter, err := db.CreateChapter(ctx, chapter.Index, chapter.Title, serie.Id, chapter.Path)
 			if err != nil {
 				return database.Chapter{}, err
@@ -155,7 +154,7 @@ func GetOrCreateChapter(ctx context.Context, db *database.Database, chapter *Cha
 	return dbChapter, nil
 }
 
-func (lib *Library) Sync(conn *pgxpool.Pool, workDir types.WorkDir) {
+func (lib *Library) Sync(conn *sql.DB, workDir types.WorkDir) {
 	db := database.New(conn)
 	ctx := context.Background()
 

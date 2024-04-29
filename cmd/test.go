@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/library"
@@ -25,12 +25,12 @@ var testCmd = &cobra.Command{
 			log.Fatal("DB_URL not set")
 		}
 
-		db, err := pgxpool.New(context.Background(), dbUrl)
+		db, err := sql.Open("sqlite3", dbUrl);
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		lib, err := library.ReadFromDir("/Volumes/manga")
+		lib, err := library.ReadFromDir("/Volumes/media/manga")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -70,7 +70,7 @@ var importCmd = &cobra.Command{
 			log.Fatal("DB_URL not set")
 		}
 
-		conn, err := pgxpool.New(context.Background(), dbUrl)
+		conn, err := sql.Open("sqlite3", dbUrl);
 		if err != nil {
 			log.Fatal(err)
 		}

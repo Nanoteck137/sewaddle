@@ -25,7 +25,7 @@ var upCmd = &cobra.Command{
 			log.Fatal("DB_URL not set")
 		}
 
-		db, err := goose.OpenDBWithDriver("pgx", dbUrl)
+		db, err := goose.OpenDBWithDriver("sqlite3", dbUrl)
 		if err != nil {
 			log.Fatalf("goose: failed to open DB: %v\n", err)
 		}
@@ -47,7 +47,7 @@ var downCmd = &cobra.Command{
 			log.Fatal("DB_URL not set")
 		}
 
-		db, err := goose.OpenDBWithDriver("pgx", dbUrl)
+		db, err := goose.OpenDBWithDriver("sqlite3", dbUrl)
 		if err != nil {
 			log.Fatalf("goose: failed to open DB: %v\n", err)
 		}
@@ -70,7 +70,7 @@ var createCmd = &cobra.Command{
 			log.Fatal("DB_URL not set")
 		}
 
-		db, err := goose.OpenDBWithDriver("pgx", dbUrl)
+		db, err := goose.OpenDBWithDriver("sqlite3", dbUrl)
 		if err != nil {
 			log.Fatalf("goose: failed to open DB: %v\n", err)
 		}
