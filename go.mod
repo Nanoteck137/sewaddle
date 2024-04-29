@@ -1,6 +1,6 @@
 module github.com/nanoteck137/sewaddle
 
-go 1.21.6
+go 1.21
 
 require (
 	github.com/MadAppGang/httplog/echolog v1.3.0
