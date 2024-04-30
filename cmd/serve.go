@@ -8,6 +8,8 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/nanoteck137/sewaddle/api"
+	"github.com/nanoteck137/sewaddle/database"
+	"github.com/nanoteck137/sewaddle/server"
 	"github.com/spf13/cobra"
 )
 
@@ -21,18 +23,17 @@ var serveCmd = &cobra.Command{
 			log.Fatal("DB_URL not set")
 		}
 
-		// db, err := pgxpool.New(context.Background(), dbUrl)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-
-		db, err := sql.Open("sqlite3", dbUrl);
+		conn, err := sql.Open("sqlite3", dbUrl);
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		api := api.New(db)
-		if err := api.Start(":3000"); err != nil {
+		db := database.New(conn)
+
+		server := server.New(db)
+
+		err = server.Start(":3000")
+		if err != nil {
 			log.Fatal(err)
 		}
 	},
