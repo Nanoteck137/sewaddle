@@ -14,7 +14,7 @@ var (
 	ErrNoSerie    = NewApiError(http.StatusNotFound, "Serie not found")
 
 	ErrChapterAlreadyMarked = NewApiError(http.StatusBadRequest, "Chapter is already marked")
-	ErrNoChapterToUnmark = NewApiError(http.StatusBadRequest, "Chapter is already marked")
+	ErrNoChapterToUnmark    = NewApiError(http.StatusBadRequest, "Chapter is already marked")
 )
 
 const (
