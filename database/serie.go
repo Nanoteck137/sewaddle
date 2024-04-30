@@ -2,8 +2,11 @@ package database
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
@@ -67,6 +70,10 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 	var item Serie
 	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Serie{}, types.ErrNoSerie
+		}
+
 		return Serie{}, err
 	}
 
@@ -94,6 +101,10 @@ func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, err
 	var item Serie
 	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Serie{}, types.ErrNoSerie
+		}
+
 		return Serie{}, err
 	}
 
@@ -114,6 +125,10 @@ func (db *Database) GetSerieByPath(ctx context.Context, path string) (Serie, err
 	var item Serie
 	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.Path)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Serie{}, types.ErrNoSerie
+		}
+
 		return Serie{}, err
 	}
 

@@ -3,8 +3,6 @@ package handlers
 import (
 	"errors"
 
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
@@ -30,15 +28,8 @@ func (api *ApiConfig) HandlePostUserMarkChapters(c echo.Context) error {
 	}
 
 	for _, chapter := range body.Chapters {
-		err := api.database.MarkChapter(c.Request().Context(), user.Id, serie.Id, chapter, true)
-		if err != nil {
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) {
-				if pgErr.Code == pgerrcode.UniqueViolation {
-					continue
-				}
-			}
-
+		err := api.database.MarkChapter(c.Request().Context(), user.Id, serie.Id, chapter)
+		if err != nil && !errors.Is(err, types.ErrChapterAlreadyMarked) {
 			return err
 		}
 	}
@@ -66,7 +57,7 @@ func (api *ApiConfig) HandlePostUserUnmarkChapters(c echo.Context) error {
 	}
 
 	for _, chapter := range body.Chapters {
-		err := api.database.MarkChapter(c.Request().Context(), user.Id, serie.Id, chapter, false)
+		err := api.database.UnmarkChapter(c.Request().Context(), user.Id, serie.Id, chapter)
 		if err != nil {
 			return err
 		}

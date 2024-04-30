@@ -2,10 +2,11 @@ package database
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/jackc/pgx/v5"
 	"github.com/nanoteck137/sewaddle/types"
 )
 
@@ -32,7 +33,7 @@ func (db *Database) GetBookmark(ctx context.Context, userId, serieId string) (Bo
 	var item Bookmark
 	err = row.Scan(&item.UserId, &item.SerieId, &item.ChapterNumber, &item.Page)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return Bookmark{}, types.ErrNoBookmark
 		}
 
@@ -61,7 +62,7 @@ func (db *Database) HasBookmark(ctx context.Context, userId, serieId string) (bo
 	var tmp int
 	err = row.Scan(&tmp)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
 

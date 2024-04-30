@@ -111,7 +111,7 @@ var importCmd = &cobra.Command{
 			}
 
 			fmt.Printf("serieId: %v\n", serieId)
-			err := db.MarkChapter(ctx, dbUser.Id, serieId, chapter.ChapterNumber, true)
+			err := db.MarkChapter(ctx, dbUser.Id, serieId, chapter.ChapterNumber)
 			if err != nil {
 				fmt.Printf("Warning: %v\n", err)
 			}

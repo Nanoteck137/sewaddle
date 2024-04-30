@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/nanoteck137/sewaddle/types"
 )
 
 type Chapter struct {
@@ -59,6 +60,10 @@ func (db *Database) GetChapter(ctx context.Context, serieId string, chapterNumbe
 	var item Chapter
 	err = row.Scan(&item.SerieId, &item.Number, &item.Title, &item.Pages)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Chapter{}, types.ErrNoChapter
+		}
+
 		return Chapter{}, err
 	}
 
@@ -149,43 +154,45 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieId string, currentC
 }
 
 // TODO(patrik): Fix
-func (db *Database) MarkChapter(ctx context.Context, userId, serieId string, chapterNumber int, mark bool) error {
-	if mark {
-		ds := dialect.Insert("user_chapter_marked").Rows(goqu.Record{
-			"user_id":        userId,
-			"serie_id":       serieId,
-			"chapter_number": chapterNumber,
-		}).Prepared(true)
+func (db *Database) MarkChapter(ctx context.Context, userId, serieId string, chapterNumber int) error {
+	ds := dialect.Insert("user_chapter_marked").Rows(goqu.Record{
+		"user_id":        userId,
+		"serie_id":       serieId,
+		"chapter_number": chapterNumber,
+	}).Prepared(true)
 
-		tag, err := db.Exec(ctx, ds)
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("tag: %v\n", tag)
-	} else {
-		ds := dialect.Delete("user_chapter_marked").
-			Where(
-				goqu.And(
-					goqu.C("user_id").Eq(userId),
-					goqu.C("serie_id").Eq(serieId),
-					goqu.C("chapter_number").Eq(chapterNumber),
-				),
-			).
-			Prepared(true)
-
-		tag, err := db.Exec(ctx, ds)
-		if err != nil {
-			return err
-		}
-
-		rowsAffected, err := tag.RowsAffected()
-		if rowsAffected == 0 {
-			return errors.New("No chapter to unmark")
-		}
-
-		fmt.Printf("tag: %v\n", tag)
+	tag, err := db.Exec(ctx, ds)
+	if err != nil {
+		return err
 	}
+
+	fmt.Printf("tag: %v\n", tag)
+
+	return nil
+}
+
+func (db *Database) UnmarkChapter(ctx context.Context, userId, serieId string, chapterNumber int) error {
+	ds := dialect.Delete("user_chapter_marked").
+		Where(
+			goqu.And(
+				goqu.C("user_id").Eq(userId),
+				goqu.C("serie_id").Eq(serieId),
+				goqu.C("chapter_number").Eq(chapterNumber),
+			),
+		).
+		Prepared(true)
+
+	tag, err := db.Exec(ctx, ds)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := tag.RowsAffected()
+	if rowsAffected == 0 {
+		return errors.New("No chapter to unmark")
+	}
+
+	fmt.Printf("tag: %v\n", tag)
 
 	return nil
 }

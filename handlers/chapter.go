@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
 )
@@ -41,11 +40,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 
 	chapter, err := api.database.GetChapter(c.Request().Context(), serieId, chapterNumber)
 	if err != nil {
-		if pgxscan.NotFound(err) {
-			return types.ErrChapterNotFound
-		} else {
-			return err
-		}
+		return err
 	}
 
 	nextChapterNumber, err := api.database.GetNextChapter(c.Request().Context(), chapter.SerieId, chapter.Number)
@@ -101,6 +96,7 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 	return c.JSON(200, types.NewApiSuccessResponse(result))
 }
 
+// TODO(patrik): Remove
 func (api *ApiConfig) HandlePostChapterMarkById(c echo.Context) error {
 	serieId := c.Param("serieId")
 	chapterNumber, err := strconv.Atoi(c.Param("chapterNumber"))
@@ -114,7 +110,7 @@ func (api *ApiConfig) HandlePostChapterMarkById(c echo.Context) error {
 		return err
 	}
 
-	err = api.database.MarkChapter(c.Request().Context(), user.Id, serieId, chapterNumber, true)
+	err = api.database.MarkChapter(c.Request().Context(), user.Id, serieId, chapterNumber)
 	if err != nil {
 		return err
 	}
@@ -135,7 +131,7 @@ func (api *ApiConfig) HandlePostChapterUnmarkById(c echo.Context) error {
 		return err
 	}
 
-	err = api.database.MarkChapter(c.Request().Context(), user.Id, serieId, chapterNumber, false)
+	err = api.database.UnmarkChapter(c.Request().Context(), user.Id, serieId, chapterNumber)
 	if err != nil {
 		return err
 	}

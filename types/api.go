@@ -6,10 +6,15 @@ import (
 
 var (
 	ErrInvalidAuthHeader = NewApiError(http.StatusUnauthorized, "Invalid Auth Header")
-	ErrChapterNotFound   = NewApiError(http.StatusNotFound, "Chapter not found")
 	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
 	ErrIncorrectCreds    = NewApiError(http.StatusUnauthorized, "Incorrect credentials")
+
 	ErrNoBookmark = NewApiError(http.StatusNotFound, "Bookmark not found")
+	ErrNoChapter  = NewApiError(http.StatusNotFound, "Chapter not found")
+	ErrNoSerie    = NewApiError(http.StatusNotFound, "Serie not found")
+
+	ErrChapterAlreadyMarked = NewApiError(http.StatusBadRequest, "Chapter is already marked")
+	ErrNoChapterToUnmark = NewApiError(http.StatusBadRequest, "Chapter is already marked")
 )
 
 const (
