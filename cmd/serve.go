@@ -7,7 +7,6 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/nanoteck137/sewaddle/api"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/server"
 	"github.com/spf13/cobra"
