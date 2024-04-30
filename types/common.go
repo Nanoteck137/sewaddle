@@ -8,6 +8,10 @@ func (d WorkDir) String() string {
 	return string(d)
 }
 
+func (d WorkDir) DataDir() string {
+	return path.Join(d.String(), "data")
+}
+
 func (d WorkDir) ChaptersDir() string {
 	return path.Join(d.String(), "chapters")
 }
