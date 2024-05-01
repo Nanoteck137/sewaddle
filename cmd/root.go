@@ -36,40 +36,8 @@ type Config struct {
 	DataDir string `mapstructure:"data_dir"`
 }
 
-func getDefaultDataDir() string {
-	// TODO(patrik): XDG_CONFIG_HOME is this right?
-	stateHome := os.Getenv("XDG_STATE_HOME")
-	if stateHome == "" {
-		userHome, err := os.UserHomeDir()
-		if err != nil {
-			log.Fatal(err)
-		}
-		stateHome = path.Join(userHome, ".local", "state")
-	}
-
-	return path.Join(stateHome, appName)
-}
-
-func getDefaultConfigDir() string {
-	// TODO(patrik): XDG_CONFIG_HOME is this right?
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	if configHome == "" {
-		userHome, err := os.UserHomeDir()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		configHome = path.Join(userHome, ".config")
-	}
-
-	return path.Join(configHome, appName)
-}
-
 func setDefaults() {
 	viper.SetDefault("listen_addr", ":3000")
-
-	// dataDir := getDefaultDataDir()
-	// viper.SetDefault("data_dir", dataDir)
 }
 
 func validateConfig(config *Config) {
@@ -96,11 +64,7 @@ func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		configPath := getDefaultConfigDir()
-		viper.AddConfigPath(configPath)
-		viper.AddConfigPath("/etc/" + appName)
 		viper.AddConfigPath(".")
-
 		viper.SetConfigName("config")
 	}
 
