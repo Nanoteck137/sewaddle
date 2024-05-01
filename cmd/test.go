@@ -10,36 +10,8 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/nanoteck137/sewaddle/database"
-	"github.com/nanoteck137/sewaddle/library"
-	"github.com/nanoteck137/sewaddle/types"
 	"github.com/spf13/cobra"
 )
-
-var testCmd = &cobra.Command{
-	Use: "test",
-	Run: func(cmd *cobra.Command, args []string) {
-		godotenv.Load()
-
-		dbUrl := os.Getenv("DB_URL")
-		if dbUrl == "" {
-			log.Fatal("DB_URL not set")
-		}
-
-		db, err := sql.Open("sqlite3", dbUrl);
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		lib, err := library.ReadFromDir("/Volumes/media/manga")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		workDir := types.WorkDir("./work")
-		lib.Sync(db, workDir)
-	},
-}
-
 
 type MarkedChapter struct {
 	SerieTitle    string `json:"serieTitle"`
@@ -139,6 +111,5 @@ var importCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(importCmd)
 }
