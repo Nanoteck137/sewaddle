@@ -49,6 +49,8 @@ func validateConfig(config *Config) {
 		}
 	}
 	
+	// NOTE(patrik): Has default value, here for completeness
+	validate(config.ListenAddr == "", "listen_addr needs to be set")
 	validate(config.DataDir == "", "data_dir needs to be set")
 
 	if hasError {
