@@ -2,3 +2,4 @@
 .env
 /work
 .DS_Store
+config.toml
