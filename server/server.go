@@ -6,13 +6,14 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/handlers"
+	"github.com/nanoteck137/sewaddle/types"
 )
 
 type Server struct {
 	e *echo.Echo
 }
 
-func New(db *database.Database) *Server {
+func New(db *database.Database, workDir types.WorkDir) *Server {
 	e := echo.New()
 
 	e.Debug = true
@@ -22,8 +23,8 @@ func New(db *database.Database) *Server {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	e.Static("/images", "./work/images")
-	e.Static("/chapters", "./work/chapters")
+	e.Static("/images", workDir.ImagesDir())
+	e.Static("/chapters", workDir.ChaptersDir())
 
 	apiConfig := handlers.New(db)
 
