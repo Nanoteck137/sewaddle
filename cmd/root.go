@@ -73,18 +73,19 @@ func setDefaults() {
 }
 
 func validateConfig(config *Config) {
-	good := true
+	hasError := false
 
 	validate := func(expr bool, msg string) {
 		if expr {
 			fmt.Println("Err:", msg)
-			good = false
+			hasError = true
 		}
 	}
 	
 	validate(config.DataDir == "", "data_dir needs to be set")
 
-	if !good {
+	if hasError {
+		fmt.Println("Config is not valid")
 		os.Exit(-1)
 	}
 }
