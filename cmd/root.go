@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
 	"github.com/kr/pretty"
 	"github.com/spf13/cobra"
