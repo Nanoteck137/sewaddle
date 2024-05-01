@@ -154,8 +154,7 @@ func GetOrCreateChapter(ctx context.Context, db *database.Database, chapter *Cha
 	return dbChapter, nil
 }
 
-func (lib *Library) Sync(conn *sql.DB, workDir types.WorkDir) {
-	db := database.New(conn)
+func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 	ctx := context.Background()
 
 	imagesDir := workDir.ImagesDir()
