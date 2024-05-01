@@ -13,10 +13,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// func GetListenAddr() string {
-// 	listenAddr := viper.GetString("listen_addr")
-// }
-
 var serveCmd = &cobra.Command{
 	Use: "serve",
 	Run: func(cmd *cobra.Command, args []string) {
