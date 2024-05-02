@@ -19,17 +19,7 @@ var serveCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// TODO(patrik): Bootstrap the directory
 		dbUrl := fmt.Sprintf("file:%s?_foreign_keys=true", workDir.DatabaseFile())
-
-		fmt.Printf("config.DataDir: %v\n", config.DataDir)
-		fmt.Printf("config.ListenAddr: %v\n", config.ListenAddr)
-
-		fmt.Printf("workDir.DatabaseFile(): %v\n", workDir.DatabaseFile())
-		fmt.Printf("workDir.ChaptersDir(): %v\n", workDir.ChaptersDir())
-		fmt.Printf("workDir.ImagesDir(): %v\n", workDir.ImagesDir())
-
-		log.Fatal()
 
 		conn, err := sql.Open("sqlite3", dbUrl);
 		if err != nil {
