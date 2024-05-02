@@ -1,5 +1,7 @@
 /tmp
-.env
 /work
+/build
+
 .DS_Store
+.env
 config.toml
