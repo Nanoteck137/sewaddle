@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/kr/pretty"
+	"github.com/nanoteck137/sewaddle/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,6 +34,26 @@ func init() {
 type Config struct {
 	ListenAddr string `mapstructure:"listen_addr"`
 	DataDir string `mapstructure:"data_dir"`
+}
+
+func (c *Config) WorkDir() types.WorkDir {
+	return types.WorkDir(c.DataDir)
+}
+
+func (c *Config) BootstrapDataDir() (types.WorkDir, error) {
+	workDir := c.WorkDir()
+
+	err := os.MkdirAll(workDir.ImagesDir(), 0755)
+	if err != nil {
+		return workDir, err
+	}
+
+	err = os.MkdirAll(workDir.ChaptersDir(), 0755)
+	if err != nil {
+		return workDir, err
+	}
+
+	return workDir, nil
 }
 
 func setDefaults() {
