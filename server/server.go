@@ -26,7 +26,7 @@ func New(db *database.Database, workDir types.WorkDir) *Server {
 	e.Static("/images", workDir.ImagesDir())
 	e.Static("/chapters", workDir.ChaptersDir())
 
-	apiConfig := handlers.New(db)
+	apiConfig := handlers.New(db, workDir)
 
 	apiGroup := e.Group("/api")
 
