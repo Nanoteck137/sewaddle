@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -17,12 +18,10 @@ var migrateCmd = &cobra.Command{
 var upCmd = &cobra.Command{
 	Use: "up",
 	Run: func(cmd *cobra.Command, args []string) {
-		godotenv.Load()
+		workDir, err := config.BootstrapDataDir()
 
-		dbUrl := os.Getenv("DB_URL")
-		if dbUrl == "" {
-			log.Fatal("DB_URL not set")
-		}
+		// TODO(patrik): Move to util function inside config or workdir or something
+		dbUrl := fmt.Sprintf("file:%s?_foreign_keys=true", workDir.DatabaseFile())
 
 		db, err := goose.OpenDBWithDriver("sqlite3", dbUrl)
 		if err != nil {
