@@ -121,7 +121,7 @@ var dialect = goqu.Dialect("postgres")
 func GetOrCreateSerie(ctx context.Context, db *database.Database, serie *Serie) (database.Serie, error) {
 	dbSerie, err := db.GetSerieByPath(ctx, serie.Path)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == types.ErrNoSerie {
 			dbSerie, err := db.CreateSerie(ctx, serie.Title, serie.Path)
 			if err != nil {
 				return database.Serie{}, err
