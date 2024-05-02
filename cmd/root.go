@@ -58,6 +58,7 @@ func (c *Config) BootstrapDataDir() (types.WorkDir, error) {
 
 func setDefaults() {
 	viper.SetDefault("listen_addr", ":3000")
+	viper.BindEnv("data_dir")
 }
 
 func validateConfig(config *Config) {
