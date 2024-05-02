@@ -270,6 +270,7 @@ func (db *Database) GetChapterByPath(ctx context.Context, path string) (Chapter,
 	var item Chapter
 	err = row.Scan(&item.SerieId, &item.Number, &item.Title, &item.Path, &item.Pages)
 	if err != nil {
+		// TODO(patrik): Return ErrNoChapter
 		return Chapter{}, err
 	}
 
