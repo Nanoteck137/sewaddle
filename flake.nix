@@ -20,7 +20,7 @@
           version = self.shortRev or "dirty";
           src = ./.;
 
-          vendorHash = "sha256-eE2nwnM1Rfn9Y9nWjUBK0pFXUsTIfoZ+IXyud0yM4nU=";
+          vendorHash = "sha256-6kR1t22fJ0sLB2DjG+KdSN4mVD6n69c82zOonvfH3A8=";
         };
       in
       {
