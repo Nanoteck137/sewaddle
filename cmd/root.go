@@ -59,6 +59,8 @@ func validateConfig(config *Config) {
 	}
 }
 
+var config Config 
+
 func initConfig() {
 	setDefaults()
 
@@ -77,7 +79,6 @@ func initConfig() {
 		log.Println("Failed to load config: ", err)
 	}
 
-	var config Config
 	err = viper.Unmarshal(&config)
 	if err != nil {
 		log.Fatal("Failed to unmarshal config: ", err)

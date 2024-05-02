@@ -10,18 +10,18 @@ import (
 	"github.com/nanoteck137/sewaddle/server"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var serveCmd = &cobra.Command{
 	Use: "serve",
 	Run: func(cmd *cobra.Command, args []string) {
-		dataDir := viper.GetString("data_dir")
-		workDir := types.WorkDir(dataDir)
+		workDir := types.WorkDir(config.DataDir)
 
 		// TODO(patrik): Bootstrap the directory
-
 		dbUrl := fmt.Sprintf("file:%s?_foreign_keys=true", workDir.DatabaseFile())
+
+		fmt.Printf("config.DataDir: %v\n", config.DataDir)
+		fmt.Printf("config.ListenAddr: %v\n", config.ListenAddr)
 
 		fmt.Printf("workDir.DatabaseFile(): %v\n", workDir.DatabaseFile())
 		fmt.Printf("workDir.ChaptersDir(): %v\n", workDir.ChaptersDir())
@@ -38,8 +38,7 @@ var serveCmd = &cobra.Command{
 
 		server := server.New(db, workDir)
 
-		listenAddr := viper.GetString("listen_addr")
-		err = server.Start(listenAddr)
+		err = server.Start(config.ListenAddr)
 		if err != nil {
 			log.Fatal(err)
 		}
