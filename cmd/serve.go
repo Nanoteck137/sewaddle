@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -19,15 +17,10 @@ var serveCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// TODO(patrik): Move to util function inside config or workdir or something
-		dbUrl := fmt.Sprintf("file:%s?_foreign_keys=true", workDir.DatabaseFile())
-
-		conn, err := sql.Open("sqlite3", dbUrl);
+		db, err := database.Open(workDir)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		db := database.New(conn)
 
 		server := server.New(db, workDir)
 

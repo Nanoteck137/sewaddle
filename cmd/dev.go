@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
 
 	"github.com/nanoteck137/sewaddle/database"
@@ -26,16 +24,10 @@ var devLibraryImportCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// TODO(patrik): Move to util function inside config or workdir or something
-		dbUrl := fmt.Sprintf("file:%s?_foreign_keys=true", workDir.DatabaseFile())
-
-		conn, err := sql.Open("sqlite3", dbUrl);
+		db, err := database.Open(workDir)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		db := database.New(conn)
-
 
 		lib, err := library.ReadFromDir("/Volumes/media/manga")
 		if err != nil {

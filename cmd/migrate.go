@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
-	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/migrations"
 	"github.com/pressly/goose/v3"
 	"github.com/spf13/cobra"
@@ -20,15 +18,12 @@ var upCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		workDir, err := config.BootstrapDataDir()
 
-		// TODO(patrik): Move to util function inside config or workdir or something
-		dbUrl := fmt.Sprintf("file:%s?_foreign_keys=true", workDir.DatabaseFile())
-
-		db, err := goose.OpenDBWithDriver("sqlite3", dbUrl)
+		db, err := database.Open(workDir)
 		if err != nil {
-			log.Fatalf("goose: failed to open DB: %v\n", err)
+			log.Fatal(err)
 		}
 
-		err = goose.Up(db, ".")
+		err = goose.Up(db.Conn, ".")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -38,49 +33,34 @@ var upCmd = &cobra.Command{
 var downCmd = &cobra.Command{
 	Use: "down",
 	Run: func(cmd *cobra.Command, args []string) {
-		godotenv.Load()
+		workDir, err := config.BootstrapDataDir()
 
-		dbUrl := os.Getenv("DB_URL")
-		if dbUrl == "" {
-			log.Fatal("DB_URL not set")
-		}
-
-		db, err := goose.OpenDBWithDriver("sqlite3", dbUrl)
+		db, err := database.Open(workDir)
 		if err != nil {
-			log.Fatalf("goose: failed to open DB: %v\n", err)
+			log.Fatal(err)
 		}
 
-		err = goose.Down(db, ".")
+		err = goose.Down(db.Conn, ".")
 		if err != nil {
 			log.Fatal(err)
 		}
 	},
 }
 
-var createCmd = &cobra.Command{
-	Use: "create <MIGRATION_NAME>",
-	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		godotenv.Load()
+// TODO(patrik): Fix
+// var createCmd = &cobra.Command{
+// 	Use: "create <MIGRATION_NAME>",
+// 	Args: cobra.ExactArgs(1),
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		name := args[0]
+// 		err = goose.Create(db, "./migrations", name, "sql")
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 	},
+// }
 
-		dbUrl := os.Getenv("DB_URL")
-		if dbUrl == "" {
-			log.Fatal("DB_URL not set")
-		}
-
-		db, err := goose.OpenDBWithDriver("sqlite3", dbUrl)
-		if err != nil {
-			log.Fatalf("goose: failed to open DB: %v\n", err)
-		}
-
-		name := args[0]
-		err = goose.Create(db, "./migrations", name, "sql")
-		if err != nil {
-			log.Fatal(err)
-		}
-	},
-}
-
+// TODO(patrik): Move to dev cmd?
 var fixCmd = &cobra.Command{
 	Use: "fix",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -92,11 +72,13 @@ var fixCmd = &cobra.Command{
 }
 
 func init() {
+	// TODO(patrik): Move?
 	goose.SetBaseFS(migrations.Migrations)
+	goose.SetDialect("sqlite3")
 
 	migrateCmd.AddCommand(upCmd)
 	migrateCmd.AddCommand(downCmd)
-	migrateCmd.AddCommand(createCmd)
+	// migrateCmd.AddCommand(createCmd)
 	migrateCmd.AddCommand(fixCmd)
 
 	rootCmd.AddCommand(migrateCmd)

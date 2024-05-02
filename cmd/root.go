@@ -33,7 +33,7 @@ func init() {
 
 type Config struct {
 	ListenAddr string `mapstructure:"listen_addr"`
-	DataDir string `mapstructure:"data_dir"`
+	DataDir    string `mapstructure:"data_dir"`
 }
 
 func (c *Config) WorkDir() types.WorkDir {
@@ -69,7 +69,7 @@ func validateConfig(config *Config) {
 			hasError = true
 		}
 	}
-	
+
 	// NOTE(patrik): Has default value, here for completeness
 	validate(config.ListenAddr == "", "listen_addr needs to be set")
 	validate(config.DataDir == "", "data_dir needs to be set")
@@ -80,7 +80,7 @@ func validateConfig(config *Config) {
 	}
 }
 
-var config Config 
+var config Config
 
 func initConfig() {
 	setDefaults()
