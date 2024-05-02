@@ -34,6 +34,7 @@ func New(db *database.Database, workDir types.WorkDir) *Server {
 	handlers.InstallSerieHandlers(v1Group, apiConfig)
 	handlers.InstallChapterHandlers(v1Group, apiConfig)
 	handlers.InstallUserHandlers(v1Group, apiConfig)
+	handlers.InstallLibraryHandlers(v1Group, apiConfig)
 
 	authGroup := apiGroup.Group("/auth")
 	handlers.InstallAuthHandlers(authGroup, apiConfig)

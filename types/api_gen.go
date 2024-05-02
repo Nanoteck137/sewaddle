@@ -59,3 +59,7 @@ type GetChapterById struct {
 	PrevChapter *int             `json:"prevChapter,omitempty"`
 	Pages       []string         `json:"pages"`
 }
+
+type GetLibraryStatus struct {
+	Syncing bool `json:"syncing"`
+}
