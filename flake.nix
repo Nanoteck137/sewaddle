@@ -50,7 +50,12 @@
             air
             pyrin.packages.${system}.default
           ];
+          shellHook = ''
+            echo "Nix flake revision is ${self.rev or self.dirtyRev or "dirty"}"
+            echo "nixpkgs revision is ${nixpkgs.rev}"
+          '';
         };
+        self = self;
       }
     );
 }
