@@ -2,6 +2,7 @@
 /work
 /build
 
+result
 .DS_Store
 .env
 config.toml
