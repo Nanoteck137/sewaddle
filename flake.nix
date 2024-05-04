@@ -15,7 +15,7 @@
           inherit system overlays;
         };
 
-        version = self.shortRev or "dirty";
+        version = self.ref or "dirty";
 
         app = pkgs.buildGoModule {
           pname = "sewaddle";
