@@ -39,21 +39,24 @@
             };
           };
         };
+
+        boom = pkgs.writeShellScriptBin "test-ver" ''
+          echo "Nix flake revision is ${self.rev or self.dirtyRev or "dirty"}"
+          echo "nixpkgs revision is ${nixpkgs.rev}"
+          '';
       in
       {
         packages.default = app;
         packages.dockerImage = dockerImage;
+        packages.test-ver = boom;
 
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             go
             air
             pyrin.packages.${system}.default
+            boom
           ];
-          shellHook = ''
-            echo "Nix flake revision is ${self.rev or self.dirtyRev or "dirty"}"
-            echo "nixpkgs revision is ${nixpkgs.rev}"
-          '';
         };
         self = self;
       }
