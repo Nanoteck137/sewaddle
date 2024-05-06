@@ -13,7 +13,7 @@ type Server struct {
 	e *echo.Echo
 }
 
-func New(db *database.Database, workDir types.WorkDir) *Server {
+func New(db *database.Database, workDir types.WorkDir, libraryDir string) *Server {
 	e := echo.New()
 
 	e.Debug = true
@@ -26,7 +26,7 @@ func New(db *database.Database, workDir types.WorkDir) *Server {
 	e.Static("/images", workDir.ImagesDir())
 	e.Static("/chapters", workDir.ChaptersDir())
 
-	apiConfig := handlers.New(db, workDir)
+	apiConfig := handlers.New(db, workDir, libraryDir)
 
 	apiGroup := e.Group("/api")
 

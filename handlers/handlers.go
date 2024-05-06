@@ -8,13 +8,15 @@ import (
 
 type ApiConfig struct {
 	workDir types.WorkDir
+	libraryDir string
 	database *database.Database
 	jwtValidator *jwt.Validator
 }
 
-func New(database *database.Database, workDir types.WorkDir) *ApiConfig {
+func New(database *database.Database, workDir types.WorkDir, libraryDir string) *ApiConfig {
 	return &ApiConfig{
 		workDir:      workDir,
+		libraryDir:   libraryDir,
 		database:     database,
 		jwtValidator: jwt.NewValidator(jwt.WithIssuedAt()),
 	}

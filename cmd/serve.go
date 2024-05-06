@@ -22,7 +22,7 @@ var serveCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		server := server.New(db, workDir)
+		server := server.New(db, workDir, config.LibraryDir)
 
 		err = server.Start(config.ListenAddr)
 		if err != nil {

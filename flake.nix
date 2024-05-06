@@ -32,6 +32,7 @@
           config = {
             Env = [
               "SEWADDLE_DATA_DIR=/data"
+              "SEWADDLE_LIBRARY_DIR=/library"
             ];
             Entrypoint = ["${app}/bin/sewaddle"];
             Cmd = [ "serve" ];
