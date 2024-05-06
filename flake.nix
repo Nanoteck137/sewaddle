@@ -15,11 +15,12 @@
           inherit system overlays;
         };
 
-        version = self.shortRev or "dirty";
+        version = builtins.readFile "${self}/version";
+        fullVersion = ''${version}-${self.shortRev or "dirty"}'';
 
         app = pkgs.buildGoModule {
           pname = "sewaddle";
-          inherit version;
+          version = fullVersion;
           src = ./.;
 
           vendorHash = "sha256-6kR1t22fJ0sLB2DjG+KdSN4mVD6n69c82zOonvfH3A8=";
