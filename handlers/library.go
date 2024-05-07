@@ -23,8 +23,7 @@ func (api *ApiConfig) HandlePostLibrarySync(c echo.Context) error {
 		syncing.Store(true)
 		defer syncing.Store(false)
 
-		// TODO(patrik): Don't hard code library path
-		lib, err := library.ReadFromDir("/Volumes/media/manga")
+		lib, err := library.ReadFromDir(api.libraryDir)
 		if err != nil {
 			log.Fatal("Failed to read library:", err)
 		}
