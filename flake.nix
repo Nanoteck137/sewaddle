@@ -15,7 +15,7 @@
           inherit system overlays;
         };
 
-        version = builtins.readFile "${self}/version";
+        version = pkgs.lib.strings.fileContents "${self}/version";
         fullVersion = ''${version}-${self.shortRev or "dirty"}'';
 
         app = pkgs.buildGoModule {
