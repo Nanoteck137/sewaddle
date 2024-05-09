@@ -60,7 +60,7 @@
           cfg = config.services.sewaddle;
 
           sewaddleConfig = pkgs.writeText "config.toml" ''
-            listen_addr = ${cfg.port}
+            listen_addr = ${toString cfg.port}
           '';
         in
         {
