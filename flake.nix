@@ -109,7 +109,7 @@
                 UMask = "0077";
                 WorkingDirectory = "/var/lib/sewaddle";
 
-                ExecStart = "${cfg.package}/bin/sewaddle serve -c ${sewaddleConfig}";
+                ExecStart = "${cfg.package}/bin/sewaddle serve -c '${sewaddleConfig}'";
 
                 Restart = "on-failure";
                 RestartSec = "5s";
