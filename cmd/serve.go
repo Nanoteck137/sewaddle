@@ -22,6 +22,12 @@ var serveCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		// TODO(patrik): Maybe create a flag to run this on startup
+		err = runMigrateUp(db)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		server := server.New(db, workDir, config.LibraryDir)
 
 		err = server.Start(config.ListenAddr)

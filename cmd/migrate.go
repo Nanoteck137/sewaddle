@@ -13,6 +13,10 @@ var migrateCmd = &cobra.Command{
 	Use: "migrate",
 }
 
+func runMigrateUp(db *database.Database) error {
+	return goose.Up(db.Conn, ".")
+}
+
 var upCmd = &cobra.Command{
 	Use: "up",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -23,7 +27,8 @@ var upCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		err = goose.Up(db.Conn, ".")
+
+		err = runMigrateUp(db)
 		if err != nil {
 			log.Fatal(err)
 		}
