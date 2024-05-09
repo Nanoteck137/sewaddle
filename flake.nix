@@ -87,7 +87,7 @@
 
               serviceConfig = {
                 DynamicUser = "yes";
-                ExecStart = "${cfg.package}/bin/sewaddle -c ${sewaddleConfig}";
+                ExecStart = "${cfg.package}/bin/sewaddle serve -c ${sewaddleConfig}";
                 Restart = "on-failure";
                 RestartSec = "5s";
               };
