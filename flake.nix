@@ -60,7 +60,7 @@
           cfg = config.services.sewaddle;
 
           sewaddleConfig = pkgs.writeText "config.toml" ''
-            listen_addr = ${toString cfg.port}
+            listen_addr = ":${toString cfg.port}"
             data_dir = "/var/lib/sewaddle"
           '';
         in
