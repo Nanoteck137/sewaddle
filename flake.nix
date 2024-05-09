@@ -53,6 +53,47 @@
             pyrin.packages.${system}.default
           ];
         };
+
+        nixosModules.default = { config, lib, pkgs, ... }:
+          with lib;
+        let
+          cfg = config.services.sewaddle;
+
+          sewaddleConfig = pkgs.writeText "config.toml" ''
+            listen_addr = ${cfg.port}
+          '';
+        in
+        {
+          options.services.sewaddle = {
+            enable = mkEnableOption "Enable the Sewaddle service";
+
+            port = mkOption {
+              type = types.port;
+              default = 3000;
+              description = "port to listen on";
+            };
+
+            package = mkOption {
+              type = types.package;
+              default = self.packages.${pkgs.system}.default;
+              description = "package to use for this service (defaults to the one in the flake)";
+            };
+          };
+
+          config = mkIf cfg.enable {
+            systemd.services.sewaddle = {
+              description = "Sewaddle";
+              wantedBy = [ "multi-user.target" ];
+
+              serviceConfig = {
+                DynamicUser = "yes";
+                ExecStart = "${cfg.package}/bin/sewaddle -c ${sewaddleConfig}";
+                Restart = "on-failure";
+                RestartSec = "5s";
+              };
+            };
+          };
+        };
       }
     );
 }
