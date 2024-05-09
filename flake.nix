@@ -111,17 +111,17 @@
                 RestartSec = "5s";
               };
             };
-          };
 
-          users.users = mkIf (cfg.user == "sewaddle") {
-            sewaddle = {
-              group = cfg.group;
-              isSystemUser = true;
+            users.users = mkIf (cfg.user == "sewaddle") {
+              sewaddle = {
+                group = cfg.group;
+                isSystemUser = true;
+              };
             };
-          };
 
-          users.groups = mkIf (cfg.group == "sewaddle") {
-            sewaddle = {};
+            users.groups = mkIf (cfg.group == "sewaddle") {
+              sewaddle = {};
+            };
           };
         };
       }
