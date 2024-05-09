@@ -61,6 +61,7 @@
 
           sewaddleConfig = pkgs.writeText "config.toml" ''
             listen_addr = ${toString cfg.port}
+            data_dir = "/var/lib/sewaddle"
           '';
         in
         {
@@ -87,6 +88,9 @@
 
               serviceConfig = {
                 DynamicUser = "yes";
+                StateDirectory = "sewaddle";
+                StateDirectoryMode = "0700";
+                WorkingDirectory = "/var/lib/sewaddle";
                 ExecStart = "${cfg.package}/bin/sewaddle serve -c ${sewaddleConfig}";
                 Restart = "on-failure";
                 RestartSec = "5s";
