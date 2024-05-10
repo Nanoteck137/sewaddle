@@ -105,7 +105,7 @@
                 Group = cfg.group;
 
                 StateDirectory = "sewaddle";
-                ReadWritePaths = ["/var/lib/sewaddle"]
+                ReadWritePaths = ["/var/lib/sewaddle"];
 
                 ExecStart = "${cfg.package}/bin/sewaddle serve -c '${sewaddleConfig}'";
 
