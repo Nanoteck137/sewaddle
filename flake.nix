@@ -52,11 +52,11 @@
             air
             pyrin.packages.${system}.default
           ];
-        };
-
-        nixosModules.default = { config, lib, pkgs, ... }:
-          with lib;
-        let
+        }; 
+      }
+    ) // {
+      nixosModules.default = { config, lib, pkgs, ... }:
+        with lib; let
           cfg = config.services.sewaddle;
 
           sewaddleConfig = pkgs.writeText "config.toml" ''
@@ -91,7 +91,7 @@
               default = self.packages.${pkgs.system}.default;
               description = "package to use for this service (defaults to the one in the flake)";
             };
-            
+
             user = mkOption {
               type = types.str;
               default = "sewaddle";
@@ -148,6 +148,5 @@
             };
           };
         };
-      }
-    );
+    };
 }
