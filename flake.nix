@@ -108,6 +108,13 @@
           };
 
           config = mkIf cfg.enable {
+            assertions = [
+              {
+                assertion = cfg.library == "";
+                message = "services.sewaddle.library needs to be set";
+              }
+            ];
+
             systemd.services.sewaddle = {
               description = "Sewaddle";
               wantedBy = [ "multi-user.target" ];
