@@ -62,7 +62,7 @@
           sewaddleConfig = pkgs.writeText "config.toml" ''
             listen_addr = ":${toString cfg.port}"
             data_dir = "/var/lib/sewaddle"
-            library_dir = "/var/lib/sewaddle/library"
+            library_dir = "${cfg.library}"
           '';
         in
         {
@@ -73,6 +73,12 @@
               type = types.port;
               default = 3000;
               description = "port to listen on";
+            };
+
+            library = mkOption {
+              type = types.path;
+              default = "";
+              description = lib.mdDoc "path to series library";
             };
 
             package = mkOption {
