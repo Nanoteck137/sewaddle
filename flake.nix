@@ -62,6 +62,7 @@
           sewaddleConfig = pkgs.writeText "config.toml" ''
             listen_addr = ":${toString cfg.port}"
             data_dir = "/var/lib/sewaddle"
+            library_dir = "/var/lib/sewaddle/library"
           '';
         in
         {
