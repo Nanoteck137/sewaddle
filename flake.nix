@@ -100,22 +100,16 @@
               wantedBy = [ "multi-user.target" ];
 
               serviceConfig = {
-                Type = "simple";
+                DynamicUser = true;
                 User = cfg.user;
                 Group = cfg.group;
 
                 StateDirectory = "sewaddle";
-                StateDirectoryMode = "0700";
-                UMask = "0077";
-                WorkingDirectory = "/var/lib/sewaddle";
 
-                ExecStart = "${cfg.package}/bin/sewaddle serve";
+                ExecStart = "${cfg.package}/bin/sewaddle serve -c '${sewaddleConfig}'";
 
                 Restart = "on-failure";
                 RestartSec = "5s";
-
-                NoNewPrivileges = true;
-                PrivateDevices = true;
               };
             };
 
