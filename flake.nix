@@ -101,18 +101,27 @@
               wantedBy = [ "multi-user.target" ];
 
               serviceConfig = {
-                DynamicUser = true;
                 User = cfg.user;
                 Group = cfg.group;
 
                 StateDirectory = "sewaddle";
-                ReadWritePaths = ["/var/lib/sewaddle"];
 
                 ExecStart = "${cfg.package}/bin/sewaddle serve -c '${sewaddleConfig}'";
 
                 Restart = "on-failure";
                 RestartSec = "5s";
               };
+            };
+
+            users.users = mkIf (cfg.user == "sewaddle") {
+              sewaddle = {
+                group = cfg.group;
+                isSystemUser = true;
+              };
+            };
+
+            users.groups = mkIf (cfg.group == "sewaddle") {
+              sewaddle = {};
             };
           };
         };
