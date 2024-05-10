@@ -83,7 +83,6 @@
 
             library = mkOption {
               type = types.path;
-              default = "";
               description = lib.mdDoc "path to series library";
             };
 
@@ -108,13 +107,6 @@
           };
 
           config = mkIf cfg.enable {
-            assertions = [
-              {
-                assertion = cfg.library == "";
-                message = "services.sewaddle.library needs to be set";
-              }
-            ];
-
             systemd.services.sewaddle = {
               description = "Sewaddle";
               wantedBy = [ "multi-user.target" ];
