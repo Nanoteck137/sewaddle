@@ -16,7 +16,7 @@
         };
 
         version = pkgs.lib.strings.fileContents "${self}/version";
-        fullVersion = ''${version}-${self.dirtyShortRev}'';
+        fullVersion = ''${version}-${self.dirtyShortRev or self.shortRev or "dirty"}'';
 
         app = pkgs.buildGoModule {
           pname = "sewaddle";
@@ -25,7 +25,7 @@
 
           ldflags = [
             "-X github.com/nanoteck137/sewaddle/cmd.Version=${version}"
-            "-X github.com/nanoteck137/sewaddle/cmd.Commit=${self.dirtyRev}"
+            "-X github.com/nanoteck137/sewaddle/cmd.Commit=${self.dirtyRev or self.rev or "no-commit"}"
           ];
 
           vendorHash = "sha256-6kR1t22fJ0sLB2DjG+KdSN4mVD6n69c82zOonvfH3A8=";
@@ -60,6 +60,8 @@
         }; 
       }
     ) // {
+      inherit self;
+
       nixosModules.default = { config, lib, pkgs, ... }:
         with lib; let
           cfg = config.services.sewaddle;
