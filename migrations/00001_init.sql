@@ -1,3 +1,5 @@
+-- NOTE(patrik): FINAL
+
 -- +goose Up
 CREATE TABLE series (
     id TEXT NOT NULL,
