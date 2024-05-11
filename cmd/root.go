@@ -11,10 +11,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-var appName = "sewaddle"
+var AppName = "sewaddle"
+var Version = "no-version"
+var Commit = "no-commit"
 
 var rootCmd = &cobra.Command{
-	Use: appName,
+	Use:     AppName,
+	Version: Version,
 }
 
 func Execute() {
@@ -25,7 +28,15 @@ func Execute() {
 
 var cfgFile string
 
+func versionTemplate() string {
+	return fmt.Sprintf(
+		"%s: %s (%s)\n",
+		AppName, Version, Commit)
+}
+
 func init() {
+	rootCmd.SetVersionTemplate(versionTemplate())
+
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "Config File")
@@ -96,7 +107,7 @@ func initConfig() {
 		viper.SetConfigName("config")
 	}
 
-	viper.SetEnvPrefix(appName)
+	viper.SetEnvPrefix(AppName)
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
