@@ -12,7 +12,14 @@ import (
 func ConvertURL(c echo.Context, path string) string {
 	host := c.Request().Host
 
-	return fmt.Sprintf("http://%s%s", host, path)
+	scheme := "http"
+
+	h := c.Request().Header.Get("X-Forwarded-Proto")
+	if h != "" {
+		scheme = h
+	}
+
+	return fmt.Sprintf("%s://%s%s", scheme, host, path)
 }
 
 func (api *ApiConfig) HandleGetSeries(c echo.Context) error {
