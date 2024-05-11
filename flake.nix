@@ -16,12 +16,17 @@
         };
 
         version = pkgs.lib.strings.fileContents "${self}/version";
-        fullVersion = ''${version}-${self.shortRev or "dirty"}'';
+        fullVersion = ''${version}-${self.dirtyShortRev}'';
 
         app = pkgs.buildGoModule {
           pname = "sewaddle";
           version = fullVersion;
           src = ./.;
+
+          ldflags = [
+            "-X github.com/nanoteck137/sewaddle/cmd.Version=${version}"
+            "-X github.com/nanoteck137/sewaddle/cmd.Commit=${self.dirtyRev}"
+          ];
 
           vendorHash = "sha256-6kR1t22fJ0sLB2DjG+KdSN4mVD6n69c82zOonvfH3A8=";
         };
