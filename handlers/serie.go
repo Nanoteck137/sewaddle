@@ -75,11 +75,13 @@ func (api *ApiConfig) HandleGetSerieById(c echo.Context) error {
 	}
 
 	result := types.GetSerieById{
-		Id:           serie.Id,
-		Name:         serie.Name,
-		Cover:        ConvertURL(c, "/images/"+serie.Cover),
-		ChapterCount: serie.ChapterCount,
-		User:         userData,
+		Serie: types.Serie{
+			Id:           serie.Id,
+			Name:         serie.Name,
+			Cover:        ConvertURL(c, "/images/"+serie.Cover),
+			ChapterCount: serie.ChapterCount,
+		},
+		User:  userData,
 	}
 
 	return c.JSON(200, types.NewApiSuccessResponse(result))

@@ -84,13 +84,16 @@ func (api *ApiConfig) HandleGetChapterById(c echo.Context) error {
 	}
 
 	result := types.GetChapterById{
-		SerieId:     chapter.SerieId,
-		Number:      chapter.Number,
-		Title:       chapter.Title,
+		Chapter:     types.Chapter{
+			SerieId:  chapter.SerieId,
+			Number:   chapter.Number,
+			Title:    chapter.Title,
+			CoverArt: pages[0],
+			User:     userData,
+		},
 		NextChapter: nextChapter,
 		PrevChapter: prevChapter,
 		Pages:       pages,
-		User:        userData,
 	}
 
 	return c.JSON(200, types.NewApiSuccessResponse(result))
