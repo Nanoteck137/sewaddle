@@ -39,6 +39,9 @@ func New(db *database.Database, workDir types.WorkDir, libraryDir string) *Serve
 	authGroup := apiGroup.Group("/auth")
 	handlers.InstallAuthHandlers(authGroup, apiConfig)
 
+	devGroup := apiGroup.Group("/dev")
+	handlers.InstallDevHandlers(devGroup, apiConfig)
+
 	return &Server{
 		e: e,
 	}

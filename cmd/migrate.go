@@ -52,18 +52,26 @@ var downCmd = &cobra.Command{
 	},
 }
 
-// TODO(patrik): Fix
-// var createCmd = &cobra.Command{
-// 	Use: "create <MIGRATION_NAME>",
-// 	Args: cobra.ExactArgs(1),
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		name := args[0]
-// 		err = goose.Create(db, "./migrations", name, "sql")
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 	},
-// }
+// TODO(patrik): Move to dev cmd
+var createCmd = &cobra.Command{
+	Use: "create <MIGRATION_NAME>",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		name := args[0]
+
+		workDir, err := config.BootstrapDataDir()
+
+		db, err := database.Open(workDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = goose.Create(db.Conn, "./migrations", name, "sql")
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
 
 // TODO(patrik): Move to dev cmd?
 var fixCmd = &cobra.Command{
@@ -83,7 +91,7 @@ func init() {
 
 	migrateCmd.AddCommand(upCmd)
 	migrateCmd.AddCommand(downCmd)
-	// migrateCmd.AddCommand(createCmd)
+	migrateCmd.AddCommand(createCmd)
 	migrateCmd.AddCommand(fixCmd)
 
 	rootCmd.AddCommand(migrateCmd)
