@@ -47,11 +47,15 @@ type GetChapters struct {
 
 type GetChapterById struct {
 	Chapter
-	NextChapter *int             `json:"nextChapter"`
-	PrevChapter *int             `json:"prevChapter"`
-	Pages       []string         `json:"pages"`
+	NextChapter *int     `json:"nextChapter"`
+	PrevChapter *int     `json:"prevChapter"`
+	Pages       []string `json:"pages"`
 }
 
 type GetLibraryStatus struct {
 	Syncing bool `json:"syncing"`
+}
+
+type GetSystemInfo struct {
+	IsSetup bool `json:"isSetup"`
 }
