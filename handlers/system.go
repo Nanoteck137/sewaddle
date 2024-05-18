@@ -7,6 +7,7 @@ import (
 
 func (api *ApiConfig) HandleGetSystemInfo(c echo.Context) error {
 	return c.JSON(200, types.NewApiSuccessResponse(types.GetSystemInfo{
+		Version: "0.0.0",
 		IsSetup: false,
 	}))
 }

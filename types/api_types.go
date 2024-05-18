@@ -57,5 +57,6 @@ type GetLibraryStatus struct {
 }
 
 type GetSystemInfo struct {
-	IsSetup bool `json:"isSetup"`
+	Version string `json:"version"`
+	IsSetup bool   `json:"isSetup"`
 }
