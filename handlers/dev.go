@@ -1,5 +1,7 @@
 package handlers
 
+import "github.com/labstack/echo/v4"
+
 // func (api *ApiConfig) HandlePostToggleAdmin(c echo.Context) error {
 // 	user, err := api.User(c)
 // 	if err != nil {
@@ -14,6 +16,6 @@ package handlers
 // 	return c.JSON(200, types.NewApiSuccessResponse(nil));
 // }
 
-// func InstallDevHandlers(g *echo.Group, api *ApiConfig) {
-// 	g.POST("/toggle-admin", api.HandlePostToggleAdmin)
-// }
+func InstallDevHandlers(g *echo.Group, api *ApiConfig) {
+	// g.POST("/toggle-admin", api.HandlePostToggleAdmin)
+}

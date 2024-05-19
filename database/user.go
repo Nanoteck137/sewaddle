@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/nanoteck137/sewaddle/utils"
