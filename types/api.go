@@ -85,7 +85,6 @@ type ApiPostLogin struct {
 type ApiGetMe struct {
 	Id       string `json:"id"`
 	Username string `json:"username"`
-	IsAdmin  bool   `json:"isAdmin"`
 }
 
 type ApiPostSerieUpdateBody struct {

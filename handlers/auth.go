@@ -179,7 +179,6 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 	return c.JSON(200, types.NewApiSuccessResponse(types.ApiGetMe{
 		Id:       user.Id,
 		Username: user.Username,
-		IsAdmin:  user.IsAdmin,
 	}))
 }
 
