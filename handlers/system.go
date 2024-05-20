@@ -13,5 +13,5 @@ func (api *ApiConfig) HandleGetSystemInfo(c echo.Context) error {
 }
 
 func InstallSystemHandlers(g *echo.Group, api *ApiConfig) {
-	g.POST("/system/info", api.HandleGetSystemInfo)
+	g.GET("/system/info", api.HandleGetSystemInfo)
 }
