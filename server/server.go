@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+
 	"github.com/MadAppGang/httplog/echolog"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -42,6 +44,11 @@ func New(db *database.Database, workDir types.WorkDir, libraryDir string) *Serve
 
 	devGroup := apiGroup.Group("/dev")
 	handlers.InstallDevHandlers(devGroup, apiConfig)
+
+	err := handlers.InitializeConfig(db)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return &Server{
 		e: e,

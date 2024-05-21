@@ -14,7 +14,7 @@ var migrateCmd = &cobra.Command{
 }
 
 func runMigrateUp(db *database.Database) error {
-	return goose.Up(db.Conn, ".")
+	return goose.Up(db.RawConn, ".")
 }
 
 var upCmd = &cobra.Command{
@@ -45,7 +45,7 @@ var downCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		err = goose.Down(db.Conn, ".")
+		err = goose.Down(db.RawConn, ".")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -66,7 +66,7 @@ var createCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		err = goose.Create(db.Conn, "./migrations", name, "sql")
+		err = goose.Create(db.RawConn, "./migrations", name, "sql")
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"log"
 
+	"github.com/kr/pretty"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/server"
@@ -27,6 +29,13 @@ var serveCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		conf, err := db.GetConfig(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		pretty.Println(conf)
 
 		server := server.New(db, workDir, config.LibraryDir)
 

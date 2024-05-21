@@ -16,12 +16,20 @@ type ToSQL interface {
 	ToSQL() (string, []interface{}, error)
 }
 
+type Connection interface {
+	Query(query string, args ...any) (*sql.Rows, error)
+	QueryRow(query string, args ...any) *sql.Row
+	Exec(query string, args ...any) (sql.Result, error)
+}
+
 type Database struct {
-	Conn *sql.DB
+	RawConn *sql.DB
+	Conn Connection
 }
 
 func New(conn *sql.DB) *Database {
 	return &Database{
+		RawConn: conn,
 		Conn: conn,
 	}
 }
@@ -35,6 +43,18 @@ func Open(workDir types.WorkDir) (*Database, error) {
 	}
 
 	return New(conn), nil
+}
+
+func (db *Database) Begin() (*Database, *sql.Tx, error) {
+	tx, err := db.RawConn.Begin()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &Database{
+		RawConn: db.RawConn,
+		Conn: tx,
+	}, tx, nil
 }
 
 func (db *Database) Query(ctx context.Context, s ToSQL) (*sql.Rows, error) {
@@ -64,7 +84,6 @@ func (db *Database) Exec(ctx context.Context, s ToSQL) (sql.Result, error) {
 
 	return db.Conn.Exec(sql, params...)
 }
-
 
 func init() {
 	opts := goqusqlite3.DialectOptions()

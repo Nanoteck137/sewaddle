@@ -60,3 +60,9 @@ type GetSystemInfo struct {
 	Version string `json:"version"`
 	IsSetup bool   `json:"isSetup"`
 }
+
+type PostSystemSetupBody struct {
+	Username        string `json:"username"`
+	Password        string `json:"password"`
+	PasswordConfirm string `json:"passwordConfirm"`
+}
