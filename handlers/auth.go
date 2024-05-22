@@ -183,7 +183,7 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 }
 
 func InstallAuthHandlers(g *echo.Group, api *ApiConfig) {
-	g.POST("/signup", api.HandlePostSignup)
-	g.POST("/signin", api.HandlePostSignin)
-	g.GET("/me", api.HandleGetMe)
+	g.POST("/auth/signup", api.HandlePostSignup)
+	g.POST("/auth/signin", api.HandlePostSignin)
+	g.GET("/auth/me", api.HandleGetMe)
 }

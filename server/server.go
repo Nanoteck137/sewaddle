@@ -38,9 +38,7 @@ func New(db *database.Database, workDir types.WorkDir, libraryDir string) *Serve
 	handlers.InstallUserHandlers(v1Group, apiConfig)
 	handlers.InstallLibraryHandlers(v1Group, apiConfig)
 	handlers.InstallSystemHandlers(v1Group, apiConfig)
-
-	authGroup := apiGroup.Group("/auth")
-	handlers.InstallAuthHandlers(authGroup, apiConfig)
+	handlers.InstallAuthHandlers(v1Group, apiConfig)
 
 	devGroup := apiGroup.Group("/dev")
 	handlers.InstallDevHandlers(devGroup, apiConfig)
