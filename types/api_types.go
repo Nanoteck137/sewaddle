@@ -66,3 +66,55 @@ type PostSystemSetupBody struct {
 	Password        string `json:"password"`
 	PasswordConfirm string `json:"passwordConfirm"`
 }
+
+type GetChapterByIdUser struct {
+	IsMarked bool `json:"isMarked"`
+}
+
+type PostAuthSignupBody struct {
+	Username        string `json:"username" validate:"required"`
+	Password        string `json:"password" validate:"required"`
+	PasswordConfirm string `json:"passwordConfirm" validate:"required"`
+}
+
+type PostAuthSignup struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+}
+
+type PostAuthSigninBody struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+type PostAuthSignin struct {
+	Token string `json:"token"`
+}
+
+type GetAuthMe struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+	IsOwner  bool   `json:"isOwner"`
+}
+
+// TODO(patrik): Remove?
+type PostSerieUpdateBody struct {
+	SerieId       string `json:"serieId"`
+	ChapterNumber int    `json:"chapterNumber"`
+}
+
+type PostUserMarkChaptersBody struct {
+	SerieId  string `json:"serieId"`
+	Chapters []int  `json:"chapters"`
+}
+
+type PostUserUnmarkChaptersBody struct {
+	SerieId  string `json:"serieId"`
+	Chapters []int  `json:"chapters"`
+}
+
+type PostUserUpdateBookmarkBody struct {
+	SerieId string `json:"serieId"`
+	Chapter int    `json:"chapter"`
+	Page    int    `json:"page"`
+}

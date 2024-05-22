@@ -17,7 +17,7 @@ import (
 
 // TODO(patrik): Check confirmPassword
 func (api *ApiConfig) HandlePostSignup(c echo.Context) error {
-	var body types.ApiPostRegisterBody
+	var body types.PostAuthSignupBody
 	err := c.Bind(&body)
 	if err != nil {
 		return err
@@ -62,14 +62,14 @@ func (api *ApiConfig) HandlePostSignup(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(types.ApiPostRegister{
+	return c.JSON(200, types.NewApiSuccessResponse(types.PostAuthSignup{
 		Id:       user.Id,
 		Username: user.Username,
 	}))
 }
 
 func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
-	var body types.ApiPostLoginBody
+	var body types.PostAuthSigninBody
 	err := c.Bind(&body)
 	if err != nil {
 		return err
@@ -129,7 +129,7 @@ func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(types.ApiPostLogin{
+	return c.JSON(200, types.NewApiSuccessResponse(types.PostAuthSignin{
 		Token: tokenString,
 	}))
 }
@@ -176,9 +176,12 @@ func (api *ApiConfig) HandleGetMe(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(types.ApiGetMe{
+	isOwner := config.OwnerId == user.Id
+
+	return c.JSON(200, types.NewApiSuccessResponse(types.GetAuthMe{
 		Id:       user.Id,
 		Username: user.Username,
+		IsOwner:  isOwner,
 	}))
 }
 

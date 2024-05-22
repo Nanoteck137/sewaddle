@@ -149,13 +149,14 @@ func (api *ApiConfig) HandleGetSerieChaptersById(c echo.Context) error {
 }
 
 // TODO(patrik): Add page
+// TODO(patrik): Remove?
 func (api *ApiConfig) HandlePostSerieUpdate(c echo.Context) error {
 	user, err := api.User(c)
 	if err != nil {
 		return err
 	}
 
-	var body types.ApiPostSerieUpdateBody
+	var body types.PostSerieUpdateBody
 	err = c.Bind(&body)
 	if err != nil {
 		return err

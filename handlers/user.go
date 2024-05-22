@@ -14,7 +14,7 @@ func (api *ApiConfig) HandlePostUserMarkChapters(c echo.Context) error {
 		return err
 	}
 
-	var body types.ApiPostUserMarkChapters
+	var body types.PostUserMarkChaptersBody
 	err = c.Bind(&body)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (api *ApiConfig) HandlePostUserUnmarkChapters(c echo.Context) error {
 		return err
 	}
 
-	var body types.ApiPostUserUnmarkChapters
+	var body types.PostUserUnmarkChaptersBody
 	err = c.Bind(&body)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (api *ApiConfig) HandlePostUserUpdateBookmark(c echo.Context) error {
 		return err
 	}
 
-	var body types.ApiPostUserUpdateBookmark
+	var body types.PostUserUpdateBookmarkBody
 	err = c.Bind(&body)
 	if err != nil {
 		return err
