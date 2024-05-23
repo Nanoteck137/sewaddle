@@ -15,6 +15,8 @@ var (
 
 	ErrChapterAlreadyMarked = NewApiError(http.StatusBadRequest, "Chapter is already marked")
 	ErrNoChapterToUnmark    = NewApiError(http.StatusBadRequest, "Chapter is already marked")
+
+ErrEmptyBody = NewApiError(400, "Expected body not to be empty")
 )
 
 const (

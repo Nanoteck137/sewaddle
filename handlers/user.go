@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 
-	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/types"
 )
@@ -14,13 +13,10 @@ func (api *ApiConfig) HandlePostUserMarkChapters(c echo.Context) error {
 		return err
 	}
 
-	var body types.PostUserMarkChaptersBody
-	err = c.Bind(&body)
+	body, err := Body[types.PostUserMarkChaptersBody](c, types.PostUserMarkChaptersBodySchema)
 	if err != nil {
 		return err
 	}
-
-	pretty.Println(body)
 
 	serie, err := api.database.GetSerieById(c.Request().Context(), body.SerieId)
 	if err != nil {
@@ -43,13 +39,10 @@ func (api *ApiConfig) HandlePostUserUnmarkChapters(c echo.Context) error {
 		return err
 	}
 
-	var body types.PostUserUnmarkChaptersBody
-	err = c.Bind(&body)
+	body, err := Body[types.PostUserUnmarkChaptersBody](c, types.PostUserUnmarkChaptersBodySchema)
 	if err != nil {
 		return err
 	}
-
-	pretty.Println(body)
 
 	serie, err := api.database.GetSerieById(c.Request().Context(), body.SerieId)
 	if err != nil {
@@ -72,15 +65,12 @@ func (api *ApiConfig) HandlePostUserUpdateBookmark(c echo.Context) error {
 		return err
 	}
 
-	var body types.PostUserUpdateBookmarkBody
-	err = c.Bind(&body)
+	body, err := Body[types.PostUserUpdateBookmarkBody](c, types.PostUserUpdateBookmarkBodySchema)
 	if err != nil {
 		return err
 	}
 
 	ctx := c.Request().Context()
-
-	pretty.Println(body)
 
 	// TODO(patrik): Check body.Page
 

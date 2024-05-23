@@ -2,59 +2,66 @@ package handlers
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
+	"io"
 	"time"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/faceair/jio"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
+	"github.com/mitchellh/mapstructure"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
-// TODO(patrik): Check confirmPassword
-func (api *ApiConfig) HandlePostSignup(c echo.Context) error {
-	var body types.PostAuthSignupBody
-	err := c.Bind(&body)
+func Decode(input interface{}, output interface{}) error {
+	config := &mapstructure.DecoderConfig{
+		Metadata: nil,
+		Result:   output,
+		TagName:  "json",
+	}
+
+	decoder, err := mapstructure.NewDecoder(config)
 	if err != nil {
 		return err
 	}
 
-	var validate = validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
-		name := strings.SplitN(field.Tag.Get("json"), ",", 2)[0]
+	return decoder.Decode(input)
+}
 
-		if name == "-" {
-			return ""
-		}
+func Body[T any](c echo.Context, schema jio.Schema) (T, error) {
+	var res T
 
-		return name
-	})
-
-	pretty.Println(body)
-
-	err = validate.Struct(body)
+	j, err := io.ReadAll(c.Request().Body)
 	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err.Namespace())
-			fmt.Println(err.Field())
-			fmt.Println(err.StructNamespace())
-			fmt.Println(err.StructField())
-			fmt.Println(err.Tag())
-			fmt.Println(err.ActualTag())
-			fmt.Println(err.Kind())
-			fmt.Println(err.Type())
-			fmt.Println(err.Value())
-			fmt.Println(err.Param())
-			fmt.Println()
-		}
+		return res, err
+	}
 
-		return c.JSON(400, map[string]any{
-			"message": "Invalid body",
-		})
+	if len(j) == 0 {
+		return res, types.ErrEmptyBody
+	}
+
+	data, err := jio.ValidateJSON(&j, schema)
+	if err != nil {
+		return res, err
+	}
+
+	pretty.Println(data)
+
+	err = Decode(data, &res)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+// TODO(patrik): Check confirmPassword
+func (api *ApiConfig) HandlePostSignup(c echo.Context) error {
+	body, err := Body[types.PostAuthSignupBody](c, types.PostAuthSignupBodySchema); 
+	if err != nil {
+		return err
 	}
 
 	user, err := api.database.CreateUser(c.Request().Context(), body.Username, body.Password)
@@ -69,44 +76,9 @@ func (api *ApiConfig) HandlePostSignup(c echo.Context) error {
 }
 
 func (api *ApiConfig) HandlePostSignin(c echo.Context) error {
-	var body types.PostAuthSigninBody
-	err := c.Bind(&body)
+	body, err := Body[types.PostAuthSigninBody](c, types.PostAuthSigninBodySchema); 
 	if err != nil {
 		return err
-	}
-
-	var validate = validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
-		name := strings.SplitN(field.Tag.Get("json"), ",", 2)[0]
-
-		if name == "-" {
-			return ""
-		}
-
-		return name
-	})
-
-	pretty.Println(body)
-
-	err = validate.Struct(body)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(err.Namespace())
-			fmt.Println(err.Field())
-			fmt.Println(err.StructNamespace())
-			fmt.Println(err.StructField())
-			fmt.Println(err.Tag())
-			fmt.Println(err.ActualTag())
-			fmt.Println(err.Kind())
-			fmt.Println(err.Type())
-			fmt.Println(err.Value())
-			fmt.Println(err.Param())
-			fmt.Println()
-		}
-
-		return c.JSON(400, map[string]any{
-			"message": "Invalid body",
-		})
 	}
 
 	user, err := api.database.GetUserByUsername(c.Request().Context(), body.Username)
