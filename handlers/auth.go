@@ -7,7 +7,6 @@ import (
 
 	"github.com/faceair/jio"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
 	"github.com/mitchellh/mapstructure"
 	"github.com/nanoteck137/sewaddle/database"
@@ -15,6 +14,7 @@ import (
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
+// TODO(patrik): Move
 func Decode(input interface{}, output interface{}) error {
 	config := &mapstructure.DecoderConfig{
 		Metadata: nil,
@@ -30,6 +30,7 @@ func Decode(input interface{}, output interface{}) error {
 	return decoder.Decode(input)
 }
 
+// TODO(patrik): Move
 func Body[T any](c echo.Context, schema jio.Schema) (T, error) {
 	var res T
 
@@ -46,8 +47,6 @@ func Body[T any](c echo.Context, schema jio.Schema) (T, error) {
 	if err != nil {
 		return res, err
 	}
-
-	pretty.Println(data)
 
 	err = Decode(data, &res)
 	if err != nil {
