@@ -12,6 +12,11 @@ func ErrorHandler(err error, c echo.Context) {
 			Status: types.StatusError,
 			Error:  err,
 		})
+	case *echo.HTTPError:
+		c.JSON(err.Code, types.ApiResponse{
+			Status: types.StatusError,
+			Error:  types.NewApiError(err.Code, err.Error()),
+		})
 	default:
 		c.JSON(500, types.ApiResponse{
 			Status: types.StatusError,
