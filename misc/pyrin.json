@@ -1,0 +1,502 @@
+{
+  "types": [
+    {
+      "name": "Serie",
+      "extend": "",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "cover",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "chapterCount",
+          "type": "int",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "GetSeries",
+      "extend": "",
+      "fields": [
+        {
+          "name": "series",
+          "type": "[]Serie",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "Bookmark",
+      "extend": "",
+      "fields": [
+        {
+          "name": "chapterNumber",
+          "type": "int",
+          "omit": false
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "SerieUserData",
+      "extend": "",
+      "fields": [
+        {
+          "name": "bookmark",
+          "type": "*Bookmark",
+          "omit": true
+        }
+      ]
+    },
+    {
+      "name": "GetSerieById",
+      "extend": "",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "cover",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "chapterCount",
+          "type": "int",
+          "omit": false
+        },
+        {
+          "name": "user",
+          "type": "*SerieUserData",
+          "omit": true
+        }
+      ]
+    },
+    {
+      "name": "ChapterUserData",
+      "extend": "",
+      "fields": [
+        {
+          "name": "isMarked",
+          "type": "bool",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "Chapter",
+      "extend": "",
+      "fields": [
+        {
+          "name": "serieId",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "number",
+          "type": "int",
+          "omit": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverArt",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "user",
+          "type": "*ChapterUserData",
+          "omit": true
+        }
+      ]
+    },
+    {
+      "name": "GetSerieChaptersById",
+      "extend": "",
+      "fields": [
+        {
+          "name": "chapters",
+          "type": "[]Chapter",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "GetChapters",
+      "extend": "",
+      "fields": [
+        {
+          "name": "chapters",
+          "type": "[]Chapter",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "GetChapterById",
+      "extend": "",
+      "fields": [
+        {
+          "name": "serieId",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "number",
+          "type": "int",
+          "omit": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverArt",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "user",
+          "type": "*ChapterUserData",
+          "omit": true
+        },
+        {
+          "name": "nextChapter",
+          "type": "*int",
+          "omit": false
+        },
+        {
+          "name": "prevChapter",
+          "type": "*int",
+          "omit": false
+        },
+        {
+          "name": "pages",
+          "type": "[]string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "GetLibraryStatus",
+      "extend": "",
+      "fields": [
+        {
+          "name": "syncing",
+          "type": "bool",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostUserMarkChaptersBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "serieId",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "chapters",
+          "type": "[]int",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostUserUnmarkChaptersBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "serieId",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "chapters",
+          "type": "[]int",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostUserUpdateBookmarkBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "serieId",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "chapter",
+          "type": "int",
+          "omit": false
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "GetSystemInfo",
+      "extend": "",
+      "fields": [
+        {
+          "name": "version",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "isSetup",
+          "type": "bool",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostSystemSetupBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "username",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "passwordConfirm",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostAuthSignup",
+      "extend": "",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostAuthSignupBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "username",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "passwordConfirm",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostAuthSignin",
+      "extend": "",
+      "fields": [
+        {
+          "name": "token",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "PostAuthSigninBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "username",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "GetAuthMe",
+      "extend": "",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "isOwner",
+          "type": "bool",
+          "omit": false
+        }
+      ]
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "GetSeries",
+      "method": "GET",
+      "path": "/api/v1/series",
+      "responseType": "GetSeries",
+      "bodyType": ""
+    },
+    {
+      "name": "GetSerieById",
+      "method": "GET",
+      "path": "/api/v1/series/:id",
+      "responseType": "GetSerieById",
+      "bodyType": ""
+    },
+    {
+      "name": "GetSerieChapters",
+      "method": "GET",
+      "path": "/api/v1/series/:id/chapters",
+      "responseType": "GetSerieChaptersById",
+      "bodyType": ""
+    },
+    {
+      "name": "GetChapters",
+      "method": "GET",
+      "path": "/api/v1/chapters",
+      "responseType": "GetChapters",
+      "bodyType": ""
+    },
+    {
+      "name": "GetChapterById",
+      "method": "GET",
+      "path": "/api/v1/chapters/:serieId/:chapterNumber",
+      "responseType": "GetChapterById",
+      "bodyType": ""
+    },
+    {
+      "name": "GetLibraryStatus",
+      "method": "GET",
+      "path": "/api/v1/library/status",
+      "responseType": "GetLibraryStatus",
+      "bodyType": ""
+    },
+    {
+      "name": "RunLibrarySync",
+      "method": "POST",
+      "path": "/api/v1/library/sync",
+      "responseType": "",
+      "bodyType": ""
+    },
+    {
+      "name": "MarkChapters",
+      "method": "POST",
+      "path": "/api/v1/user/markChapters",
+      "responseType": "",
+      "bodyType": "PostUserMarkChaptersBody"
+    },
+    {
+      "name": "UnmarkChapters",
+      "method": "POST",
+      "path": "/api/v1/user/unmarkChapters",
+      "responseType": "",
+      "bodyType": "PostUserUnmarkChaptersBody"
+    },
+    {
+      "name": "UpdateBookmark",
+      "method": "POST",
+      "path": "/api/v1/user/updateBookmark",
+      "responseType": "",
+      "bodyType": "PostUserUpdateBookmarkBody"
+    },
+    {
+      "name": "GetSystemInfo",
+      "method": "GET",
+      "path": "/api/v1/system/info",
+      "responseType": "GetSystemInfo",
+      "bodyType": ""
+    },
+    {
+      "name": "RunSystemSetup",
+      "method": "POST",
+      "path": "/api/v1/system/setup",
+      "responseType": "",
+      "bodyType": "PostSystemSetupBody"
+    },
+    {
+      "name": "Signup",
+      "method": "POST",
+      "path": "/api/v1/auth/signup",
+      "responseType": "PostAuthSignup",
+      "bodyType": "PostAuthSignupBody"
+    },
+    {
+      "name": "Signin",
+      "method": "POST",
+      "path": "/api/v1/auth/signin",
+      "responseType": "PostAuthSignin",
+      "bodyType": "PostAuthSigninBody"
+    },
+    {
+      "name": "GetMe",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "responseType": "GetAuthMe",
+      "bodyType": ""
+    }
+  ]
+}
