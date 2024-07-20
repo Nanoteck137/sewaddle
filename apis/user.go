@@ -118,7 +118,7 @@ func InstallUserHandlers(app core.App, group Group) {
 	group.Register(
 		Handler{
 			Name:        "MarkChapters",
-			Method:      http.MethodGet,
+			Method:      http.MethodPost,
 			Path:        "/user/markChapters",
 			DataType:    nil,
 			BodyType:    types.PostUserMarkChaptersBody{},
@@ -128,7 +128,7 @@ func InstallUserHandlers(app core.App, group Group) {
 
 		Handler{
 			Name:        "UnmarkChapters",
-			Method:      http.MethodGet,
+			Method:      http.MethodPost,
 			Path:        "/user/unmarkChapters",
 			DataType:    nil,
 			BodyType:    types.PostUserUnmarkChaptersBody{},
@@ -138,7 +138,7 @@ func InstallUserHandlers(app core.App, group Group) {
 
 		Handler{
 			Name:        "UpdateBookmark",
-			Method:      http.MethodGet,
+			Method:      http.MethodPost,
 			Path:        "/user/updateBookmark",
 			DataType:    nil,
 			BodyType:    types.PostUserUpdateBookmarkBody{},
