@@ -1,8 +1,9 @@
-package cmd
+package cli
 
 import (
-	"log"
-
+	"github.com/nanoteck137/sewaddle/config"
+	"github.com/nanoteck137/sewaddle/core"
+	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/migrations"
 	"github.com/pressly/goose/v3"
@@ -20,17 +21,16 @@ func runMigrateUp(db *database.Database) error {
 var upCmd = &cobra.Command{
 	Use: "up",
 	Run: func(cmd *cobra.Command, args []string) {
-		workDir, err := config.BootstrapDataDir()
+		app := core.NewBaseApp(&config.LoadedConfig)
 
-		db, err := database.Open(workDir)
+		err := app.Bootstrap()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to bootstrap app", "err", err)
 		}
 
-
-		err = runMigrateUp(db)
+		err = runMigrateUp(app.DB())
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to run migrate up", "err", err)
 		}
 	},
 }
@@ -38,16 +38,16 @@ var upCmd = &cobra.Command{
 var downCmd = &cobra.Command{
 	Use: "down",
 	Run: func(cmd *cobra.Command, args []string) {
-		workDir, err := config.BootstrapDataDir()
+		app := core.NewBaseApp(&config.LoadedConfig)
 
-		db, err := database.Open(workDir)
+		err := app.Bootstrap()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to bootstrap app", "err", err)
 		}
 
-		err = goose.Down(db.RawConn, ".")
+		err = goose.Down(app.DB().RawConn, ".")
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to run migrate down", "err", err)
 		}
 	},
 }
@@ -59,16 +59,9 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
 
-		workDir, err := config.BootstrapDataDir()
-
-		db, err := database.Open(workDir)
+		err := goose.Create(nil, "./migrations", name, "sql")
 		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = goose.Create(db.RawConn, "./migrations", name, "sql")
-		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to create migration", "err", err)
 		}
 	},
 }
@@ -79,7 +72,7 @@ var fixCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := goose.Fix("./migrations")
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to fix migrations", "err", err)
 		}
 	},
 }

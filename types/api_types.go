@@ -2,6 +2,10 @@ package types
 
 import "github.com/faceair/jio"
 
+type Body interface {
+	Schema() jio.Schema
+}
+
 type Serie struct {
 	Id           string `json:"id"`
 	Name         string `json:"name"`
@@ -69,6 +73,14 @@ type PostSystemSetupBody struct {
 	PasswordConfirm string `json:"passwordConfirm"`
 }
 
+func (b PostSystemSetupBody) Schema() jio.Schema {
+	return jio.Object().Keys(jio.K{
+		"username":        jio.String().Required(),
+		"password":        jio.String().Required(),
+		"passwordConfirm": jio.String().Required(),
+	})
+}
+
 type GetChapterByIdUser struct {
 	IsMarked bool `json:"isMarked"`
 }
@@ -79,11 +91,13 @@ type PostAuthSignupBody struct {
 	PasswordConfirm string `json:"passwordConfirm"`
 }
 
-var PostAuthSignupBodySchema = jio.Object().Keys(jio.K{
-	"username":        jio.String().Min(4).Required(),
-	"password":        jio.String().Min(8).Required(),
-	"passwordConfirm": jio.String().Min(8).Required(),
-})
+func (b PostAuthSignupBody) Schema() jio.Schema {
+	return jio.Object().Keys(jio.K{
+		"username":        jio.String().Min(4).Required(),
+		"password":        jio.String().Min(8).Required(),
+		"passwordConfirm": jio.String().Min(8).Required(),
+	})
+}
 
 type PostAuthSignup struct {
 	Id       string `json:"id"`
@@ -95,10 +109,12 @@ type PostAuthSigninBody struct {
 	Password string `json:"password"`
 }
 
-var PostAuthSigninBodySchema = jio.Object().Keys(jio.K{
-	"username": jio.String().Required(),
-	"password": jio.String().Required(),
-})
+func (b PostAuthSigninBody) Schema() jio.Schema {
+	return jio.Object().Keys(jio.K{
+		"username": jio.String().Required(),
+		"password": jio.String().Required(),
+	})
+}
 
 type PostAuthSignin struct {
 	Token string `json:"token"`
@@ -121,20 +137,24 @@ type PostUserMarkChaptersBody struct {
 	Chapters []int  `json:"chapters"`
 }
 
-var PostUserMarkChaptersBodySchema = jio.Object().Keys(jio.K{
-	"serieId":  jio.String().Required(),
-	"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
-})
+func (b PostUserMarkChaptersBody) Schema() jio.Schema {
+	return jio.Object().Keys(jio.K{
+		"serieId":  jio.String().Required(),
+		"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
+	})
+}
 
 type PostUserUnmarkChaptersBody struct {
 	SerieId  string `json:"serieId"`
 	Chapters []int  `json:"chapters"`
 }
 
-var PostUserUnmarkChaptersBodySchema = jio.Object().Keys(jio.K{
-	"serieId":  jio.String().Required(),
-	"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
-})
+func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
+	return jio.Object().Keys(jio.K{
+		"serieId":  jio.String().Required(),
+		"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
+	})
+}
 
 type PostUserUpdateBookmarkBody struct {
 	SerieId string `json:"serieId"`
@@ -142,8 +162,10 @@ type PostUserUpdateBookmarkBody struct {
 	Page    int    `json:"page"`
 }
 
-var PostUserUpdateBookmarkBodySchema = jio.Object().Keys(jio.K{
-	"serieId": jio.String().Required(),
-	"chapter": jio.Number().Integer().Required(),
-	"page":    jio.Number().Integer().Required(),
-})
+func (b PostUserUpdateBookmarkBody) Schema() jio.Schema {
+	return jio.Object().Keys(jio.K{
+		"serieId": jio.String().Required(),
+		"chapter": jio.Number().Integer().Required(),
+		"page":    jio.Number().Integer().Required(),
+	})
+}

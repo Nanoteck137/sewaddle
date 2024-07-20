@@ -8,6 +8,8 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	goqusqlite3 "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/nanoteck137/sewaddle/types"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var dialect = goqu.Dialect("sqlite_returning")

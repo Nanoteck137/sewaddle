@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nrednav/cuid2"
 )
@@ -18,6 +19,21 @@ func createIdGenerator() func() string {
 	}
 
 	return res
+}
+
+func Decode(input interface{}, output interface{}) error {
+	config := &mapstructure.DecoderConfig{
+		Metadata: nil,
+		Result:   output,
+		TagName:  "json",
+	}
+
+	decoder, err := mapstructure.NewDecoder(config)
+	if err != nil {
+		return err
+	}
+
+	return decoder.Decode(input)
 }
 
 func ParseAuthHeader(authHeader string) (string, error) {

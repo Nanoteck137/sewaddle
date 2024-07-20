@@ -1,6 +1,8 @@
 module github.com/nanoteck137/sewaddle
 
-go 1.21
+go 1.21.0
+
+toolchain go1.21.6
 
 require (
 	github.com/MadAppGang/httplog/echolog v1.3.0
@@ -24,6 +26,7 @@ require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/golang-cz/devslog v0.0.8 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

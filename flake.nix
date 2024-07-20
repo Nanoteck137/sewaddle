@@ -109,6 +109,7 @@
               description = lib.mdDoc "group to use for this service";
             };
 
+            # TODO(patrik): Add jwt secret option like dwebble
           };
 
           config = mkIf cfg.enable {

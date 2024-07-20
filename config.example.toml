@@ -1,3 +1,4 @@
 # listen_addr = ":3000"
 data_dir = "./work"
 library_dir = "/Some/Path"
+jwt_secret = "" # Example: openssl rand -base64 32
