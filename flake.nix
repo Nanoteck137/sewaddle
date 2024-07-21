@@ -27,7 +27,7 @@
             "-X github.com/nanoteck137/sewaddle/cmd.Commit=${self.dirtyRev or self.rev or "no-commit"}"
           ];
 
-          vendorHash = "sha256-gspBjxnVH3zZGEhUIKQWacVb/gdPdzmtfY7pChlYet4=";
+          vendorHash = "sha256-r19IsDSVfHufL3yg4LqijPnAXKHa0Jg6yAS4gRx0mMM=";
         };
 
         dockerImage = pkgs.dockerTools.buildLayeredImage {
