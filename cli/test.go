@@ -2,14 +2,13 @@ package cli
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
-	"github.com/nanoteck137/sewaddle/database"
+	"github.com/nanoteck137/sewaddle/config"
+	"github.com/nanoteck137/sewaddle/core"
 	"github.com/spf13/cobra"
 )
 
@@ -35,19 +34,19 @@ var importCmd = &cobra.Command{
 	Use: "import <IMPORT_FILE>",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		godotenv.Load()
+		app := core.NewBaseApp(&config.LoadedConfig)
 
-		dbUrl := os.Getenv("DB_URL")
-		if dbUrl == "" {
-			log.Fatal("DB_URL not set")
-		}
-
-		conn, err := sql.Open("sqlite3", dbUrl);
+		err := app.Bootstrap()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to bootstrap app", "err", err)
 		}
 
-		db := database.New(conn)
+		// TODO(patrik): Maybe create a flag to run this on startup
+		// TODO(patrik): Move to apis.Server
+		err = runMigrateUp(app.DB())
+		if err != nil {
+			log.Fatal("Failed to run migrate up", "err", err)
+		}
 
 		importFile := args[0]
 		data, err := os.ReadFile(importFile)
@@ -63,7 +62,7 @@ var importCmd = &cobra.Command{
 
 		ctx := context.Background()
 
-		dbUser, err := db.GetUserByUsername(ctx, user.Username)
+		dbUser, err := app.DB().GetUserByUsername(ctx, user.Username)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -73,7 +72,7 @@ var importCmd = &cobra.Command{
 		for _, chapter := range user.MarkedChapters {
 			serieId, exists := cachedSeries[chapter.SerieTitle]
 			if !exists {
-				serie, err := db.GetSerieByName(ctx, chapter.SerieTitle)
+				serie, err := app.DB().GetSerieByName(ctx, chapter.SerieTitle)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -83,7 +82,7 @@ var importCmd = &cobra.Command{
 			}
 
 			fmt.Printf("serieId: %v\n", serieId)
-			err := db.MarkChapter(ctx, dbUser.Id, serieId, chapter.ChapterNumber)
+			err := app.DB().MarkChapter(ctx, dbUser.Id, serieId, chapter.ChapterNumber)
 			if err != nil {
 				fmt.Printf("Warning: %v\n", err)
 			}
@@ -92,7 +91,7 @@ var importCmd = &cobra.Command{
 		for _, chapter := range user.BookmarkedChapters {
 			serieId, exists := cachedSeries[chapter.SerieTitle]
 			if !exists {
-				serie, err := db.GetSerieByName(ctx, chapter.SerieTitle)
+				serie, err := app.DB().GetSerieByName(ctx, chapter.SerieTitle)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -102,9 +101,9 @@ var importCmd = &cobra.Command{
 			}
 
 			fmt.Printf("serieId: %v\n", serieId)
-			err := db.CreateBookmark(ctx, dbUser.Id, serieId, chapter.ChapterNumber, chapter.Page)
+			err := app.DB().CreateBookmark(ctx, dbUser.Id, serieId, chapter.ChapterNumber, chapter.Page)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Printf("Warning: %v", err)
 			}
 		}
 	},
