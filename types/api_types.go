@@ -126,12 +126,6 @@ type GetAuthMe struct {
 	IsOwner  bool   `json:"isOwner"`
 }
 
-// TODO(patrik): Remove?
-type PostSerieUpdateBody struct {
-	SerieId       string `json:"serieId"`
-	ChapterNumber int    `json:"chapterNumber"`
-}
-
 type PostUserMarkChaptersBody struct {
 	SerieId  string `json:"serieId"`
 	Chapters []int  `json:"chapters"`
