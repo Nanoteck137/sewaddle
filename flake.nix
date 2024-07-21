@@ -68,6 +68,7 @@
             listen_addr = "${cfg.host}:${toString cfg.port}"
             data_dir = "/var/lib/sewaddle"
             library_dir = "${cfg.library}"
+            jwt_secret = "${cfg.jwtSecret}"
           '';
         in
         {
@@ -91,6 +92,11 @@
               description = lib.mdDoc "path to series library";
             };
 
+            jwtSecret = mkOption {
+              type = types.str;
+              description = lib.mdDoc "jwt secret";
+            };
+
             package = mkOption {
               type = types.package;
               default = self.packages.${pkgs.system}.default;
@@ -108,8 +114,6 @@
               default = "sewaddle";
               description = lib.mdDoc "group to use for this service";
             };
-
-            # TODO(patrik): Add jwt secret option like dwebble
           };
 
           config = mkIf cfg.enable {
