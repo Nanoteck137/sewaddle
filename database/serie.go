@@ -28,7 +28,8 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 	ds := dialect.
 		From("series").
 		Select("series.id", "series.name", "series.cover", "chapter_count.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")}))
+		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
+		Order(goqu.I("series.name").Asc())
 
 	rows, err := db.Query(ctx, ds)
 	if err != nil {
