@@ -3,6 +3,7 @@ package apis
 import (
 	"net/http"
 	"sync/atomic"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/core"
@@ -27,13 +28,22 @@ func (api *libraryApi) HandlePostLibrarySync(c echo.Context) error {
 		api.syncing.Store(true)
 		defer api.syncing.Store(false)
 
+		start := time.Now()
+
+		log.Info("Sync: Reading library")
 		lib, err := library.ReadFromDir(api.app.Config().LibraryDir)
 		if err != nil {
-			// TODO(patrik): Remove fatal
-			log.Fatal("Failed to read library", "err", err)
+			log.Error("Failed to sync", "err", err)
+			return
 		}
+		log.Info("Sync: Done Reading library", "time", time.Since(start))
 
-		lib.Sync(api.app.DB(), api.app.WorkDir())
+		start = time.Now()
+
+		log.Info("Sync: Started Syncing library")
+		lib.Sync(api.app.DB(), api.app.Config().WorkDir())
+		log.Info("Sync: Done Syncing library", "time", time.Since(start))
+
 	}()
 
 	return c.JSON(200, types.NewApiSuccessResponse(nil))
