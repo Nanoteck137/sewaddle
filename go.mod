@@ -8,6 +8,7 @@ require (
 	github.com/MadAppGang/httplog/echolog v1.3.0
 	github.com/doug-martin/goqu/v9 v9.19.0
 	github.com/faceair/jio v1.0.1
+	github.com/flytam/filenamify v1.2.0
 	github.com/golang-cz/devslog v0.0.8
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/kr/pretty v0.3.1
