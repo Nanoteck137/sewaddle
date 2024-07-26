@@ -3,8 +3,6 @@ package library
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -13,22 +11,11 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+	"github.com/nanoteck137/sewaddle-core/library"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
-
-type ChapterMetadata struct {
-	Index int      `json:"index"`
-	Name  string   `json:"name"`
-	Pages []string `json:"pages"`
-}
-
-type SerieMetadata struct {
-	Title    string            `json:"title"`
-	Cover    string            `json:"cover"`
-	Chapters []ChapterMetadata `json:"chapters"`
-}
 
 type Chapter struct {
 	Path  string
@@ -51,40 +38,18 @@ type Library struct {
 }
 
 func ReadFromDir(dir string) (*Library, error) {
-	entries, err := os.ReadDir(dir)
+	lib, err := library.ReadFromDir(dir)
 	if err != nil {
 		return nil, err
 	}
 
 	var series []Serie
 
-	for _, entry := range entries {
-		// Skip over files and folders starting with a dot
-		if entry.Name()[0] == '.' {
-			continue
-		}
-
-		p := path.Join(dir, entry.Name())
-
-		data, err := os.ReadFile(path.Join(p, "manga.json"))
-		if err != nil {
-			log.Printf("Warning: '%v' has no manga.json", p)
-			return nil, err
-		}
-
-		var metadata SerieMetadata
-		err = json.Unmarshal(data, &metadata)
-		if err != nil {
-			return nil, err
-		}
-
-		coverPath := path.Join(entry.Name(), "images", metadata.Cover)
-		fmt.Printf("coverPath: %v\n", coverPath)
-
+	for _, serie := range lib.Series {
 		var chapters []Chapter
 
-		for _, chapter := range metadata.Chapters {
-			chapterPath := path.Join(p, "chapters", strconv.Itoa(chapter.Index))
+		for _, chapter := range serie.Chapters {
+			chapterPath := path.Join(serie.Path(), "chapters", strconv.Itoa(chapter.Number))
 
 			pages := make([]string, len(chapter.Pages))
 			for i, page := range chapter.Pages {
@@ -94,21 +59,20 @@ func ReadFromDir(dir string) (*Library, error) {
 			chapters = append(chapters, Chapter{
 				Path:  chapterPath,
 				Title: chapter.Name,
-				Index: chapter.Index,
+				Index: chapter.Number,
 				Pages: pages,
 			})
 		}
 
-		// pretty.Println(metadata)
+		coverPath := path.Join(serie.Path(), serie.CoverArt)
+
 		series = append(series, Serie{
-			Path:      p,
-			Title:     metadata.Title,
+			Path:      serie.Path(),
+			Title:     serie.Title,
 			CoverPath: coverPath,
 			Chapters:  chapters,
 		})
 	}
-
-	// pretty.Println(series)
 
 	return &Library{
 		Base:   dir,
