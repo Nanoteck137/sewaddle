@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/core/log"
-	"github.com/nanoteck137/sewaddle/library"
+	"github.com/nanoteck137/sewaddle/database/libsync"
 	"github.com/nanoteck137/sewaddle/types"
 )
 
@@ -31,7 +31,7 @@ func (api *libraryApi) HandlePostLibrarySync(c echo.Context) error {
 		start := time.Now()
 
 		log.Info("Sync: Reading library")
-		lib, err := library.ReadFromDir(api.app.Config().LibraryDir)
+		lib, err := libsync.ReadFromDir(api.app.Config().LibraryDir)
 		if err != nil {
 			log.Error("Failed to sync", "err", err)
 			return

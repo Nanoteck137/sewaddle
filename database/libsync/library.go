@@ -1,4 +1,4 @@
-package library
+package libsync
 
 import (
 	"context"
