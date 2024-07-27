@@ -11,8 +11,8 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/nanoteck137/sewaddle/library"
 	"github.com/nanoteck137/sewaddle/database"
+	"github.com/nanoteck137/sewaddle/library"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
@@ -142,11 +142,13 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 			continue
 		}
 
+		// TODO(patrik): Check for empty serie.CoverPath
+
 		ext := path.Ext(serie.CoverPath)
 		name := dbSerie.Id + ext
 		dst := path.Join(imagesDir, name)
 
-		src, err := filepath.Abs(path.Join(lib.Base, serie.CoverPath))
+		src, err := filepath.Abs(serie.CoverPath)
 		if err != nil {
 			// TODO(patrik): Remove
 			log.Fatal(err)
