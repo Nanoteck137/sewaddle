@@ -16,7 +16,7 @@ type App interface {
 	WorkDir() types.WorkDir
 
 	IsSetup() bool
-	UpdateDBConfig(conf *database.Config)
+	InvalidateDBConfig() error
 
 	Bootstrap() error
 }

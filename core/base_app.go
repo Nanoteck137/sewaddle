@@ -37,8 +37,15 @@ func (app *BaseApp) IsSetup() bool {
 	return app.dbConfig != nil
 }
 
-func (app *BaseApp) UpdateDBConfig(conf *database.Config) {
-	app.dbConfig = conf
+func (app *BaseApp) InvalidateDBConfig() error {
+	var err error
+
+	app.dbConfig, err = app.db.GetConfig(context.Background())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (app *BaseApp) Bootstrap() error {
@@ -57,11 +64,6 @@ func (app *BaseApp) Bootstrap() error {
 	}
 
 	err = os.MkdirAll(workDir.ChaptersDir(), 0755)
-	if err != nil {
-		return err
-	}
-
-	app.dbConfig, err = app.db.GetConfig(context.Background())
 	if err != nil {
 		return err
 	}

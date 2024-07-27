@@ -3,7 +3,6 @@ package apis
 import (
 	"net/http"
 
-	"github.com/kr/pretty"
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/config"
 	"github.com/nanoteck137/sewaddle/core"
@@ -42,19 +41,20 @@ func (api *systemApi) HandlePostSystemSetup(c echo.Context) error {
 		return err
 	}
 
-	conf, err := db.CreateConfig(c.Request().Context(), user.Id)
+	_, err = db.CreateConfig(c.Request().Context(), user.Id)
 	if err != nil {
 		return err
 	}
-
-	pretty.Println(body)
 
 	err = tx.Commit()
 	if err != nil {
 		return err
 	}
 
-	api.app.UpdateDBConfig(&conf)
+	err = api.app.InvalidateDBConfig()
+	if err != nil {
+		return err
+	}
 
 	return c.JSON(200, types.NewApiSuccessResponse(nil))
 }
