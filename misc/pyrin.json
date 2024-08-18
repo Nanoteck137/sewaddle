@@ -5,7 +5,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "id",
+          "name": "slug",
           "type": "string",
           "omit": false
         },
@@ -69,7 +69,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "id",
+          "name": "slug",
           "type": "string",
           "omit": false
         },
@@ -111,7 +111,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieId",
+          "name": "serieSlug",
           "type": "string",
           "omit": false
         },
@@ -164,7 +164,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieId",
+          "name": "serieSlug",
           "type": "string",
           "omit": false
         },
@@ -221,7 +221,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieId",
+          "name": "serieSlug",
           "type": "string",
           "omit": false
         },
@@ -237,7 +237,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieId",
+          "name": "serieSlug",
           "type": "string",
           "omit": false
         },
@@ -253,7 +253,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieId",
+          "name": "serieSlug",
           "type": "string",
           "omit": false
         },
