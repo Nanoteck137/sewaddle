@@ -1,12 +1,6 @@
 package cli
 
 import (
-	"fmt"
-	"log"
-
-	"github.com/kr/pretty"
-	"github.com/nanoteck137/sewaddle/config"
-	"github.com/nanoteck137/sewaddle/library"
 	"github.com/spf13/cobra"
 )
 
@@ -107,22 +101,6 @@ var importCmd = &cobra.Command{
 	},
 }
 
-var testCmd = &cobra.Command{
-	Use: "test",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("config.LoadedConfig.LibraryDir: %v\n", config.LoadedConfig.LibraryDir)
-		fmt.Println("Hello World")
-
-		lib,err := library.ReadFromDir(config.LoadedConfig.LibraryDir)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pretty.Println(lib)
-	},
-}
-
 func init() {
 	rootCmd.AddCommand(importCmd)
-	rootCmd.AddCommand(testCmd)
 }
