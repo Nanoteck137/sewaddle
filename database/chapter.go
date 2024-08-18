@@ -76,7 +76,7 @@ func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([
 		From("chapters").
 		Select("serie_id", "slug", "title", "pages").
 		Where(goqu.C("serie_id").Eq(serieId)).
-		Order(goqu.C("title").Asc())
+		Order(goqu.C("number").Asc())
 
 	rows, err := db.Query(ctx, ds)
 	if err != nil {
