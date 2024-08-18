@@ -24,13 +24,13 @@ func (api *userApi) HandlePostUserMarkChapters(c echo.Context) error {
 		return err
 	}
 
-	serie, err := api.app.DB().GetSerieById(c.Request().Context(), body.SerieId)
+	serie, err := api.app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
 	if err != nil {
 		return err
 	}
 
 	for _, chapter := range body.Chapters {
-		err := api.app.DB().MarkChapter(c.Request().Context(), user.Id, serie.Id, chapter)
+		err := api.app.DB().MarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
 		if err != nil && !errors.Is(err, types.ErrChapterAlreadyMarked) {
 			return err
 		}
@@ -50,13 +50,13 @@ func (api *userApi) HandlePostUserUnmarkChapters(c echo.Context) error {
 		return err
 	}
 
-	serie, err := api.app.DB().GetSerieById(c.Request().Context(), body.SerieId)
+	serie, err := api.app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
 	if err != nil {
 		return err
 	}
 
 	for _, chapter := range body.Chapters {
-		err := api.app.DB().UnmarkChapter(c.Request().Context(), user.Id, serie.Id, chapter)
+		err := api.app.DB().UnmarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
 		if err != nil {
 			return err
 		}

@@ -7,28 +7,27 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/nanoteck137/sewaddle/types"
-	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type Serie struct {
-	Id           string
+	Slug         string
 	Name         string
 	Cover        string
 	Path         string
-	ChapterCount int `db:"count"`
+	ChapterCount int
 }
 
 func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 	chapterCount := dialect.
 		From("chapters").
-		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("slug")).As("count")).
-		GroupBy("chapters.serie_id").
+		Select(goqu.C("serie_slug"), goqu.COUNT(goqu.C("slug")).As("count")).
+		GroupBy("chapters.serie_slug").
 		As("chapter_count")
 
 	ds := dialect.
 		From("series").
-		Select("series.id", "series.name", "series.cover", "chapter_count.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
+		Select("series.slug", "series.name", "series.cover", "chapter_count.count").
+		Join(chapterCount, goqu.On(goqu.Ex{"series.slug": goqu.C("serie_slug").Table("chapter_count")})).
 		Order(goqu.I("series.name").Asc())
 
 	rows, err := db.Query(ctx, ds)
@@ -39,29 +38,30 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 	var items []Serie
 	for rows.Next() {
 		var item Serie
-		rows.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
+		rows.Scan(&item.Slug, &item.Name, &item.Cover, &item.ChapterCount)
 		items = append(items, item)
 	}
 
 	return items, nil
 }
 
-func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) {
+// TODO(patrik): Rename to GetSerieBySlug
+func (db *Database) GetSerieById(ctx context.Context, slug string) (Serie, error) {
 	chapterCount := dialect.
 		From("chapters").
-		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("slug")).As("count")).
-		GroupBy(goqu.I("chapters.serie_id")).
+		Select(goqu.C("serie_slug"), goqu.COUNT(goqu.C("slug")).As("count")).
+		GroupBy(goqu.I("chapters.serie_slug")).
 		As("chapter_count")
 
 	ds := dialect.
 		From("series").
-		Select("series.id", "series.name", "series.cover", "chapter_count.count").
-		Join(chapterCount, 
+		Select("series.slug", "series.name", "series.cover", "chapter_count.count").
+		Join(chapterCount,
 			goqu.On(
-				goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")},
+				goqu.Ex{"series.slug": goqu.C("serie_slug").Table("chapter_count")},
 			),
 		).
-		Where(goqu.C("id").Eq(id))
+		Where(goqu.C("slug").Eq(slug))
 
 	row, err := db.QueryRow(ctx, ds)
 	if err != nil {
@@ -69,7 +69,7 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 	}
 
 	var item Serie
-	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
+	err = row.Scan(&item.Slug, &item.Name, &item.Cover, &item.ChapterCount)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Serie{}, types.ErrNoSerie
@@ -84,14 +84,14 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, error) {
 	chapterCount := dialect.
 		From("chapters").
-		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("number")).As("count")).
-		GroupBy("chapters.serie_id").
+		Select(goqu.C("serie_slug"), goqu.COUNT(goqu.C("number")).As("count")).
+		GroupBy("chapters.serie_slug").
 		As("chapter_count")
 
 	ds := dialect.
 		From("series").
-		Select("series.id", "series.name", "series.cover", "chapter_count.count").
-		Join(chapterCount, goqu.On(goqu.Ex{"series.id": goqu.C("serie_id").Table("chapter_count")})).
+		Select("series.slug", "series.name", "series.cover", "chapter_count.count").
+		Join(chapterCount, goqu.On(goqu.Ex{"series.slug": goqu.C("serie_slug").Table("chapter_count")})).
 		Where(goqu.I("series.name").Eq(name))
 
 	row, err := db.QueryRow(ctx, ds)
@@ -100,7 +100,7 @@ func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, err
 	}
 
 	var item Serie
-	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.ChapterCount)
+	err = row.Scan(&item.Slug, &item.Name, &item.Cover, &item.ChapterCount)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Serie{}, types.ErrNoSerie
@@ -115,7 +115,7 @@ func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, err
 func (db *Database) GetSerieByPath(ctx context.Context, path string) (Serie, error) {
 	ds := dialect.
 		From("series").
-		Select("id", "name", "cover", "path").
+		Select("slug", "name", "cover", "path").
 		Where(goqu.C("path").Eq(path))
 
 	row, err := db.QueryRow(ctx, ds)
@@ -124,7 +124,7 @@ func (db *Database) GetSerieByPath(ctx context.Context, path string) (Serie, err
 	}
 
 	var item Serie
-	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.Path)
+	err = row.Scan(&item.Slug, &item.Name, &item.Cover, &item.Path)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Serie{}, types.ErrNoSerie
@@ -136,15 +136,15 @@ func (db *Database) GetSerieByPath(ctx context.Context, path string) (Serie, err
 	return item, nil
 }
 
-func (db *Database) CreateSerie(ctx context.Context, name, path string) (Serie, error) {
+func (db *Database) CreateSerie(ctx context.Context, slug, name, path string) (Serie, error) {
 	ds := dialect.Insert("series").
 		Rows(goqu.Record{
-			"id": utils.CreateId(),
-			"name": name,
+			"slug":  slug,
+			"name":  name,
 			"cover": "",
-			"path": path,
+			"path":  path,
 		}).
-		Returning("id", "name", "cover", "path").
+		Returning("slug", "name", "cover", "path").
 		Prepared(true)
 
 	row, err := db.QueryRow(ctx, ds)
@@ -153,7 +153,7 @@ func (db *Database) CreateSerie(ctx context.Context, name, path string) (Serie, 
 	}
 
 	var item Serie
-	err = row.Scan(&item.Id, &item.Name, &item.Cover, &item.Path)
+	err = row.Scan(&item.Slug, &item.Name, &item.Cover, &item.Path)
 	if err != nil {
 		return Serie{}, err
 	}
@@ -161,10 +161,10 @@ func (db *Database) CreateSerie(ctx context.Context, name, path string) (Serie, 
 	return item, nil
 }
 
-func (db *Database) UpdateSerieCover(ctx context.Context, id, coverPath string) error {
+func (db *Database) UpdateSerieCover(ctx context.Context, slug, coverPath string) error {
 	ds := dialect.Update("series").
 		Set(goqu.Record{"cover": coverPath}).
-		Where(goqu.C("id").Eq(id)).
+		Where(goqu.C("slug").Eq(slug)).
 		Prepared(true)
 
 	_, err := db.Exec(context.Background(), ds)

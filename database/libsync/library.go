@@ -10,8 +10,8 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+	"github.com/nanoteck137/sewaddle-core/library"
 	"github.com/nanoteck137/sewaddle/database"
-	"github.com/nanoteck137/sewaddle/library"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
@@ -26,6 +26,7 @@ type Chapter struct {
 }
 
 type Serie struct {
+	Slug      string
 	Path      string
 	Title     string
 	CoverPath string
@@ -49,7 +50,7 @@ func ReadFromDir(dir string) (*Library, error) {
 		var chapters []Chapter
 
 		for i, chapter := range serie.Chapters {
-			chapterPath := path.Join(serie.Path(), "chapters", chapter.Slug)
+			chapterPath := path.Join(serie.Path(), chapter.Slug)
 
 			pages := make([]string, len(chapter.Pages))
 			for i, page := range chapter.Pages {
@@ -68,6 +69,7 @@ func ReadFromDir(dir string) (*Library, error) {
 		coverPath := path.Join(serie.Path(), serie.CoverArt)
 
 		series = append(series, Serie{
+			Slug:      serie.Slug,
 			Path:      serie.Path(),
 			Title:     serie.Title,
 			CoverPath: coverPath,
@@ -87,7 +89,7 @@ func GetOrCreateSerie(ctx context.Context, db *database.Database, serie *Serie) 
 	dbSerie, err := db.GetSerieByPath(ctx, serie.Path)
 	if err != nil {
 		if err == types.ErrNoSerie {
-			dbSerie, err := db.CreateSerie(ctx, serie.Title, serie.Path)
+			dbSerie, err := db.CreateSerie(ctx, serie.Slug, serie.Title, serie.Path)
 			if err != nil {
 				return database.Serie{}, err
 			}
@@ -105,7 +107,7 @@ func GetOrCreateChapter(ctx context.Context, db *database.Database, chapter *Cha
 	dbChapter, err := db.GetChapterByPath(ctx, chapter.Path)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			dbChapter, err := db.CreateChapter(ctx, chapter.Slug, chapter.Title, serie.Id, chapter.Path)
+			dbChapter, err := db.CreateChapter(ctx, chapter.Slug, chapter.Title, serie.Slug, chapter.Path)
 			if err != nil {
 				return database.Chapter{}, err
 			}
@@ -144,9 +146,8 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 		}
 
 		// TODO(patrik): Check for empty serie.CoverPath
-
 		ext := path.Ext(serie.CoverPath)
-		name := dbSerie.Id + ext
+		name := dbSerie.Slug + "-cover" + ext
 		dst := path.Join(imagesDir, name)
 
 		src, err := filepath.Abs(serie.CoverPath)
@@ -160,7 +161,7 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 			log.Fatal(err)
 		}
 
-		err = db.UpdateSerieCover(ctx, dbSerie.Id, name)
+		err = db.UpdateSerieCover(ctx, dbSerie.Slug, name)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -172,7 +173,7 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 				continue
 			}
 
-			dir := path.Join(chaptersDir, dbChapter.SerieId, dbChapter.Slug)
+			dir := path.Join(chaptersDir, dbChapter.SerieSlug, dbChapter.Slug)
 
 			err = os.MkdirAll(dir, 0755)
 			if err != nil {
@@ -199,7 +200,7 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 				pages = append(pages, name)
 			}
 
-			db.UpdateChapterPages(ctx, dbChapter.SerieId, dbChapter.Slug, pages, chapter.Number)
+			db.UpdateChapterPages(ctx, dbChapter.SerieSlug, dbChapter.Slug, pages, chapter.Number)
 		}
 	}
 }

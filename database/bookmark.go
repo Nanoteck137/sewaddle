@@ -12,18 +12,18 @@ import (
 
 type Bookmark struct {
 	UserId      string
-	SerieId     string
+	SerieSlug   string
 	ChapterSlug int
 	Page        int
 }
 
-func (db *Database) GetBookmark(ctx context.Context, userId, serieId string) (Bookmark, error) {
+func (db *Database) GetBookmark(ctx context.Context, userId, serieSlug string) (Bookmark, error) {
 	ds := dialect.From("user_bookmark").
-		Select("user_id", "serie_id", "chapter_slug", "page").
+		Select("user_id", "serie_slug", "chapter_slug", "page").
 		Where(
 			goqu.And(
 				goqu.I("user_id").Eq(userId),
-				goqu.I("serie_id").Eq(serieId),
+				goqu.I("serie_slug").Eq(serieSlug),
 			),
 		).
 		Prepared(true)
@@ -31,7 +31,7 @@ func (db *Database) GetBookmark(ctx context.Context, userId, serieId string) (Bo
 	row, err := db.QueryRow(ctx, ds)
 
 	var item Bookmark
-	err = row.Scan(&item.UserId, &item.SerieId, &item.ChapterSlug, &item.Page)
+	err = row.Scan(&item.UserId, &item.SerieSlug, &item.ChapterSlug, &item.Page)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Bookmark{}, types.ErrNoBookmark
@@ -43,13 +43,13 @@ func (db *Database) GetBookmark(ctx context.Context, userId, serieId string) (Bo
 	return item, nil
 }
 
-func (db *Database) HasBookmark(ctx context.Context, userId, serieId string) (bool, error) {
+func (db *Database) HasBookmark(ctx context.Context, userId, serieSlug string) (bool, error) {
 	ds := dialect.From("user_bookmark").
 		Select(goqu.L("1")).
 		Where(
 			goqu.And(
 				goqu.I("user_id").Eq(userId),
-				goqu.I("serie_id").Eq(serieId),
+				goqu.I("serie_slug").Eq(serieSlug),
 			),
 		).
 		Prepared(true)
@@ -72,10 +72,10 @@ func (db *Database) HasBookmark(ctx context.Context, userId, serieId string) (bo
 	return true, nil
 }
 
-func (db *Database) CreateBookmark(ctx context.Context, userId, serieId, chapterSlug string, page int) error {
+func (db *Database) CreateBookmark(ctx context.Context, userId, serieSlug, chapterSlug string, page int) error {
 	ds := dialect.Insert("user_bookmark").Rows(goqu.Record{
 		"user_id":      userId,
-		"serie_id":     serieId,
+		"serie_slug":   serieSlug,
 		"chapter_slug": chapterSlug,
 		"page":         page,
 	})

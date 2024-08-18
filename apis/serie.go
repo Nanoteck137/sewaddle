@@ -27,7 +27,7 @@ func (api *serieApi) HandleGetSeries(c echo.Context) error {
 
 	for i, item := range items {
 		result.Series[i] = types.Serie{
-			Id:           item.Id,
+			Slug:         item.Slug,
 			Name:         item.Name,
 			Cover:        utils.ConvertURL(c, "/images/"+item.Cover),
 			ChapterCount: item.ChapterCount,
@@ -50,7 +50,7 @@ func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 	if user != nil {
 		var bookmark *types.Bookmark
 
-		dbBookmark, err := api.app.DB().GetBookmark(c.Request().Context(), user.Id, serie.Id)
+		dbBookmark, err := api.app.DB().GetBookmark(c.Request().Context(), user.Id, serie.Slug)
 		if err != nil && err != types.ErrNoBookmark {
 			return err
 		}
@@ -69,7 +69,7 @@ func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 
 	result := types.GetSerieById{
 		Serie: types.Serie{
-			Id:           serie.Id,
+			Slug:         serie.Slug,
 			Name:         serie.Name,
 			Cover:        utils.ConvertURL(c, "/images/"+serie.Cover),
 			ChapterCount: serie.ChapterCount,
@@ -118,7 +118,7 @@ func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
 
 	for i, item := range items {
 		pages := strings.Split(item.Pages, ",")
-		coverArt := utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%s/%s", item.SerieId, item.Slug, pages[0]))
+		coverArt := utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%s/%s", item.SerieSlug, item.Slug, pages[0]))
 
 		var userData *types.ChapterUserData
 		if user != nil {
@@ -130,11 +130,11 @@ func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
 		}
 
 		result.Chapters[i] = types.Chapter{
-			SerieId:  item.SerieId,
-			Slug:     item.Slug,
-			Title:    item.Title,
-			CoverArt: coverArt,
-			User:     userData,
+			SerieSlug: item.SerieSlug,
+			Slug:      item.Slug,
+			Title:     item.Title,
+			CoverArt:  coverArt,
+			User:      userData,
 		}
 	}
 

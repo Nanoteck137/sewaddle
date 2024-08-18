@@ -7,23 +7,23 @@ type Body interface {
 }
 
 type Serie struct {
-	Id           string `json:"id"`
+	Slug           string `json:"slug"`
 	Name         string `json:"name"`
 	Cover        string `json:"cover"`
 	ChapterCount int    `json:"chapterCount"`
 }
 
 type Chapter struct {
-	SerieId  string           `json:"serieId"`
-	Slug     string           `json:"slug"`
-	Title    string           `json:"title"`
-	CoverArt string           `json:"coverArt"`
-	User     *ChapterUserData `json:"user,omitempty"`
+	SerieSlug string           `json:"serieSlug"`
+	Slug      string           `json:"slug"`
+	Title     string           `json:"title"`
+	CoverArt  string           `json:"coverArt"`
+	User      *ChapterUserData `json:"user,omitempty"`
 }
 
 type Bookmark struct {
 	ChapterSlug int `json:"chapterSlug"`
-	Page          int `json:"page"`
+	Page        int `json:"page"`
 }
 
 type SerieUserData struct {
@@ -127,38 +127,38 @@ type GetAuthMe struct {
 }
 
 type PostUserMarkChaptersBody struct {
-	SerieId  string   `json:"serieId"`
+	SerieSlug  string   `json:"serieSlug"`
 	Chapters []string `json:"chapters"`
 }
 
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieId":  jio.String().Required(),
+		"serieSlug":  jio.String().Required(),
 		"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
 	})
 }
 
 type PostUserUnmarkChaptersBody struct {
-	SerieId  string   `json:"serieId"`
+	SerieSlug  string   `json:"serieSlug"`
 	Chapters []string `json:"chapters"`
 }
 
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieId":  jio.String().Required(),
+		"serieSlug":  jio.String().Required(),
 		"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
 	})
 }
 
 type PostUserUpdateBookmarkBody struct {
-	SerieId string `json:"serieId"`
+	SerieSlug string `json:"serieSlug"`
 	Chapter int    `json:"chapter"`
 	Page    int    `json:"page"`
 }
 
 func (b PostUserUpdateBookmarkBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieId": jio.String().Required(),
+		"serieSlug": jio.String().Required(),
 		"chapter": jio.Number().Integer().Required(),
 		"page":    jio.Number().Integer().Required(),
 	})

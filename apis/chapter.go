@@ -27,9 +27,9 @@ func (api *chapterApi) HandleGetChapters(c echo.Context) error {
 
 	for i, chapter := range chapters {
 		result.Chapters[i] = types.Chapter{
-			SerieId: chapter.SerieId,
-			Slug:    chapter.Slug,
-			Title:   chapter.Title,
+			SerieSlug: chapter.SerieSlug,
+			Slug:      chapter.Slug,
+			Title:     chapter.Title,
 		}
 	}
 
@@ -45,7 +45,7 @@ func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
 		return err
 	}
 
-	nextChapterSlug, err := api.app.DB().GetNextChapter(c.Request().Context(), chapter.SerieId, chapter.Number)
+	nextChapterSlug, err := api.app.DB().GetNextChapter(c.Request().Context(), chapter.SerieSlug, chapter.Number)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
 		nextChapter = &nextChapterSlug
 	}
 
-	prevChapterSlug, err := api.app.DB().GetPrevChapter(c.Request().Context(), chapter.SerieId, chapter.Number)
+	prevChapterSlug, err := api.app.DB().GetPrevChapter(c.Request().Context(), chapter.SerieSlug, chapter.Number)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
 
 	user, err := User(api.app, c)
 	if err == nil {
-		isMarked, err := api.app.DB().IsChapterMarked(c.Request().Context(), user.Id, chapter.SerieId, chapter.Slug)
+		isMarked, err := api.app.DB().IsChapterMarked(c.Request().Context(), user.Id, chapter.SerieSlug, chapter.Slug)
 		if err != nil {
 			return err
 		}
@@ -81,12 +81,12 @@ func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
 
 	pages := strings.Split(chapter.Pages, ",")
 	for i, page := range pages {
-		pages[i] = utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%v/%s", chapter.SerieId, chapter.Slug, page))
+		pages[i] = utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%s/%s", chapter.SerieSlug, chapter.Slug, page))
 	}
 
 	result := types.GetChapterById{
 		Chapter: types.Chapter{
-			SerieId:  chapter.SerieId,
+			SerieSlug:  chapter.SerieSlug,
 			Slug:     chapter.Slug,
 			Title:    chapter.Title,
 			CoverArt: pages[0],
