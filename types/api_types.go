@@ -15,14 +15,14 @@ type Serie struct {
 
 type Chapter struct {
 	SerieId  string           `json:"serieId"`
-	Number   int              `json:"number"`
+	Slug     string           `json:"slug"`
 	Title    string           `json:"title"`
 	CoverArt string           `json:"coverArt"`
 	User     *ChapterUserData `json:"user,omitempty"`
 }
 
 type Bookmark struct {
-	ChapterNumber int `json:"chapterNumber"`
+	ChapterSlug int `json:"chapterSlug"`
 	Page          int `json:"page"`
 }
 
@@ -53,8 +53,8 @@ type GetChapters struct {
 
 type GetChapterById struct {
 	Chapter
-	NextChapter *int     `json:"nextChapter"`
-	PrevChapter *int     `json:"prevChapter"`
+	NextChapter *string  `json:"nextChapter"`
+	PrevChapter *string  `json:"prevChapter"`
 	Pages       []string `json:"pages"`
 }
 
@@ -127,8 +127,8 @@ type GetAuthMe struct {
 }
 
 type PostUserMarkChaptersBody struct {
-	SerieId  string `json:"serieId"`
-	Chapters []int  `json:"chapters"`
+	SerieId  string   `json:"serieId"`
+	Chapters []string `json:"chapters"`
 }
 
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
@@ -139,8 +139,8 @@ func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 }
 
 type PostUserUnmarkChaptersBody struct {
-	SerieId  string `json:"serieId"`
-	Chapters []int  `json:"chapters"`
+	SerieId  string   `json:"serieId"`
+	Chapters []string `json:"chapters"`
 }
 
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {

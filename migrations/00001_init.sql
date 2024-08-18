@@ -12,6 +12,7 @@ CREATE TABLE series (
 
 CREATE TABLE chapters (
     serie_id TEXT NOT NULL,
+    slug TEXT NOT NULL,
     number INTEGER NOT NULL,
 
     title TEXT NOT NULL,
@@ -19,7 +20,7 @@ CREATE TABLE chapters (
 
     path TEXT NOT NULL,
 
-    CONSTRAINT chapters_pk PRIMARY KEY(serie_id, number),
+    CONSTRAINT chapters_pk PRIMARY KEY(slug, serie_id),
 
     CONSTRAINT chapters_serie_id_fk FOREIGN KEY (serie_id)
         REFERENCES series(id)
@@ -36,9 +37,9 @@ CREATE TABLE users (
 CREATE TABLE user_chapter_marked(
     user_id TEXT NOT NULL,
     serie_id TEXT NOT NULL,
-    chapter_number INTEGER NOT NULL,
+    chapter_slug INTEGER NOT NULL,
 
-    CONSTRAINT user_chapter_marked_pk PRIMARY KEY(user_id, serie_id, chapter_number),
+    CONSTRAINT user_chapter_marked_pk PRIMARY KEY(user_id, serie_id, chapter_slug),
 
     CONSTRAINT user_chapter_marked_user_id_fk FOREIGN KEY (user_id)
         REFERENCES users(id),
@@ -46,14 +47,14 @@ CREATE TABLE user_chapter_marked(
     CONSTRAINT user_chapter_marked_serie_id_fk FOREIGN KEY (serie_id)
         REFERENCES series(id),
 
-    CONSTRAINT user_chapter_marked_chapter_fk FOREIGN KEY (serie_id, chapter_number)
-        REFERENCES chapters(serie_id, number)
+    CONSTRAINT user_chapter_marked_chapter_fk FOREIGN KEY (serie_id, chapter_slug)
+        REFERENCES chapters(serie_id, slug)
 );
 
 CREATE TABLE user_bookmark(
     user_id TEXT NOT NULL,
     serie_id TEXT NOT NULL,
-    chapter_number INTEGER NOT NULL,
+    chapter_slug TEXT NOT NULL,
     page INTEGER NOT NULL,
 
     CONSTRAINT user_bookmark_pk PRIMARY KEY(user_id, serie_id),
@@ -64,8 +65,8 @@ CREATE TABLE user_bookmark(
     CONSTRAINT user_bookmark_serie_id_fk FOREIGN KEY (serie_id)
         REFERENCES series(id),
 
-    CONSTRAINT user_bookmark_chapter_fk FOREIGN KEY (serie_id, chapter_number)
-        REFERENCES chapters(serie_id, number)
+    CONSTRAINT user_bookmark_chapter_fk FOREIGN KEY (serie_id, chapter_slug)
+        REFERENCES chapters(serie_id, slug)
 );
 
 -- +goose Down

@@ -57,8 +57,8 @@ func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 
 		if err != types.ErrNoBookmark {
 			bookmark = &types.Bookmark{
-				ChapterNumber: dbBookmark.ChapterNumber,
-				Page:          dbBookmark.Page,
+				ChapterSlug: dbBookmark.ChapterSlug,
+				Page:        dbBookmark.Page,
 			}
 		}
 
@@ -92,7 +92,7 @@ func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
 		Chapters: make([]types.Chapter, len(items)),
 	}
 
-	var markedChapters []int
+	var markedChapters []string
 
 	user, _ := User(api.app, c)
 	if user != nil {
@@ -102,13 +102,13 @@ func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
 		}
 	}
 
-	isChapterMarked := func(chapterNumber int) bool {
+	isChapterMarked := func(chapterSlug string) bool {
 		if markedChapters == nil {
 			return false
 		}
 
 		for _, item := range markedChapters {
-			if item == chapterNumber {
+			if item == chapterSlug {
 				return true
 			}
 		}
@@ -118,11 +118,11 @@ func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
 
 	for i, item := range items {
 		pages := strings.Split(item.Pages, ",")
-		coverArt := utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%v/%s", item.SerieId, item.Number, pages[0]))
+		coverArt := utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%s/%s", item.SerieId, item.Slug, pages[0]))
 
 		var userData *types.ChapterUserData
 		if user != nil {
-			isMarked := isChapterMarked(item.Number)
+			isMarked := isChapterMarked(item.Slug)
 
 			userData = &types.ChapterUserData{
 				IsMarked: isMarked,
@@ -131,7 +131,7 @@ func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
 
 		result.Chapters[i] = types.Chapter{
 			SerieId:  item.SerieId,
-			Number:   item.Number,
+			Slug:     item.Slug,
 			Title:    item.Title,
 			CoverArt: coverArt,
 			User:     userData,

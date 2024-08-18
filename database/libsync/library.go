@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -18,11 +17,12 @@ import (
 )
 
 type Chapter struct {
-	Path  string
-	Title string
-	Index int
+	Slug   string
+	Title  string
+	Pages  []string
+	Number int
 
-	Pages []string
+	Path string
 }
 
 type Serie struct {
@@ -48,8 +48,8 @@ func ReadFromDir(dir string) (*Library, error) {
 	for _, serie := range lib.Series {
 		var chapters []Chapter
 
-		for _, chapter := range serie.Chapters {
-			chapterPath := path.Join(serie.Path(), "chapters", strconv.Itoa(chapter.Number))
+		for i, chapter := range serie.Chapters {
+			chapterPath := path.Join(serie.Path(), "chapters", chapter.Slug)
 
 			pages := make([]string, len(chapter.Pages))
 			for i, page := range chapter.Pages {
@@ -57,10 +57,11 @@ func ReadFromDir(dir string) (*Library, error) {
 			}
 
 			chapters = append(chapters, Chapter{
-				Path:  chapterPath,
-				Title: chapter.Name,
-				Index: chapter.Number,
-				Pages: pages,
+				Slug:   chapter.Slug,
+				Title:  chapter.Name,
+				Pages:  pages,
+				Number: i,
+				Path:   chapterPath,
 			})
 		}
 
@@ -104,7 +105,7 @@ func GetOrCreateChapter(ctx context.Context, db *database.Database, chapter *Cha
 	dbChapter, err := db.GetChapterByPath(ctx, chapter.Path)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			dbChapter, err := db.CreateChapter(ctx, chapter.Index, chapter.Title, serie.Id, chapter.Path)
+			dbChapter, err := db.CreateChapter(ctx, chapter.Slug, chapter.Title, serie.Id, chapter.Path)
 			if err != nil {
 				return database.Chapter{}, err
 			}
@@ -171,7 +172,7 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 				continue
 			}
 
-			dir := path.Join(chaptersDir, dbChapter.SerieId, strconv.Itoa(dbChapter.Number))
+			dir := path.Join(chaptersDir, dbChapter.SerieId, dbChapter.Slug)
 
 			err = os.MkdirAll(dir, 0755)
 			if err != nil {
@@ -198,7 +199,7 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 				pages = append(pages, name)
 			}
 
-			db.UpdateChapterPages(ctx, dbChapter.SerieId, dbChapter.Number, pages)
+			db.UpdateChapterPages(ctx, dbChapter.SerieId, dbChapter.Slug, pages, chapter.Number)
 		}
 	}
 }

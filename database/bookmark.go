@@ -11,15 +11,15 @@ import (
 )
 
 type Bookmark struct {
-	UserId        string
-	SerieId       string
-	ChapterNumber int
-	Page          int
+	UserId      string
+	SerieId     string
+	ChapterSlug int
+	Page        int
 }
 
 func (db *Database) GetBookmark(ctx context.Context, userId, serieId string) (Bookmark, error) {
 	ds := dialect.From("user_bookmark").
-		Select("user_id", "serie_id", "chapter_number", "page").
+		Select("user_id", "serie_id", "chapter_slug", "page").
 		Where(
 			goqu.And(
 				goqu.I("user_id").Eq(userId),
@@ -31,7 +31,7 @@ func (db *Database) GetBookmark(ctx context.Context, userId, serieId string) (Bo
 	row, err := db.QueryRow(ctx, ds)
 
 	var item Bookmark
-	err = row.Scan(&item.UserId, &item.SerieId, &item.ChapterNumber, &item.Page)
+	err = row.Scan(&item.UserId, &item.SerieId, &item.ChapterSlug, &item.Page)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Bookmark{}, types.ErrNoBookmark
@@ -72,12 +72,12 @@ func (db *Database) HasBookmark(ctx context.Context, userId, serieId string) (bo
 	return true, nil
 }
 
-func (db *Database) CreateBookmark(ctx context.Context, userId, serieId string, chapterNumber, page int) error {
+func (db *Database) CreateBookmark(ctx context.Context, userId, serieId, chapterSlug string, page int) error {
 	ds := dialect.Insert("user_bookmark").Rows(goqu.Record{
-		"user_id":        userId,
-		"serie_id":       serieId,
-		"chapter_number": chapterNumber,
-		"page":           page,
+		"user_id":      userId,
+		"serie_id":     serieId,
+		"chapter_slug": chapterSlug,
+		"page":         page,
 	})
 
 	tag, err := db.Exec(ctx, ds)
@@ -90,10 +90,10 @@ func (db *Database) CreateBookmark(ctx context.Context, userId, serieId string, 
 	return nil
 }
 
-func (db *Database) UpdateBookmark(ctx context.Context, userId, serieId string, chapterNumber, page int) error {
+func (db *Database) UpdateBookmark(ctx context.Context, userId, serieId, chapterSlug string, page int) error {
 	ds := dialect.Update("user_bookmark").Set(goqu.Record{
-		"chapter_number": chapterNumber,
-		"page":           page,
+		"chapter_slug": chapterSlug,
+		"page":         page,
 	}).Where(
 		goqu.And(
 			goqu.I("user_id").Eq(userId),

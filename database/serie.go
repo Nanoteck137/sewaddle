@@ -21,7 +21,7 @@ type Serie struct {
 func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 	chapterCount := dialect.
 		From("chapters").
-		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("number")).As("count")).
+		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("slug")).As("count")).
 		GroupBy("chapters.serie_id").
 		As("chapter_count")
 
@@ -49,7 +49,7 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) {
 	chapterCount := dialect.
 		From("chapters").
-		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("number")).As("count")).
+		Select(goqu.C("serie_id"), goqu.COUNT(goqu.C("slug")).As("count")).
 		GroupBy(goqu.I("chapters.serie_id")).
 		As("chapter_count")
 

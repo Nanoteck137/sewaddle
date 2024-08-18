@@ -66,48 +66,49 @@ func (api *userApi) HandlePostUserUnmarkChapters(c echo.Context) error {
 }
 
 func (api *userApi) HandlePostUserUpdateBookmark(c echo.Context) error {
-	user, err := User(api.app, c)
-	if err != nil {
-		return err
-	}
+	// user, err := User(api.app, c)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// body, err := Body[types.PostUserUpdateBookmarkBody](c)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// ctx := c.Request().Context()
+	//
+	// // TODO(patrik): Check body.Page
+	//
+	// serie, err := api.app.DB().GetSerieById(ctx, body.SerieId)
+	// if err != nil {
+	// 	return err
+	// }
 
-	body, err := Body[types.PostUserUpdateBookmarkBody](c)
-	if err != nil {
-		return err
-	}
-
-	ctx := c.Request().Context()
-
-	// TODO(patrik): Check body.Page
-
-	serie, err := api.app.DB().GetSerieById(ctx, body.SerieId)
-	if err != nil {
-		return err
-	}
-
-	chapter, err := api.app.DB().GetChapter(ctx, serie.Id, body.Chapter)
-	if err != nil {
-		return err
-	}
-
-	hasBookmark, err := api.app.DB().HasBookmark(ctx, user.Id, serie.Id)
-	if err != nil {
-		return err
-	}
-
-	if hasBookmark {
-		err := api.app.DB().UpdateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := api.app.DB().CreateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
-		if err != nil {
-			return err
-		}
-	}
-
-	return c.JSON(200, types.NewApiSuccessResponse(nil))
+	// chapter, err := api.app.DB().GetChapter(ctx, serie.Id, body.Chapter)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// hasBookmark, err := api.app.DB().HasBookmark(ctx, user.Id, serie.Id)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// if hasBookmark {
+	// 	err := api.app.DB().UpdateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	err := api.app.DB().CreateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	//
+	// return c.JSON(200, types.NewApiSuccessResponse(nil))
+	return nil
 }
 
 func InstallUserHandlers(app core.App, group Group) {

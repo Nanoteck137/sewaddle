@@ -1,12 +1,11 @@
 package cli
 
 import (
-	"log"
-
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/nanoteck137/sewaddle/apis"
 	"github.com/nanoteck137/sewaddle/config"
 	"github.com/nanoteck137/sewaddle/core"
+	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/spf13/cobra"
 )
 
@@ -20,18 +19,18 @@ var serveCmd = &cobra.Command{
 			log.Fatal("Failed to bootstrap app", "err", err)
 		}
 
-		// TODO(patrik): Move this to bootstrap when migration is moved 
-		// to bootstrap
-		err = app.InvalidateDBConfig()
-		if err != nil {
-			log.Fatal("Failed to invalidate app", "err", err)
-		}
-
 		// TODO(patrik): Maybe create a flag to run this on startup
 		// TODO(patrik): Move to apis.Server
 		err = runMigrateUp(app.DB())
 		if err != nil {
 			log.Fatal("Failed to run migrate up", "err", err)
+		}
+
+		// TODO(patrik): Move this to bootstrap when migration is moved 
+		// to bootstrap
+		err = app.InvalidateDBConfig()
+		if err != nil {
+			log.Fatal("Failed to invalidate app", "err", err)
 		}
 
 		e, err := apis.Server(app)
