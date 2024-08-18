@@ -42,7 +42,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "chapterNumber",
+          "name": "chapterSlug",
           "type": "int",
           "omit": false
         },
@@ -116,8 +116,8 @@
           "omit": false
         },
         {
-          "name": "number",
-          "type": "int",
+          "name": "slug",
+          "type": "string",
           "omit": false
         },
         {
@@ -169,8 +169,8 @@
           "omit": false
         },
         {
-          "name": "number",
-          "type": "int",
+          "name": "slug",
+          "type": "string",
           "omit": false
         },
         {
@@ -190,12 +190,12 @@
         },
         {
           "name": "nextChapter",
-          "type": "*int",
+          "type": "*string",
           "omit": false
         },
         {
           "name": "prevChapter",
-          "type": "*int",
+          "type": "*string",
           "omit": false
         },
         {
@@ -227,7 +227,7 @@
         },
         {
           "name": "chapters",
-          "type": "[]int",
+          "type": "[]string",
           "omit": false
         }
       ]
@@ -243,7 +243,7 @@
         },
         {
           "name": "chapters",
-          "type": "[]int",
+          "type": "[]string",
           "omit": false
         }
       ]
@@ -424,7 +424,7 @@
     {
       "name": "GetChapterById",
       "method": "GET",
-      "path": "/api/v1/chapters/:serieId/:chapterNumber",
+      "path": "/api/v1/chapters/:serieId/:slug",
       "responseType": "GetChapterById",
       "bodyType": ""
     },
