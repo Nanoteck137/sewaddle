@@ -9,6 +9,7 @@ import (
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
+	pyrinapi "github.com/nanoteck137/pyrin/api"
 )
 
 type chapterApi struct {
@@ -33,7 +34,7 @@ func (api *chapterApi) HandleGetChapters(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(result))
+	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
 func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
@@ -86,27 +87,24 @@ func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
 
 	result := types.GetChapterById{
 		Chapter: types.Chapter{
-			SerieSlug:  chapter.SerieSlug,
-			Slug:     chapter.Slug,
-			Title:    chapter.Title,
-			CoverArt: pages[0],
-			User:     userData,
+			SerieSlug: chapter.SerieSlug,
+			Slug:      chapter.Slug,
+			Title:     chapter.Title,
+			CoverArt:  pages[0],
+			User:      userData,
 		},
 		NextChapter: nextChapter,
 		PrevChapter: prevChapter,
 		Pages:       pages,
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(result))
+	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
 func InstallChapterHandlers(app core.App, group Group) {
 	api := chapterApi{app: app}
 
 	requireSetup := RequireSetup(app)
-
-	// g.GET("/chapters", api.HandleGetChapters)
-	// g.GET("/chapters/:serieId/:chapterNumber", api.HandleGetChapterById)
 
 	group.Register(
 		Handler{
