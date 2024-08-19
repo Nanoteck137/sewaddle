@@ -1,12 +1,15 @@
 package apis
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	pyrinapi "github.com/nanoteck137/pyrin/api"
 	"github.com/nanoteck137/sewaddle/core"
+	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
@@ -34,13 +37,17 @@ func (api *serieApi) HandleGetSeries(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(result))
+	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
 func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 	id := c.Param("id")
 	serie, err := api.app.DB().GetSerieById(c.Request().Context(), id)
 	if err != nil {
+		if errors.Is(err, database.ErrItemNotFound) {
+			return SerieNotFound()
+		}
+
 		return err
 	}
 
@@ -77,7 +84,7 @@ func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 		User: userData,
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(result))
+	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
 func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
@@ -138,7 +145,7 @@ func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(result))
+	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
 func InstallSerieHandlers(app core.App, group Group) {
@@ -163,6 +170,7 @@ func InstallSerieHandlers(app core.App, group Group) {
 			Path:        "/series/:id",
 			DataType:    types.GetSerieById{},
 			BodyType:    nil,
+			Errors:      []pyrinapi.ErrorType{TypeSerieNotFound},
 			HandlerFunc: api.HandleGetSerieById,
 			Middlewares: []echo.MiddlewareFunc{requireSetup},
 		},

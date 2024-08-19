@@ -5,10 +5,12 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/nanoteck137/pyrin/api"
 	"github.com/nanoteck137/pyrin/client"
 	"github.com/nanoteck137/pyrin/extract"
 	"github.com/nanoteck137/pyrin/resolve"
 	"github.com/nanoteck137/pyrin/util"
+	"github.com/nanoteck137/sewaddle/apis"
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/tools/routes"
 )
@@ -77,10 +79,31 @@ func main() {
 			bodyType = name
 		}
 
+		globalErrorTypes := []api.ErrorType{
+			apis.ErrTypeUnknownError,
+		};
+
+		types := make(map[api.ErrorType]struct{})
+
+		for _, t := range globalErrorTypes {
+			types[t] = struct{}{}
+		}
+
+		for _, t := range route.ErrorTypes {
+			types[t] = struct{}{}
+		}
+
+		errorTypes := make([]api.ErrorType, 0, len(types))
+
+		for k := range types {
+			errorTypes = append(errorTypes, k)
+		}
+
 		s.Endpoints = append(s.Endpoints, client.Endpoint{
 			Name:         route.Name,
 			Method:       route.Method,
 			Path:         route.Path,
+			ErrorTypes:   errorTypes,
 			ResponseType: responseType,
 			BodyType:     bodyType,
 		})

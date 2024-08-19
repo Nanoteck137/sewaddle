@@ -72,7 +72,7 @@ func (db *Database) GetSerieById(ctx context.Context, slug string) (Serie, error
 	err = row.Scan(&item.Slug, &item.Name, &item.Cover, &item.ChapterCount)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Serie{}, types.ErrNoSerie
+			return Serie{}, ErrItemNotFound
 		}
 
 		return Serie{}, err

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/doug-martin/goqu/v9"
@@ -10,6 +11,10 @@ import (
 	"github.com/nanoteck137/sewaddle/types"
 
 	_ "github.com/mattn/go-sqlite3"
+)
+
+var (
+	ErrItemNotFound = errors.New("database: item not found")
 )
 
 var dialect = goqu.Dialect("sqlite_returning")

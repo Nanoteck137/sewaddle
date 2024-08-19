@@ -397,6 +397,9 @@
       "name": "GetSeries",
       "method": "GET",
       "path": "/api/v1/series",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "GetSeries",
       "bodyType": ""
     },
@@ -404,6 +407,10 @@
       "name": "GetSerieById",
       "method": "GET",
       "path": "/api/v1/series/:id",
+      "errorTypes": [
+        "UNKNOWN_ERROR",
+        "SERIE_NOT_FOUND"
+      ],
       "responseType": "GetSerieById",
       "bodyType": ""
     },
@@ -411,6 +418,9 @@
       "name": "GetSerieChapters",
       "method": "GET",
       "path": "/api/v1/series/:id/chapters",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "GetSerieChaptersById",
       "bodyType": ""
     },
@@ -418,6 +428,9 @@
       "name": "GetChapters",
       "method": "GET",
       "path": "/api/v1/chapters",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "GetChapters",
       "bodyType": ""
     },
@@ -425,6 +438,9 @@
       "name": "GetChapterById",
       "method": "GET",
       "path": "/api/v1/chapters/:serieId/:slug",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "GetChapterById",
       "bodyType": ""
     },
@@ -432,6 +448,9 @@
       "name": "GetLibraryStatus",
       "method": "GET",
       "path": "/api/v1/library/status",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "GetLibraryStatus",
       "bodyType": ""
     },
@@ -439,6 +458,9 @@
       "name": "RunLibrarySync",
       "method": "POST",
       "path": "/api/v1/library/sync",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "",
       "bodyType": ""
     },
@@ -446,6 +468,9 @@
       "name": "MarkChapters",
       "method": "POST",
       "path": "/api/v1/user/markChapters",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "",
       "bodyType": "PostUserMarkChaptersBody"
     },
@@ -453,6 +478,9 @@
       "name": "UnmarkChapters",
       "method": "POST",
       "path": "/api/v1/user/unmarkChapters",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "",
       "bodyType": "PostUserUnmarkChaptersBody"
     },
@@ -460,6 +488,9 @@
       "name": "UpdateBookmark",
       "method": "POST",
       "path": "/api/v1/user/updateBookmark",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "",
       "bodyType": "PostUserUpdateBookmarkBody"
     },
@@ -467,6 +498,9 @@
       "name": "GetSystemInfo",
       "method": "GET",
       "path": "/api/v1/system/info",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "GetSystemInfo",
       "bodyType": ""
     },
@@ -474,6 +508,9 @@
       "name": "RunSystemSetup",
       "method": "POST",
       "path": "/api/v1/system/setup",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "",
       "bodyType": "PostSystemSetupBody"
     },
@@ -481,6 +518,9 @@
       "name": "Signup",
       "method": "POST",
       "path": "/api/v1/auth/signup",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "PostAuthSignup",
       "bodyType": "PostAuthSignupBody"
     },
@@ -488,6 +528,9 @@
       "name": "Signin",
       "method": "POST",
       "path": "/api/v1/auth/signin",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "PostAuthSignin",
       "bodyType": "PostAuthSigninBody"
     },
@@ -495,6 +538,9 @@
       "name": "GetMe",
       "method": "GET",
       "path": "/api/v1/auth/me",
+      "errorTypes": [
+        "UNKNOWN_ERROR"
+      ],
       "responseType": "GetAuthMe",
       "bodyType": ""
     }
