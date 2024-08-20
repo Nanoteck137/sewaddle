@@ -1,5 +1,3 @@
--- NOTE(patrik): FINAL
-
 -- +goose Up
 CREATE TABLE series (
     slug TEXT NOT NULL,
