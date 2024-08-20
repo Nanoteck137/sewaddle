@@ -4,7 +4,7 @@
 CREATE TABLE series (
     slug TEXT NOT NULL,
     name TEXT NOT NULL,
-    cover TEXT NOT NULL,
+    cover TEXT,
     path TEXT NOT NULL,
 
     CONSTRAINT series_pk PRIMARY KEY(slug)

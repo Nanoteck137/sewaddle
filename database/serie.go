@@ -12,7 +12,7 @@ import (
 type Serie struct {
 	Slug         string
 	Name         string
-	Cover        string
+	Cover        sql.NullString
 	Path         string
 	ChapterCount int
 }
@@ -161,7 +161,7 @@ func (db *Database) CreateSerie(ctx context.Context, slug, name, path string) (S
 	return item, nil
 }
 
-func (db *Database) UpdateSerieCover(ctx context.Context, slug, coverPath string) error {
+func (db *Database) UpdateSerieCover(ctx context.Context, slug string, coverPath sql.NullString) error {
 	ds := dialect.Update("series").
 		Set(goqu.Record{"cover": coverPath}).
 		Where(goqu.C("slug").Eq(slug)).

@@ -3,6 +3,7 @@ package libsync
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -66,7 +67,10 @@ func ReadFromDir(dir string) (*Library, error) {
 			})
 		}
 
-		coverPath := path.Join(serie.Path(), serie.CoverArt)
+		coverPath := ""
+		if serie.CoverArt != "" {
+			coverPath = path.Join(serie.Path(), serie.CoverArt)
+		}
 
 		series = append(series, Serie{
 			Slug:      serie.Slug,
@@ -145,23 +149,33 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 			continue
 		}
 
-		// TODO(patrik): Check for empty serie.CoverPath
-		ext := path.Ext(serie.CoverPath)
-		name := dbSerie.Slug + "-cover" + ext
-		dst := path.Join(imagesDir, name)
+		cover := sql.NullString{}
 
-		src, err := filepath.Abs(serie.CoverPath)
-		if err != nil {
-			// TODO(patrik): Remove
-			log.Fatal(err)
+		if serie.CoverPath != "" {
+			fmt.Printf("serie.CoverPath: %v\n", serie.CoverPath)
+			// TODO(patrik): Check for empty serie.CoverPath
+			ext := path.Ext(serie.CoverPath)
+			name := dbSerie.Slug + "-cover" + ext
+			dst := path.Join(imagesDir, name)
+
+			src, err := filepath.Abs(serie.CoverPath)
+			if err != nil {
+				// TODO(patrik): Remove
+				log.Fatal(err)
+			}
+
+			err = utils.SymlinkReplace(src, dst)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			cover = sql.NullString{
+				String: name,
+				Valid:  true,
+			}
 		}
 
-		err = utils.SymlinkReplace(src, dst)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = db.UpdateSerieCover(ctx, dbSerie.Slug, name)
+		err = db.UpdateSerieCover(ctx, dbSerie.Slug, cover)
 		if err != nil {
 			log.Fatal(err)
 		}

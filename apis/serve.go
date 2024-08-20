@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nanoteck137/pyrin/api"
+	"github.com/nanoteck137/sewaddle/assets"
 	"github.com/nanoteck137/sewaddle/config"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/core/log"
@@ -78,6 +79,7 @@ func Server(app core.App) (*echo.Echo, error) {
 	e.Use(middleware.CORS())
 
 	e.Static("/images", app.WorkDir().ImagesDir())
+	e.StaticFS("/images/default", assets.DefaultImagesFS)
 	e.Static("/chapters", app.WorkDir().ChaptersDir())
 
 	g := newEchoGroup(app, e, "/api/v1")

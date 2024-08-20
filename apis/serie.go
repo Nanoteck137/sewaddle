@@ -29,10 +29,15 @@ func (api *serieApi) HandleGetSeries(c echo.Context) error {
 	}
 
 	for i, item := range items {
+		cover := "/images/default/default_cover.png"
+		if item.Cover.Valid {
+			cover = "/images/" + item.Cover.String
+		}
+
 		result.Series[i] = types.Serie{
 			Slug:         item.Slug,
 			Name:         item.Name,
-			Cover:        utils.ConvertURL(c, "/images/"+item.Cover),
+			Cover:        utils.ConvertURL(c, cover),
 			ChapterCount: item.ChapterCount,
 		}
 	}
@@ -74,11 +79,16 @@ func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 		}
 	}
 
+	cover := "/images/default/default_cover.png"
+	if serie.Cover.Valid {
+		cover = "/images/" + serie.Cover.String
+	}
+
 	result := types.GetSerieById{
 		Serie: types.Serie{
 			Slug:         serie.Slug,
 			Name:         serie.Name,
-			Cover:        utils.ConvertURL(c, "/images/"+serie.Cover),
+			Cover:        utils.ConvertURL(c, cover),
 			ChapterCount: serie.ChapterCount,
 		},
 		User: userData,
