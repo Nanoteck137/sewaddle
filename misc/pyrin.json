@@ -43,7 +43,7 @@
       "fields": [
         {
           "name": "chapterSlug",
-          "type": "int",
+          "type": "string",
           "omit": false
         },
         {
