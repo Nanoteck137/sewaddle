@@ -22,8 +22,8 @@ type Chapter struct {
 }
 
 type Bookmark struct {
-	ChapterSlug int `json:"chapterSlug"`
-	Page        int `json:"page"`
+	ChapterSlug string `json:"chapterSlug"`
+	Page        int    `json:"page"`
 }
 
 type SerieUserData struct {

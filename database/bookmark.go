@@ -13,7 +13,7 @@ import (
 type Bookmark struct {
 	UserId      string
 	SerieSlug   string
-	ChapterSlug int
+	ChapterSlug string
 	Page        int
 }
 
