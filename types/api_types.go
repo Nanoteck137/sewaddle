@@ -134,7 +134,7 @@ type PostUserMarkChaptersBody struct {
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
 		"serieSlug": jio.String().Required(),
-		"chapters":  jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
+		"chapters":  jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
 
@@ -146,7 +146,7 @@ type PostUserUnmarkChaptersBody struct {
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
 		"serieSlug": jio.String().Required(),
-		"chapters":  jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
+		"chapters":  jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
 
@@ -158,8 +158,8 @@ type PostUserUpdateBookmarkBody struct {
 
 func (b PostUserUpdateBookmarkBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieSlug": jio.String().Required(),
-		"chapterSlug":   jio.String().Required(),
-		"page":      jio.Number().Integer().Required(),
+		"serieSlug":   jio.String().Required(),
+		"chapterSlug": jio.String().Required(),
+		"page":        jio.Number().Integer().Required(),
 	})
 }
