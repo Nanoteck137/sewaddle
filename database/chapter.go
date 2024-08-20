@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/mattn/go-sqlite3"
 	"github.com/nanoteck137/sewaddle/types"
 )
 
@@ -154,6 +155,8 @@ func (db *Database) GetPrevChapter(ctx context.Context, serieSlug string, curren
 	return item, nil
 }
 
+var ErrAlreadyMarked = errors.New("database: chapter already marked")
+
 // TODO(patrik): Fix
 func (db *Database) MarkChapter(ctx context.Context, userId, serieSlug, chapterSlug string) error {
 	ds := dialect.Insert("user_chapter_marked").Rows(goqu.Record{
@@ -164,6 +167,13 @@ func (db *Database) MarkChapter(ctx context.Context, userId, serieSlug, chapterS
 
 	tag, err := db.Exec(ctx, ds)
 	if err != nil {
+		var sqlerr sqlite3.Error
+		if errors.As(err, &sqlerr) {
+			if sqlerr.ExtendedCode == sqlite3.ErrConstraintPrimaryKey {
+				return ErrAlreadyMarked
+			}
+		}
+
 		return err
 	}
 
@@ -251,8 +261,6 @@ func (db *Database) IsChapterMarked(ctx context.Context, userId, serieSlug, chap
 
 		return false, err
 	}
-
-	fmt.Printf("i: %v\n", i)
 
 	return true, nil
 }

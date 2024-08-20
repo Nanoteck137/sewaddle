@@ -90,14 +90,14 @@ func (db *Database) CreateBookmark(ctx context.Context, userId, serieSlug, chapt
 	return nil
 }
 
-func (db *Database) UpdateBookmark(ctx context.Context, userId, serieId, chapterSlug string, page int) error {
+func (db *Database) UpdateBookmark(ctx context.Context, userId, serieSlug, chapterSlug string, page int) error {
 	ds := dialect.Update("user_bookmark").Set(goqu.Record{
 		"chapter_slug": chapterSlug,
 		"page":         page,
 	}).Where(
 		goqu.And(
 			goqu.I("user_id").Eq(userId),
-			goqu.I("serie_id").Eq(serieId),
+			goqu.I("serie_slug").Eq(serieSlug),
 		),
 	).Prepared(true)
 

@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/nanoteck137/sewaddle/core"
-	"github.com/nanoteck137/sewaddle/types"
 	pyrinapi "github.com/nanoteck137/pyrin/api"
+	"github.com/nanoteck137/sewaddle/core"
+	"github.com/nanoteck137/sewaddle/database"
+	"github.com/nanoteck137/sewaddle/types"
 )
 
 type userApi struct {
@@ -32,7 +33,7 @@ func (api *userApi) HandlePostUserMarkChapters(c echo.Context) error {
 
 	for _, chapter := range body.Chapters {
 		err := api.app.DB().MarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
-		if err != nil && !errors.Is(err, types.ErrChapterAlreadyMarked) {
+		if err != nil && !errors.Is(err, database.ErrAlreadyMarked) {
 			return err
 		}
 	}
