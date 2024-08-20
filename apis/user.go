@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/types"
+	pyrinapi "github.com/nanoteck137/pyrin/api"
 )
 
 type userApi struct {
@@ -36,7 +37,7 @@ func (api *userApi) HandlePostUserMarkChapters(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(nil))
+	return c.JSON(200, pyrinapi.SuccessResponse(nil))
 }
 
 func (api *userApi) HandlePostUserUnmarkChapters(c echo.Context) error {
@@ -62,53 +63,52 @@ func (api *userApi) HandlePostUserUnmarkChapters(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(nil))
+	return c.JSON(200, pyrinapi.SuccessResponse(nil))
 }
 
 func (api *userApi) HandlePostUserUpdateBookmark(c echo.Context) error {
-	// user, err := User(api.app, c)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// body, err := Body[types.PostUserUpdateBookmarkBody](c)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// ctx := c.Request().Context()
-	//
-	// // TODO(patrik): Check body.Page
-	//
-	// serie, err := api.app.DB().GetSerieById(ctx, body.SerieId)
-	// if err != nil {
-	// 	return err
-	// }
+	user, err := User(api.app, c)
+	if err != nil {
+		return err
+	}
 
-	// chapter, err := api.app.DB().GetChapter(ctx, serie.Id, body.Chapter)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// hasBookmark, err := api.app.DB().HasBookmark(ctx, user.Id, serie.Id)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// if hasBookmark {
-	// 	err := api.app.DB().UpdateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	err := api.app.DB().CreateBookmark(ctx, user.Id, serie.Id, chapter.Number, body.Page)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	//
-	// return c.JSON(200, types.NewApiSuccessResponse(nil))
-	return nil
+	body, err := Body[types.PostUserUpdateBookmarkBody](c)
+	if err != nil {
+		return err
+	}
+
+	ctx := c.Request().Context()
+
+	// TODO(patrik): Check body.Page
+
+	serie, err := api.app.DB().GetSerieById(ctx, body.SerieSlug)
+	if err != nil {
+		return err
+	}
+
+	chapter, err := api.app.DB().GetChapter(ctx, serie.Slug, body.ChapterSlug)
+	if err != nil {
+		return err
+	}
+
+	hasBookmark, err := api.app.DB().HasBookmark(ctx, user.Id, serie.Slug)
+	if err != nil {
+		return err
+	}
+
+	if hasBookmark {
+		err := api.app.DB().UpdateBookmark(ctx, user.Id, serie.Slug, chapter.Slug, body.Page)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := api.app.DB().CreateBookmark(ctx, user.Id, serie.Slug, chapter.Slug, body.Page)
+		if err != nil {
+			return err
+		}
+	}
+
+	return c.JSON(200, pyrinapi.SuccessResponse(nil))
 }
 
 func InstallUserHandlers(app core.App, group Group) {

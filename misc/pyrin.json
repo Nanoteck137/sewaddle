@@ -258,8 +258,8 @@
           "omit": false
         },
         {
-          "name": "chapter",
-          "type": "int",
+          "name": "chapterSlug",
+          "type": "string",
           "omit": false
         },
         {

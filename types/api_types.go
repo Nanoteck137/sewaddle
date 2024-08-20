@@ -7,7 +7,7 @@ type Body interface {
 }
 
 type Serie struct {
-	Slug           string `json:"slug"`
+	Slug         string `json:"slug"`
 	Name         string `json:"name"`
 	Cover        string `json:"cover"`
 	ChapterCount int    `json:"chapterCount"`
@@ -127,39 +127,39 @@ type GetAuthMe struct {
 }
 
 type PostUserMarkChaptersBody struct {
-	SerieSlug  string   `json:"serieSlug"`
-	Chapters []string `json:"chapters"`
+	SerieSlug string   `json:"serieSlug"`
+	Chapters  []string `json:"chapters"`
 }
 
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieSlug":  jio.String().Required(),
-		"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
+		"serieSlug": jio.String().Required(),
+		"chapters":  jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
 	})
 }
 
 type PostUserUnmarkChaptersBody struct {
-	SerieSlug  string   `json:"serieSlug"`
-	Chapters []string `json:"chapters"`
+	SerieSlug string   `json:"serieSlug"`
+	Chapters  []string `json:"chapters"`
 }
 
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieSlug":  jio.String().Required(),
-		"chapters": jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
+		"serieSlug": jio.String().Required(),
+		"chapters":  jio.Array().Items(jio.Number().Integer()).Min(1).Required(),
 	})
 }
 
 type PostUserUpdateBookmarkBody struct {
-	SerieSlug string `json:"serieSlug"`
-	Chapter int    `json:"chapter"`
-	Page    int    `json:"page"`
+	SerieSlug   string `json:"serieSlug"`
+	ChapterSlug string `json:"chapterSlug"`
+	Page        int    `json:"page"`
 }
 
 func (b PostUserUpdateBookmarkBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
 		"serieSlug": jio.String().Required(),
-		"chapter": jio.Number().Integer().Required(),
-		"page":    jio.Number().Integer().Required(),
+		"chapterSlug":   jio.String().Required(),
+		"page":      jio.Number().Integer().Required(),
 	})
 }

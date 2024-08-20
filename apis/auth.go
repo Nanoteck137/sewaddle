@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/types"
+	pyrinapi "github.com/nanoteck137/pyrin/api"
 )
 
 type authApi struct {
@@ -26,7 +27,7 @@ func (api *authApi) HandlePostSignup(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(types.PostAuthSignup{
+	return c.JSON(200, pyrinapi.SuccessResponse(types.PostAuthSignup{
 		Id:       user.Id,
 		Username: user.Username,
 	}))
@@ -58,7 +59,7 @@ func (api *authApi) HandlePostSignin(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(types.PostAuthSignin{
+	return c.JSON(200, pyrinapi.SuccessResponse(types.PostAuthSignin{
 		Token: tokenString,
 	}))
 }
@@ -69,7 +70,7 @@ func (api *authApi) HandleGetMe(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, types.NewApiSuccessResponse(types.GetAuthMe{
+	return c.JSON(200, pyrinapi.SuccessResponse(types.GetAuthMe{
 		Id:       user.Id,
 		Username: user.Username,
 	}))

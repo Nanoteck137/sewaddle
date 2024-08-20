@@ -10,6 +10,7 @@ import (
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/database/libsync"
 	"github.com/nanoteck137/sewaddle/types"
+	pyrinapi "github.com/nanoteck137/pyrin/api"
 )
 
 type libraryApi struct {
@@ -18,7 +19,7 @@ type libraryApi struct {
 }
 
 func (api *libraryApi) HandleGetLibraryStatus(c echo.Context) error {
-	return c.JSON(200, types.NewApiSuccessResponse(types.GetLibraryStatus{
+	return c.JSON(200, pyrinapi.SuccessResponse(types.GetLibraryStatus{
 		Syncing: api.syncing.Load(),
 	}))
 }
@@ -46,7 +47,7 @@ func (api *libraryApi) HandlePostLibrarySync(c echo.Context) error {
 
 	}()
 
-	return c.JSON(200, types.NewApiSuccessResponse(nil))
+	return c.JSON(200, pyrinapi.SuccessResponse(nil))
 }
 
 func InstallLibraryHandlers(app core.App, group Group) {
