@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"github.com/nanoteck137/sewaddle/config"
@@ -53,11 +54,6 @@ func (app *BaseApp) Bootstrap() error {
 
 	workDir := app.config.WorkDir()
 
-	app.db, err = database.Open(workDir)
-	if err != nil {
-		return err
-	}
-
 	err = os.MkdirAll(workDir.ImagesDir(), 0755)
 	if err != nil {
 		return err
@@ -66,6 +62,50 @@ func (app *BaseApp) Bootstrap() error {
 	err = os.MkdirAll(workDir.ChaptersDir(), 0755)
 	if err != nil {
 		return err
+	}
+
+	app.db, err = database.Open(workDir)
+	if err != nil {
+		return err
+	}
+
+	err = app.db.RunMigrateUp()
+	if err != nil {
+		return err
+	}
+
+	app.dbConfig, err = app.db.GetConfig(context.Background())
+	if err != nil {
+		if errors.Is(err, database.ErrItemNotFound) {
+			db, tx, err := app.DB().Begin()
+			if err != nil {
+				return err
+			}
+			defer tx.Rollback()
+
+			ctx := context.Background()
+			username := app.config.Username
+			password := app.config.InitialPassword
+
+			user, err := db.CreateUser(ctx, username, password)
+			if err != nil {
+				return err
+			}
+
+			conf, err := db.CreateConfig(ctx, user.Id)
+			if err != nil {
+				return err
+			}
+
+			err = tx.Commit()
+			if err != nil {
+				return err
+			}
+
+			app.dbConfig = &conf;
+		} else {
+			return err
+		}
 	}
 
 	return nil

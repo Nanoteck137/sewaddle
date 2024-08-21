@@ -76,6 +76,8 @@
             listen_addr = "${cfg.host}:${toString cfg.port}"
             data_dir = "/var/lib/sewaddle"
             library_dir = "${cfg.library}"
+            username = "${cfg.username}"
+            initial_password = "${cfg.initialPassword}"
             jwt_secret = "${cfg.jwtSecret}"
           '';
         in
@@ -98,6 +100,16 @@
             library = mkOption {
               type = types.path;
               description = lib.mdDoc "path to series library";
+            };
+
+            username = mkOption {
+              type = types.str;
+              description = "username of the first user";
+            };
+
+            initialPassword = mkOption {
+              type = types.str;
+              description = "initial password of the first user (should change after the first login)";
             };
 
             jwtSecret = mkOption {

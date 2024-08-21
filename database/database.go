@@ -9,6 +9,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	goqusqlite3 "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/nanoteck137/sewaddle/types"
+	"github.com/pressly/goose/v3"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -92,8 +93,13 @@ func (db *Database) Exec(ctx context.Context, s ToSQL) (sql.Result, error) {
 	return db.Conn.Exec(sql, params...)
 }
 
+func (db *Database) RunMigrateUp() error {
+	return goose.Up(db.RawConn, ".")
+}
+
 func init() {
 	opts := goqusqlite3.DialectOptions()
 	opts.SupportsReturn = true
 	goqu.RegisterDialect("sqlite_returning", opts)
 }
+
