@@ -45,11 +45,6 @@
           "name": "chapterSlug",
           "type": "string",
           "omit": false
-        },
-        {
-          "name": "page",
-          "type": "int",
-          "omit": false
         }
       ]
     },
@@ -65,7 +60,7 @@
       ]
     },
     {
-      "name": "GetSerieById",
+      "name": "GetSerieBySlug",
       "extend": "",
       "fields": [
         {
@@ -138,7 +133,7 @@
       ]
     },
     {
-      "name": "GetSerieChaptersById",
+      "name": "GetSerieChaptersBySlug",
       "extend": "",
       "fields": [
         {
@@ -160,7 +155,7 @@
       ]
     },
     {
-      "name": "GetChapterById",
+      "name": "GetChapterBySlug",
       "extend": "",
       "fields": [
         {
@@ -406,22 +401,22 @@
     {
       "name": "GetSerieById",
       "method": "GET",
-      "path": "/api/v1/series/:id",
+      "path": "/api/v1/series/:slug",
       "errorTypes": [
         "UNKNOWN_ERROR",
         "SERIE_NOT_FOUND"
       ],
-      "responseType": "GetSerieById",
+      "responseType": "GetSerieBySlug",
       "bodyType": ""
     },
     {
       "name": "GetSerieChapters",
       "method": "GET",
-      "path": "/api/v1/series/:id/chapters",
+      "path": "/api/v1/series/:slug/chapters",
       "errorTypes": [
         "UNKNOWN_ERROR"
       ],
-      "responseType": "GetSerieChaptersById",
+      "responseType": "GetSerieChaptersBySlug",
       "bodyType": ""
     },
     {
@@ -435,13 +430,13 @@
       "bodyType": ""
     },
     {
-      "name": "GetChapterById",
+      "name": "GetChapterBySlug",
       "method": "GET",
-      "path": "/api/v1/chapters/:serieId/:slug",
+      "path": "/api/v1/chapters/:serieSlug/:slug",
       "errorTypes": [
         "UNKNOWN_ERROR"
       ],
-      "responseType": "GetChapterById",
+      "responseType": "GetChapterBySlug",
       "bodyType": ""
     },
     {
