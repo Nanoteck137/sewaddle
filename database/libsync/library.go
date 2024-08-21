@@ -3,7 +3,6 @@ package libsync
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -152,8 +151,6 @@ func (lib *Library) Sync(db *database.Database, workDir types.WorkDir) {
 		cover := sql.NullString{}
 
 		if serie.CoverPath != "" {
-			fmt.Printf("serie.CoverPath: %v\n", serie.CoverPath)
-			// TODO(patrik): Check for empty serie.CoverPath
 			ext := path.Ext(serie.CoverPath)
 			name := dbSerie.Slug + "-cover" + ext
 			dst := path.Join(imagesDir, name)
