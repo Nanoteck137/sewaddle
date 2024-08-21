@@ -60,17 +60,16 @@ func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 
 	user, err := User(api.app, c)
 	if user != nil {
-		var bookmark *types.Bookmark
 
 		dbBookmark, err := api.app.DB().GetBookmark(c.Request().Context(), user.Id, serie.Slug)
-		if err != nil && err != types.ErrNoBookmark {
+		if err != nil && err != database.ErrItemNotFound {
 			return err
 		}
 
-		if err != types.ErrNoBookmark {
+		var bookmark *types.Bookmark
+		if err != database.ErrItemNotFound {
 			bookmark = &types.Bookmark{
 				ChapterSlug: dbBookmark.ChapterSlug,
-				Page:        dbBookmark.Page,
 			}
 		}
 

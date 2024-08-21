@@ -53,7 +53,6 @@ CREATE TABLE user_bookmark(
     user_id TEXT NOT NULL,
     serie_slug TEXT NOT NULL,
     chapter_slug TEXT NOT NULL,
-    page INTEGER NOT NULL,
 
     CONSTRAINT user_bookmark_pk PRIMARY KEY(user_id, serie_slug),
 

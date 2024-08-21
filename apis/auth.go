@@ -6,9 +6,9 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+	pyrinapi "github.com/nanoteck137/pyrin/api"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/types"
-	pyrinapi "github.com/nanoteck137/pyrin/api"
 )
 
 type authApi struct {
@@ -70,9 +70,12 @@ func (api *authApi) HandleGetMe(c echo.Context) error {
 		return err
 	}
 
+	isOwner := api.app.DBConfig().OwnerId == user.Id
+
 	return c.JSON(200, pyrinapi.SuccessResponse(types.GetAuthMe{
 		Id:       user.Id,
 		Username: user.Username,
+		IsOwner:  isOwner,
 	}))
 }
 
