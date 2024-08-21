@@ -83,7 +83,7 @@ func (api *serieApi) HandleGetSerieBySlug(c echo.Context) error {
 		cover = "/images/" + serie.Cover.String
 	}
 
-	result := types.GetSerieById{
+	result := types.GetSerieBySlug{
 		Serie: types.Serie{
 			Slug:         serie.Slug,
 			Name:         serie.Name,
@@ -104,7 +104,7 @@ func (api *serieApi) HandleGetSerieChaptersBySlug(c echo.Context) error {
 		return err
 	}
 
-	result := types.GetSerieChaptersById{
+	result := types.GetSerieChaptersBySlug{
 		Chapters: make([]types.Chapter, len(items)),
 	}
 
@@ -177,7 +177,7 @@ func InstallSerieHandlers(app core.App, group Group) {
 			Name:        "GetSerieById",
 			Method:      http.MethodGet,
 			Path:        "/series/:slug",
-			DataType:    types.GetSerieById{},
+			DataType:    types.GetSerieBySlug{},
 			BodyType:    nil,
 			Errors:      []pyrinapi.ErrorType{TypeSerieNotFound},
 			HandlerFunc: api.HandleGetSerieBySlug,
@@ -188,7 +188,7 @@ func InstallSerieHandlers(app core.App, group Group) {
 			Name:        "GetSerieChapters",
 			Method:      http.MethodGet,
 			Path:        "/series/:slug/chapters",
-			DataType:    types.GetSerieChaptersById{},
+			DataType:    types.GetSerieChaptersBySlug{},
 			BodyType:    nil,
 			HandlerFunc: api.HandleGetSerieChaptersBySlug,
 			Middlewares: []echo.MiddlewareFunc{requireSetup},

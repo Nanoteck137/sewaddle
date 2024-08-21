@@ -37,7 +37,7 @@ func (api *chapterApi) HandleGetChapters(c echo.Context) error {
 	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
-func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
+func (api *chapterApi) HandleGetChapterBySlug(c echo.Context) error {
 	serieId := c.Param("serieId")
 	slug := c.Param("slug")
 
@@ -85,7 +85,7 @@ func (api *chapterApi) HandleGetChapterById(c echo.Context) error {
 		pages[i] = utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%s/%s", chapter.SerieSlug, chapter.Slug, page))
 	}
 
-	result := types.GetChapterById{
+	result := types.GetChapterBySlug{
 		Chapter: types.Chapter{
 			SerieSlug: chapter.SerieSlug,
 			Slug:      chapter.Slug,
@@ -118,12 +118,12 @@ func InstallChapterHandlers(app core.App, group Group) {
 		},
 		Handler{
 			// TODO(patrik): Rename GetChapterById?
-			Name:        "GetChapterById",
+			Name:        "GetChapterBySlug",
 			Method:      http.MethodGet,
-			Path:        "/chapters/:serieId/:slug",
-			DataType:    types.GetChapterById{},
+			Path:        "/chapters/:serieSlug/:slug",
+			DataType:    types.GetChapterBySlug{},
 			BodyType:    nil,
-			HandlerFunc: api.HandleGetChapterById,
+			HandlerFunc: api.HandleGetChapterBySlug,
 			Middlewares: []echo.MiddlewareFunc{requireSetup},
 		},
 	)

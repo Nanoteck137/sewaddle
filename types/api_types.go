@@ -37,12 +37,12 @@ type GetSeries struct {
 	Series []Serie `json:"series"`
 }
 
-type GetSerieById struct {
+type GetSerieBySlug struct {
 	Serie
 	User *SerieUserData `json:"user,omitempty"`
 }
 
-type GetSerieChaptersById struct {
+type GetSerieChaptersBySlug struct {
 	Chapters []Chapter `json:"chapters"`
 }
 
@@ -50,7 +50,7 @@ type GetChapters struct {
 	Chapters []Chapter `json:"chapters"`
 }
 
-type GetChapterById struct {
+type GetChapterBySlug struct {
 	Chapter
 	NextChapter *string  `json:"nextChapter"`
 	PrevChapter *string  `json:"prevChapter"`
