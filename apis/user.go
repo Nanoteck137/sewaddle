@@ -113,8 +113,6 @@ func (api *userApi) HandlePostUserUpdateBookmark(c echo.Context) error {
 func InstallUserHandlers(app core.App, group Group) {
 	api := userApi{app: app}
 
-	requireSetup := RequireSetup(app)
-
 	group.Register(
 		Handler{
 			Name:        "MarkChapters",
@@ -123,7 +121,7 @@ func InstallUserHandlers(app core.App, group Group) {
 			DataType:    nil,
 			BodyType:    types.PostUserMarkChaptersBody{},
 			HandlerFunc: api.HandlePostUserMarkChapters,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 
 		Handler{
@@ -133,7 +131,7 @@ func InstallUserHandlers(app core.App, group Group) {
 			DataType:    nil,
 			BodyType:    types.PostUserUnmarkChaptersBody{},
 			HandlerFunc: api.HandlePostUserUnmarkChapters,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 
 		Handler{
@@ -143,7 +141,7 @@ func InstallUserHandlers(app core.App, group Group) {
 			DataType:    nil,
 			BodyType:    types.PostUserUpdateBookmarkBody{},
 			HandlerFunc: api.HandlePostUserUpdateBookmark,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 	)
 }

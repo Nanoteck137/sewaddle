@@ -160,8 +160,6 @@ func (api *serieApi) HandleGetSerieChaptersBySlug(c echo.Context) error {
 func InstallSerieHandlers(app core.App, group Group) {
 	api := serieApi{app: app}
 
-	requireSetup := RequireSetup(app)
-
 	group.Register(
 		Handler{
 			Name:        "GetSeries",
@@ -170,7 +168,7 @@ func InstallSerieHandlers(app core.App, group Group) {
 			DataType:    types.GetSeries{},
 			BodyType:    nil,
 			HandlerFunc: api.HandleGetSeries,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 
 		Handler{
@@ -181,7 +179,7 @@ func InstallSerieHandlers(app core.App, group Group) {
 			BodyType:    nil,
 			Errors:      []pyrinapi.ErrorType{TypeSerieNotFound},
 			HandlerFunc: api.HandleGetSerieBySlug,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 
 		Handler{
@@ -191,7 +189,7 @@ func InstallSerieHandlers(app core.App, group Group) {
 			DataType:    types.GetSerieChaptersBySlug{},
 			BodyType:    nil,
 			HandlerFunc: api.HandleGetSerieChaptersBySlug,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 	)
 }

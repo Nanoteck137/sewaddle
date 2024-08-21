@@ -53,8 +53,6 @@ func (api *libraryApi) HandlePostLibrarySync(c echo.Context) error {
 func InstallLibraryHandlers(app core.App, group Group) {
 	api := libraryApi{app: app}
 
-	requireSetup := RequireSetup(app)
-
 	group.Register(
 		Handler{
 			Name:        "GetLibraryStatus",
@@ -63,7 +61,7 @@ func InstallLibraryHandlers(app core.App, group Group) {
 			DataType:    types.GetLibraryStatus{},
 			BodyType:    nil,
 			HandlerFunc: api.HandleGetLibraryStatus,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 		Handler{
 			Name:        "RunLibrarySync",
@@ -72,7 +70,7 @@ func InstallLibraryHandlers(app core.App, group Group) {
 			DataType:    nil,
 			BodyType:    nil,
 			HandlerFunc: api.HandlePostLibrarySync,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 	)
 }

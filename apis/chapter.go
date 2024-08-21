@@ -104,8 +104,6 @@ func (api *chapterApi) HandleGetChapterBySlug(c echo.Context) error {
 func InstallChapterHandlers(app core.App, group Group) {
 	api := chapterApi{app: app}
 
-	requireSetup := RequireSetup(app)
-
 	group.Register(
 		Handler{
 			Name:        "GetChapters",
@@ -114,7 +112,7 @@ func InstallChapterHandlers(app core.App, group Group) {
 			DataType:    types.GetChapters{},
 			BodyType:    nil,
 			HandlerFunc: api.HandleGetChapters,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 		Handler{
 			Name:        "GetChapterBySlug",
@@ -123,7 +121,7 @@ func InstallChapterHandlers(app core.App, group Group) {
 			DataType:    types.GetChapterBySlug{},
 			BodyType:    nil,
 			HandlerFunc: api.HandleGetChapterBySlug,
-			Middlewares: []echo.MiddlewareFunc{requireSetup},
+			Middlewares: []echo.MiddlewareFunc{},
 		},
 	)
 }
