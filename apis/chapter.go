@@ -38,7 +38,7 @@ func (api *chapterApi) HandleGetChapters(c echo.Context) error {
 }
 
 func (api *chapterApi) HandleGetChapterBySlug(c echo.Context) error {
-	serieId := c.Param("serieId")
+	serieId := c.Param("serieSlug")
 	slug := c.Param("slug")
 
 	chapter, err := api.app.DB().GetChapter(c.Request().Context(), serieId, slug)
@@ -117,7 +117,6 @@ func InstallChapterHandlers(app core.App, group Group) {
 			Middlewares: []echo.MiddlewareFunc{requireSetup},
 		},
 		Handler{
-			// TODO(patrik): Rename GetChapterById?
 			Name:        "GetChapterBySlug",
 			Method:      http.MethodGet,
 			Path:        "/chapters/:serieSlug/:slug",
