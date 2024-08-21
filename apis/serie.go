@@ -45,8 +45,8 @@ func (api *serieApi) HandleGetSeries(c echo.Context) error {
 	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
-func (api *serieApi) HandleGetSerieById(c echo.Context) error {
-	id := c.Param("id")
+func (api *serieApi) HandleGetSerieBySlug(c echo.Context) error {
+	id := c.Param("slug")
 	serie, err := api.app.DB().GetSerieById(c.Request().Context(), id)
 	if err != nil {
 		if errors.Is(err, database.ErrItemNotFound) {
@@ -96,8 +96,8 @@ func (api *serieApi) HandleGetSerieById(c echo.Context) error {
 	return c.JSON(200, pyrinapi.SuccessResponse(result))
 }
 
-func (api *serieApi) HandleGetSerieChaptersById(c echo.Context) error {
-	id := c.Param("id")
+func (api *serieApi) HandleGetSerieChaptersBySlug(c echo.Context) error {
+	id := c.Param("slug")
 
 	items, err := api.app.DB().GetSerieChaptersById(c.Request().Context(), id)
 	if err != nil {
@@ -176,21 +176,21 @@ func InstallSerieHandlers(app core.App, group Group) {
 		Handler{
 			Name:        "GetSerieById",
 			Method:      http.MethodGet,
-			Path:        "/series/:id",
+			Path:        "/series/:slug",
 			DataType:    types.GetSerieById{},
 			BodyType:    nil,
 			Errors:      []pyrinapi.ErrorType{TypeSerieNotFound},
-			HandlerFunc: api.HandleGetSerieById,
+			HandlerFunc: api.HandleGetSerieBySlug,
 			Middlewares: []echo.MiddlewareFunc{requireSetup},
 		},
 
 		Handler{
 			Name:        "GetSerieChapters",
 			Method:      http.MethodGet,
-			Path:        "/series/:id/chapters",
+			Path:        "/series/:slug/chapters",
 			DataType:    types.GetSerieChaptersById{},
 			BodyType:    nil,
-			HandlerFunc: api.HandleGetSerieChaptersById,
+			HandlerFunc: api.HandleGetSerieChaptersBySlug,
 			Middlewares: []echo.MiddlewareFunc{requireSetup},
 		},
 	)
