@@ -82,7 +82,7 @@ func (api *chapterApi) HandleGetChapterBySlug(c echo.Context) error {
 
 	pages := strings.Split(chapter.Pages, ",")
 	for i, page := range pages {
-		pages[i] = utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%s/%s", chapter.SerieSlug, chapter.Slug, page))
+		pages[i] = utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", chapter.SerieSlug, chapter.Slug, page))
 	}
 
 	result := types.GetChapterBySlug{

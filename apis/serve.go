@@ -78,9 +78,9 @@ func Server(app core.App) (*echo.Echo, error) {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	e.Static("/images", app.WorkDir().ImagesDir())
-	e.StaticFS("/images/default", assets.DefaultImagesFS)
-	e.Static("/chapters", app.WorkDir().ChaptersDir())
+	e.Static("/files/images", app.WorkDir().ImagesDir())
+	e.StaticFS("/files/images/default", assets.DefaultImagesFS)
+	e.Static("/files/chapters", app.WorkDir().ChaptersDir())
 
 	g := newEchoGroup(app, e, "/api/v1")
 	InstallHandlers(app, g)

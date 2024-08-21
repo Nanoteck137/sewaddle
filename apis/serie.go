@@ -29,9 +29,9 @@ func (api *serieApi) HandleGetSeries(c echo.Context) error {
 	}
 
 	for i, item := range items {
-		cover := "/images/default/default_cover.png"
+		cover := "/files/images/default/default_cover.png"
 		if item.Cover.Valid {
-			cover = "/images/" + item.Cover.String
+			cover = "/files/images/" + item.Cover.String
 		}
 
 		result.Series[i] = types.Serie{
@@ -78,9 +78,9 @@ func (api *serieApi) HandleGetSerieBySlug(c echo.Context) error {
 		}
 	}
 
-	cover := "/images/default/default_cover.png"
+	cover := "/files/images/default/default_cover.png"
 	if serie.Cover.Valid {
-		cover = "/images/" + serie.Cover.String
+		cover = "/files/images/" + serie.Cover.String
 	}
 
 	result := types.GetSerieBySlug{
@@ -134,7 +134,7 @@ func (api *serieApi) HandleGetSerieChaptersBySlug(c echo.Context) error {
 
 	for i, item := range items {
 		pages := strings.Split(item.Pages, ",")
-		coverArt := utils.ConvertURL(c, fmt.Sprintf("/chapters/%s/%s/%s", item.SerieSlug, item.Slug, pages[0]))
+		coverArt := utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", item.SerieSlug, item.Slug, pages[0]))
 
 		var userData *types.ChapterUserData
 		if user != nil {
