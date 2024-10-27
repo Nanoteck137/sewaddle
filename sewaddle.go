@@ -2,7 +2,7 @@ package sewaddle
 
 import "fmt"
 
-var AppName = "dwebble"
+var AppName = "sewaddle"
 
 var Version = "no-version"
 var Commit = "no-commit"
