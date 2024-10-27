@@ -1,16 +1,16 @@
 package cli
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/nanoteck137/sewaddle"
 	"github.com/nanoteck137/sewaddle/config"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:     config.AppName,
-	Version: config.Version,
+	Use:     sewaddle.AppName,
+	Version: sewaddle.Version,
 }
 
 func Execute() {
@@ -19,17 +19,8 @@ func Execute() {
 	}
 }
 
-func versionTemplate() string {
-	return fmt.Sprintf(
-		"%s: %s (%s)\n",
-		config.AppName,
-		config.Version,
-		config.Commit,
-	)
-}
-
 func init() {
-	rootCmd.SetVersionTemplate(versionTemplate())
+	rootCmd.SetVersionTemplate(sewaddle.VersionTemplate(sewaddle.AppName))
 
 	cobra.OnInitialize(config.InitConfig)
 

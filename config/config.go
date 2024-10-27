@@ -3,14 +3,11 @@ package config
 import (
 	"os"
 
+	"github.com/nanoteck137/sewaddle"
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/spf13/viper"
 )
-
-var AppName = "sewaddle"
-var Version = "no-version"
-var Commit = "no-commit"
 
 type Config struct {
 	ListenAddr      string `mapstructure:"listen_addr"`
@@ -70,7 +67,7 @@ func InitConfig() {
 		viper.SetConfigName("config")
 	}
 
-	viper.SetEnvPrefix(AppName)
+	viper.SetEnvPrefix(sewaddle.AppName)
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
@@ -84,6 +81,20 @@ func InitConfig() {
 		os.Exit(-1)
 	}
 
-	log.Debug("Current Config", "config", LoadedConfig)
+	hide := func(s string) string {
+		var res string
+		for i := 0; i < len(s); i++ {
+			res += "*"
+		}
+
+		return res
+	}
+
+	configCopy := LoadedConfig
+	configCopy.JwtSecret = hide(configCopy.JwtSecret)
+	configCopy.InitialPassword = hide(configCopy.InitialPassword)
+
+	log.Debug("Current Config", "config", configCopy)
+
 	validateConfig(&LoadedConfig)
 }
