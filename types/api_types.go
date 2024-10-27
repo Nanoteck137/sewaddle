@@ -1,6 +1,10 @@
 package types
 
-import "github.com/faceair/jio"
+import (
+	"github.com/faceair/jio"
+	"github.com/nanoteck137/pyrin"
+	"github.com/nanoteck137/pyrin/tools/validate"
+)
 
 type Body interface {
 	Schema() jio.Schema
@@ -63,7 +67,6 @@ type GetLibraryStatus struct {
 
 type GetSystemInfo struct {
 	Version string `json:"version"`
-	IsSetup bool   `json:"isSetup"`
 }
 
 type PostSystemSetupBody struct {
@@ -84,10 +87,16 @@ type GetChapterByIdUser struct {
 	IsMarked bool `json:"isMarked"`
 }
 
+var _ pyrin.Body = (*PostAuthSignupBody)(nil)
+
 type PostAuthSignupBody struct {
 	Username        string `json:"username"`
 	Password        string `json:"password"`
 	PasswordConfirm string `json:"passwordConfirm"`
+}
+
+func (b PostAuthSignupBody) Validate(validator validate.Validator) error {
+	panic("unimplemented")
 }
 
 func (b PostAuthSignupBody) Schema() jio.Schema {
@@ -103,9 +112,15 @@ type PostAuthSignup struct {
 	Username string `json:"username"`
 }
 
+var _ pyrin.Body = (*PostAuthSigninBody)(nil)
+
 type PostAuthSigninBody struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+func (b PostAuthSigninBody) Validate(validator validate.Validator) error {
+	panic("unimplemented")
 }
 
 func (b PostAuthSigninBody) Schema() jio.Schema {
@@ -125,9 +140,15 @@ type GetAuthMe struct {
 	IsOwner  bool   `json:"isOwner"`
 }
 
+var _ pyrin.Body = (*PostUserMarkChaptersBody)(nil)
+
 type PostUserMarkChaptersBody struct {
 	SerieSlug string   `json:"serieSlug"`
 	Chapters  []string `json:"chapters"`
+}
+
+func (b PostUserMarkChaptersBody) Validate(validator validate.Validator) error {
+	panic("unimplemented")
 }
 
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
@@ -137,9 +158,15 @@ func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 	})
 }
 
+var _ pyrin.Body = (*PostUserUnmarkChaptersBody)(nil)
+
 type PostUserUnmarkChaptersBody struct {
 	SerieSlug string   `json:"serieSlug"`
 	Chapters  []string `json:"chapters"`
+}
+
+func (b PostUserUnmarkChaptersBody) Validate(validator validate.Validator) error {
+	panic("unimplemented")
 }
 
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
@@ -149,10 +176,16 @@ func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 	})
 }
 
+var _ pyrin.Body = (*PostUserUpdateBookmarkBody)(nil)
+
 type PostUserUpdateBookmarkBody struct {
 	SerieSlug   string `json:"serieSlug"`
 	ChapterSlug string `json:"chapterSlug"`
 	Page        int    `json:"page"`
+}
+
+func (b PostUserUpdateBookmarkBody) Validate(validator validate.Validator) error {
+	panic("unimplemented")
 }
 
 func (b PostUserUpdateBookmarkBody) Schema() jio.Schema {

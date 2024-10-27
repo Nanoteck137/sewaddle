@@ -6,14 +6,14 @@ import (
 
 	"github.com/faceair/jio"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
+	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
-func User(app core.App, c echo.Context) (*database.User, error) {
+func User(app core.App, c pyrin.Context) (*database.User, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	tokenString, err := utils.ParseAuthHeader(authHeader)
 	if err != nil {
@@ -51,7 +51,7 @@ func User(app core.App, c echo.Context) (*database.User, error) {
 	return nil, types.ErrInvalidToken
 }
 
-func Body[T types.Body](c echo.Context) (T, error) {
+func Body[T types.Body](c pyrin.Context) (T, error) {
 	var res T
 
 	schema := res.Schema()

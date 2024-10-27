@@ -4,144 +4,127 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-	pyrinapi "github.com/nanoteck137/pyrin/api"
+	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 )
 
-type userApi struct {
-	app core.App
-}
-
-func (api *userApi) HandlePostUserMarkChapters(c echo.Context) error {
-	user, err := User(api.app, c)
-	if err != nil {
-		return err
-	}
-
-	body, err := Body[types.PostUserMarkChaptersBody](c)
-	if err != nil {
-		return err
-	}
-
-	serie, err := api.app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
-	if err != nil {
-		return err
-	}
-
-	for _, chapter := range body.Chapters {
-		err := api.app.DB().MarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
-		if err != nil && !errors.Is(err, database.ErrAlreadyMarked) {
-			return err
-		}
-	}
-
-	return c.JSON(200, pyrinapi.SuccessResponse(nil))
-}
-
-func (api *userApi) HandlePostUserUnmarkChapters(c echo.Context) error {
-	user, err := User(api.app, c)
-	if err != nil {
-		return err
-	}
-
-	body, err := Body[types.PostUserUnmarkChaptersBody](c)
-	if err != nil {
-		return err
-	}
-
-	serie, err := api.app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
-	if err != nil {
-		return err
-	}
-
-	for _, chapter := range body.Chapters {
-		err := api.app.DB().UnmarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
-		if err != nil {
-			return err
-		}
-	}
-
-	return c.JSON(200, pyrinapi.SuccessResponse(nil))
-}
-
-func (api *userApi) HandlePostUserUpdateBookmark(c echo.Context) error {
-	user, err := User(api.app, c)
-	if err != nil {
-		return err
-	}
-
-	body, err := Body[types.PostUserUpdateBookmarkBody](c)
-	if err != nil {
-		return err
-	}
-
-	ctx := c.Request().Context()
-
-	serie, err := api.app.DB().GetSerieById(ctx, body.SerieSlug)
-	if err != nil {
-		return err
-	}
-
-	chapter, err := api.app.DB().GetChapter(ctx, serie.Slug, body.ChapterSlug)
-	if err != nil {
-		return err
-	}
-
-	hasBookmark, err := api.app.DB().HasBookmark(ctx, user.Id, serie.Slug)
-	if err != nil {
-		return err
-	}
-
-	if hasBookmark {
-		err := api.app.DB().UpdateBookmark(ctx, user.Id, serie.Slug, chapter.Slug)
-		if err != nil {
-			return err
-		}
-	} else {
-		err := api.app.DB().CreateBookmark(ctx, user.Id, serie.Slug, chapter.Slug)
-		if err != nil {
-			return err
-		}
-	}
-
-	return c.JSON(200, pyrinapi.SuccessResponse(nil))
-}
-
-func InstallUserHandlers(app core.App, group Group) {
-	api := userApi{app: app}
-
+func InstallUserHandlers(app core.App, group pyrin.Group) {
 	group.Register(
-		Handler{
-			Name:        "MarkChapters",
-			Method:      http.MethodPost,
-			Path:        "/user/markChapters",
-			DataType:    nil,
-			BodyType:    types.PostUserMarkChaptersBody{},
-			HandlerFunc: api.HandlePostUserMarkChapters,
-			Middlewares: []echo.MiddlewareFunc{},
+		pyrin.ApiHandler{
+			Name:     "MarkChapters",
+			Method:   http.MethodPost,
+			Path:     "/user/markChapters",
+			BodyType: types.PostUserMarkChaptersBody{},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				user, err := User(app, c)
+				if err != nil {
+					return nil, err
+				}
+
+				body, err := Body[types.PostUserMarkChaptersBody](c)
+				if err != nil {
+					return nil, err
+				}
+
+				serie, err := app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
+				if err != nil {
+					return nil, err
+				}
+
+				for _, chapter := range body.Chapters {
+					err := app.DB().MarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
+					if err != nil && !errors.Is(err, database.ErrAlreadyMarked) {
+						return nil, err
+					}
+				}
+
+				return nil, nil
+			},
 		},
 
-		Handler{
-			Name:        "UnmarkChapters",
-			Method:      http.MethodPost,
-			Path:        "/user/unmarkChapters",
-			DataType:    nil,
-			BodyType:    types.PostUserUnmarkChaptersBody{},
-			HandlerFunc: api.HandlePostUserUnmarkChapters,
-			Middlewares: []echo.MiddlewareFunc{},
+		pyrin.ApiHandler{
+			Name:     "UnmarkChapters",
+			Method:   http.MethodPost,
+			Path:     "/user/unmarkChapters",
+			DataType: nil,
+			BodyType: types.PostUserUnmarkChaptersBody{},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				user, err := User(app, c)
+				if err != nil {
+					return nil, err
+				}
+
+				body, err := Body[types.PostUserUnmarkChaptersBody](c)
+				if err != nil {
+					return nil, err
+				}
+
+				serie, err := app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
+				if err != nil {
+					return nil, err
+				}
+
+				for _, chapter := range body.Chapters {
+					err := app.DB().UnmarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
+					if err != nil {
+						return nil, err
+					}
+				}
+
+				return nil, nil
+			},
 		},
 
-		Handler{
-			Name:        "UpdateBookmark",
-			Method:      http.MethodPost,
-			Path:        "/user/updateBookmark",
-			DataType:    nil,
-			BodyType:    types.PostUserUpdateBookmarkBody{},
-			HandlerFunc: api.HandlePostUserUpdateBookmark,
-			Middlewares: []echo.MiddlewareFunc{},
+		pyrin.ApiHandler{
+			Name:     "UpdateBookmark",
+			Method:   http.MethodPost,
+			Path:     "/user/updateBookmark",
+			DataType: nil,
+			BodyType: types.PostUserUpdateBookmarkBody{},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				user, err := User(app, c)
+				if err != nil {
+					return nil, err
+				}
+
+				body, err := Body[types.PostUserUpdateBookmarkBody](c)
+				if err != nil {
+					return nil, err
+				}
+
+				ctx := c.Request().Context()
+
+				serie, err := app.DB().GetSerieById(ctx, body.SerieSlug)
+				if err != nil {
+					return nil, err
+				}
+
+				chapter, err := app.DB().GetChapter(ctx, serie.Slug, body.ChapterSlug)
+				if err != nil {
+					return nil, err
+				}
+
+				hasBookmark, err := app.DB().HasBookmark(ctx, user.Id, serie.Slug)
+				if err != nil {
+					return nil, err
+				}
+
+				if hasBookmark {
+					err := app.DB().UpdateBookmark(ctx, user.Id, serie.Slug, chapter.Slug)
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					err := app.DB().CreateBookmark(ctx, user.Id, serie.Slug, chapter.Slug)
+					if err != nil {
+						return nil, err
+					}
+				}
+
+				return nil, nil
+			},
 		},
 	)
 }

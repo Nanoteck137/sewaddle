@@ -3,10 +3,10 @@ package utils
 import (
 	"fmt"
 
-	"github.com/labstack/echo/v4"
+	"github.com/nanoteck137/pyrin"
 )
 
-func ConvertURL(c echo.Context, path string) string {
+func ConvertURL(c pyrin.Context, path string) string {
 	host := c.Request().Host
 
 	scheme := "http"
