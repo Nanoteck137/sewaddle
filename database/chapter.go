@@ -10,6 +10,7 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/mattn/go-sqlite3"
+	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
@@ -306,6 +307,50 @@ func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParam
 	}
 
 	return item, nil
+}
+
+// TODO(patrik): Move
+func addToRecord[T any](record goqu.Record, name string, change types.Change[T]) {
+	if change.Changed {
+		record[name] = change.Value
+	}
+}
+
+type ChapterChanges struct {
+	Title     types.Change[string]
+	Pages     types.Change[string]
+	Number    types.Change[sql.NullInt64]
+}
+
+func (db *Database) UpdateChapter(ctx context.Context, serieSlug, slug string, changes ChapterChanges) error {
+	record := goqu.Record{}
+
+	addToRecord(record, "name", changes.Title)
+	addToRecord(record, "pages", changes.Pages)
+	addToRecord(record, "number", changes.Number)
+
+	if len(record) <= 0 {
+		return nil
+	}
+
+	record["updated"] = time.Now().UnixMilli()
+
+	ds := dialect.Update("chapters").
+		Set(record).
+		Where(
+			goqu.And(
+				goqu.I("chapters.serie_slug").Eq(serieSlug),
+				goqu.I("chapters.slug").Eq(slug),
+			),
+		).
+		Prepared(true)
+
+	_, err := db.Exec(ctx, ds)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (db *Database) UpdateChapterPages(ctx context.Context, serieSlug, slug string, pages []string, number int) error {

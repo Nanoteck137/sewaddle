@@ -7,16 +7,20 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/kr/pretty"
 	"github.com/nanoteck137/sewaddle"
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
+	"github.com/nanoteck137/sewaddle/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -32,14 +36,15 @@ var rootCmd = &cobra.Command{
 
 		workDir := types.WorkDir(out)
 
-		err := os.MkdirAll(workDir.ImagesDir(), 0755)
-		if err != nil {
-			log.Fatal("Failed to create images dir", "err", err)
+		dirs := []string{
+			workDir.SeriesDir(),
 		}
 
-		err = os.MkdirAll(workDir.ChaptersDir(), 0755)
-		if err != nil {
-			log.Fatal("Failed to create chapters dir", "err", err)
+		for _, dir := range dirs {
+			err := os.Mkdir(dir, 0755)
+			if err != nil && !os.IsExist(err) {
+				log.Fatal("Failed to create directory", "err", err)
+			}
 		}
 
 		db, err := database.Open(workDir)
@@ -132,11 +137,25 @@ var rootCmd = &cobra.Command{
 			if err != nil {
 				if errors.Is(err, database.ErrItemNotFound) {
 					serie, err = db.CreateSerie(ctx, database.CreateSerieParams{
-						Name:    data.Series,
+						Name: data.Series,
 					})
 
 					if err != nil {
 						log.Fatal("Failed", "err", err)
+					}
+
+					serieDir := workDir.SerieDir(serie.Slug)
+					dirs := []string{
+						serieDir.String(),
+						serieDir.ChaptersDir(),
+						serieDir.ImagesDir(),
+					}
+
+					for _, dir := range dirs {
+						err := os.Mkdir(dir, 0755)
+						if err != nil && !os.IsExist(err) {
+							log.Fatal("Failed to create serie directory", "err", err, "serieSlug", serie.Slug)
+						}
 					}
 				} else {
 					log.Fatal("Failed", "err", err)
@@ -145,7 +164,7 @@ var rootCmd = &cobra.Command{
 
 			fmt.Printf("serie: %v\n", serie)
 
-			_, err = db.CreateChapter(ctx, database.CreateChapterParams{
+			chapter, err := db.CreateChapter(ctx, database.CreateChapterParams{
 				SerieSlug: serie.Slug,
 				Title:     data.Title,
 				Number: sql.NullInt64{
@@ -156,6 +175,60 @@ var rootCmd = &cobra.Command{
 
 			if err != nil {
 				log.Fatal("Failed to create chapter", "err", err)
+			}
+
+			serieDir := workDir.SerieDir(serie.Slug)
+			chapterDir := serieDir.ChapterDir(chapter.Slug)
+
+			dirs := []string{
+				chapterDir.String(),
+				chapterDir.PagesDir(),
+				chapterDir.ImagesDir(),
+			}
+
+			for _, dir := range dirs {
+				err := os.Mkdir(dir, 0755)
+				if err != nil && !os.IsExist(err) {
+					log.Fatal("Failed to create chapater directory", "err", err, "serieSlug", serie.Slug, "chapterSlug", chapter.Slug)
+				}
+			}
+
+			var names []string
+
+			for _, p := range pages {
+				file := r.File[p]
+				r, err := file.Open()
+				if err != nil {
+					log.Fatal("Failed to open page file", "err", err)
+				}
+				defer r.Close()
+
+				n := utils.ExtractNumber(file.Name)
+				dstName := strconv.Itoa(n) + path.Ext(file.Name)
+				d := path.Join(chapterDir.PagesDir(), dstName)
+				dst, err := os.OpenFile(d, os.O_RDWR|os.O_CREATE, 0644)
+				if err != nil {
+					log.Fatal("Failed to open file for page", "err", err)
+				}
+				defer dst.Close()
+
+				_, err = io.Copy(dst, r)
+				if err != nil {
+					log.Fatal("Failed to copy page content to file", "err", err)
+				}
+
+				names = append(names, dstName)
+			}
+
+			err = db.UpdateChapter(ctx, serie.Slug, chapter.Slug, database.ChapterChanges{
+				Pages: types.Change[string]{
+					Value:   strings.Join(names, ","),
+					Changed: true,
+				},
+			})
+
+			if err != nil {
+				log.Fatal("Failed to update chapter", "err", err)
 			}
 		}
 	},

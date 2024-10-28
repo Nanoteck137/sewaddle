@@ -3,7 +3,9 @@ package utils
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/gosimple/slug"
 	"github.com/mitchellh/mapstructure"
@@ -24,6 +26,28 @@ func createIdGenerator() func() string {
 
 func Slug(s string) string {
 	return slug.Make(s)
+}
+
+func ExtractNumber(s string) int {
+	n := ""
+	for _, c := range s {
+		if unicode.IsDigit(c) {
+			n += string(c)
+		} else {
+			break
+		}
+	}
+
+	if len(n) == 0 {
+		return 0
+	}
+
+	i, err := strconv.ParseInt(n, 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return int(i)
 }
 
 func Decode(input interface{}, output interface{}) error {
