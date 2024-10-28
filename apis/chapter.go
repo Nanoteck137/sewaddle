@@ -33,6 +33,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 						SerieSlug: chapter.SerieSlug,
 						Slug:      chapter.Slug,
 						Title:     chapter.Title,
+						Number:    chapter.Number.Int64,
 					}
 				}
 
@@ -54,7 +55,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 					return nil, err
 				}
 
-				nextChapterSlug, err := app.DB().GetNextChapter(c.Request().Context(), chapter.SerieSlug, chapter.Number)
+				nextChapterSlug, err := app.DB().GetNextChapter(c.Request().Context(), chapter.SerieSlug, 0)
 				if err != nil {
 					return nil, err
 				}
@@ -64,7 +65,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 					nextChapter = &nextChapterSlug
 				}
 
-				prevChapterSlug, err := app.DB().GetPrevChapter(c.Request().Context(), chapter.SerieSlug, chapter.Number)
+				prevChapterSlug, err := app.DB().GetPrevChapter(c.Request().Context(), chapter.SerieSlug, 0)
 				if err != nil {
 					return nil, err
 				}
@@ -98,6 +99,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 						SerieSlug: chapter.SerieSlug,
 						Slug:      chapter.Slug,
 						Title:     chapter.Title,
+					Number:    chapter.Number.Int64,
 						CoverArt:  pages[0],
 						User:      userData,
 					},

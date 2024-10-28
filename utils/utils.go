@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gosimple/slug"
 	"github.com/mitchellh/mapstructure"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nrednav/cuid2"
@@ -19,6 +20,10 @@ func createIdGenerator() func() string {
 	}
 
 	return res
+}
+
+func Slug(s string) string {
+	return slug.Make(s)
 }
 
 func Decode(input interface{}, output interface{}) error {

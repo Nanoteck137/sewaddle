@@ -6,64 +6,68 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/mattn/go-sqlite3"
-	"github.com/nanoteck137/sewaddle/types"
+	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type Chapter struct {
-	SerieSlug string
-	Slug      string
-	Title     string
-	Pages     string
-	Path      string
-	Number    int
+	SerieSlug string        `db:"serie_slug"`
+	Slug      string        `db:"slug"`
+	Title     string        `db:"title"`
+	Pages     string        `db:"pages"`
+	Number    sql.NullInt64 `db:"number"`
+	Created   int64         `db:"created"`
+	Updated   int64         `db:"updated"`
+}
+
+func ChapterQuery() *goqu.SelectDataset {
+	return dialect.From("chapters").
+		Select(
+			"chapters.serie_slug",
+			"chapters.slug",
+
+			"chapters.title",
+			"chapters.pages",
+			"chapters.number",
+
+			"chapters.created",
+			"chapters.updated",
+		).
+		Prepared(true).
+		Order(
+			goqu.I("chapters.number").Asc(),
+		)
 }
 
 func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
-	ds := dialect.
-		From("chapters").
-		Select("serie_slug", "slug", "title")
-
-	rows, err := db.Query(ctx, ds)
-	if err != nil {
-		return nil, err
-	}
+	query := ChapterQuery()
 
 	var items []Chapter
-	for rows.Next() {
-		var item Chapter
-		rows.Scan(&item.SerieSlug, &item.Slug, &item.Title)
-
-		items = append(items, item)
+	err := db.Select(&items, query)
+	if err != nil {
+		return nil, err
 	}
 
 	return items, nil
 }
 
 func (db *Database) GetChapter(ctx context.Context, serieSlug, slug string) (Chapter, error) {
-	ds := dialect.
-		From("chapters").
-		Select("serie_slug", "slug", "title", "pages", "number").
+	query := ChapterQuery().
 		Where(
 			goqu.And(
-				goqu.C("serie_slug").Eq(serieSlug),
-				goqu.C("slug").Eq(slug),
+				goqu.I("chapters.serie_slug").Eq(serieSlug),
+				goqu.I("chapters.slug").Eq(slug),
 			),
-		).
-		Prepared(true)
-
-	row, err := db.QueryRow(ctx, ds)
-	if err != nil {
-		return Chapter{}, err
-	}
+		)
 
 	var item Chapter
-	err = row.Scan(&item.SerieSlug, &item.Slug, &item.Title, &item.Pages, &item.Number)
+	err := db.Get(&item, query)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Chapter{}, types.ErrNoChapter
+			return Chapter{}, ErrItemNotFound
 		}
 
 		return Chapter{}, err
@@ -73,86 +77,78 @@ func (db *Database) GetChapter(ctx context.Context, serieSlug, slug string) (Cha
 }
 
 func (db *Database) GetSerieChaptersById(ctx context.Context, serieSlug string) ([]Chapter, error) {
-	ds := dialect.
-		From("chapters").
-		Select("serie_slug", "slug", "title", "pages").
-		Where(goqu.C("serie_slug").Eq(serieSlug)).
-		Order(goqu.C("number").Asc())
-
-	rows, err := db.Query(ctx, ds)
-	if err != nil {
-		return nil, err
-	}
+	query := ChapterQuery().
+		Where(goqu.I("chapters.serie_slug").Eq(serieSlug))
 
 	var items []Chapter
-	for rows.Next() {
-		var item Chapter
-		rows.Scan(&item.SerieSlug, &item.Slug, &item.Title, &item.Pages)
-
-		items = append(items, item)
+	err := db.Select(&items, query)
+	if err != nil {
+		return nil, err
 	}
 
 	return items, nil
 }
 
 func (db *Database) GetNextChapter(ctx context.Context, serieSlug string, currentNumber int) (string, error) {
-	ds := dialect.
-		From("chapters").
-		Select("slug").
-		Where(
-			goqu.And(
-				goqu.C("serie_slug").Eq(serieSlug),
-				goqu.C("number").Gt(currentNumber),
-			),
-		).
-		Order(goqu.C("number").Asc())
-
-	row, err := db.QueryRow(ctx, ds)
-	if err != nil {
-		return "", err
-	}
-
-	var item string
-	err = row.Scan(&item)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return "", nil
-		}
-
-		return "", err
-	}
-
-	return item, nil
+	// query := dialect.
+	// 	From("chapters").
+	// 	Select("slug").
+	// 	Where(
+	// 		goqu.And(
+	// 			goqu.C("serie_slug").Eq(serieSlug),
+	// 			goqu.C("number").Gt(currentNumber),
+	// 		),
+	// 	).
+	// 	Order(goqu.C("number").Asc())
+	//
+	// row, err := db.QueryRow(ctx, ds)
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// var item string
+	// err = row.Scan(&item)
+	// if err != nil {
+	// 	if err == sql.ErrNoRows {
+	// 		return "", nil
+	// 	}
+	//
+	// 	return "", err
+	// }
+	//
+	// return item, nil
+	return "", nil
 }
 
 func (db *Database) GetPrevChapter(ctx context.Context, serieSlug string, currentNumber int) (string, error) {
-	ds := dialect.
-		From("chapters").
-		Select("slug").
-		Where(
-			goqu.And(
-				goqu.C("serie_slug").Eq(serieSlug),
-				goqu.C("number").Lt(currentNumber),
-			),
-		).
-		Order(goqu.C("number").Desc())
-
-	row, err := db.QueryRow(ctx, ds)
-	if err != nil {
-		return "", err
-	}
-
-	var item string
-	err = row.Scan(&item)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return "", nil
-		}
-
-		return "", err
-	}
-
-	return item, nil
+	// ds := dialect.
+	// 	From("chapters").
+	// 	Select("slug").
+	// 	Where(
+	// 		goqu.And(
+	// 			goqu.C("serie_slug").Eq(serieSlug),
+	// 			goqu.C("number").Lt(currentNumber),
+	// 		),
+	// 	).
+	// 	Order(goqu.C("number").Desc())
+	//
+	// row, err := db.QueryRow(ctx, ds)
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// var item string
+	// err = row.Scan(&item)
+	// if err != nil {
+	// 	if err == sql.ErrNoRows {
+	// 		return "", nil
+	// 	}
+	//
+	// 	return "", err
+	// }
+	//
+	// return item, nil
+	return "", nil
 }
 
 var ErrAlreadyMarked = errors.New("database: chapter already marked")
@@ -265,47 +261,46 @@ func (db *Database) IsChapterMarked(ctx context.Context, userId, serieSlug, chap
 	return true, nil
 }
 
-func (db *Database) GetChapterByPath(ctx context.Context, path string) (Chapter, error) {
-	ds := dialect.
-		From("chapters").
-		Select("serie_slug", "slug", "title", "path", "pages").
-		Where(goqu.C("path").Eq(path))
-
-	row, err := db.QueryRow(ctx, ds)
-	if err != nil {
-		return Chapter{}, err
-	}
-
-	var item Chapter
-	err = row.Scan(&item.SerieSlug, &item.Slug, &item.Title, &item.Path, &item.Pages)
-	if err != nil {
-		// TODO(patrik): Return ErrNoChapter
-		return Chapter{}, err
-	}
-
-	return item, nil
+type CreateChapterParams struct {
+	SerieSlug string
+	Slug      string
+	Title     string
+	Pages     string
+	Number    sql.NullInt64
+	Created   int64
+	Updated   int64
 }
 
-func (db *Database) CreateChapter(ctx context.Context, slug, title, serieSlug, path string) (Chapter, error) {
-	ds := dialect.Insert("chapters").
-		Rows(goqu.Record{
-			"slug":       slug,
-			"serie_slug": serieSlug,
-			"title":      title,
-			"pages":      "",
-			"path":       path,
-			"number":     0,
-		}).
-		Returning("serie_slug", "slug", "title", "pages", "path").
-		Prepared(true)
+func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParams) (Chapter, error) {
+	// TODO(patrik): Trim space here?
 
-	row, err := db.QueryRow(ctx, ds)
-	if err != nil {
-		return Chapter{}, err
+	if params.Created == 0 && params.Updated == 0 {
+		t := time.Now().UnixMilli()
+		params.Created = t
+		params.Updated = t
 	}
 
+	if params.Slug == "" {
+		params.Slug = utils.Slug(params.Title)
+	}
+
+	query := dialect.Insert("chapters").
+		Rows(goqu.Record{
+			"serie_slug": params.SerieSlug,
+			"slug":       params.Slug,
+
+			"title":  params.Title,
+			"pages":  params.Pages,
+			"number": params.Number,
+
+			"created": params.Created,
+			"updated": params.Updated,
+		}).
+		Returning("serie_slug", "slug", "title", "pages", "number", "created", "updated").
+		Prepared(true)
+
 	var item Chapter
-	err = row.Scan(&item.SerieSlug, &item.Slug, &item.Title, &item.Pages, &item.Path)
+	err := db.Get(&item, query)
 	if err != nil {
 		return Chapter{}, err
 	}

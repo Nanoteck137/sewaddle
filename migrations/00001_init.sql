@@ -3,7 +3,9 @@ CREATE TABLE series (
     slug TEXT NOT NULL,
     name TEXT NOT NULL,
     cover TEXT,
-    path TEXT NOT NULL,
+
+    created INTEGER NOT NULL,
+    updated INTEGER NOT NULL,
 
     CONSTRAINT series_pk PRIMARY KEY(slug)
 );
@@ -11,12 +13,13 @@ CREATE TABLE series (
 CREATE TABLE chapters (
     serie_slug TEXT NOT NULL,
     slug TEXT NOT NULL,
-    number INTEGER NOT NULL,
 
     title TEXT NOT NULL,
     pages TEXT NOT NULL,
+    number INT,
 
-    path TEXT NOT NULL,
+    created INTEGER NOT NULL,
+    updated INTEGER NOT NULL,
 
     CONSTRAINT chapters_pk PRIMARY KEY(slug, serie_slug),
 

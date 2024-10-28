@@ -38,30 +38,20 @@ func (app *BaseApp) IsSetup() bool {
 	return app.dbConfig != nil
 }
 
-func (app *BaseApp) InvalidateDBConfig() error {
-	var err error
-
-	app.dbConfig, err = app.db.GetConfig(context.Background())
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (app *BaseApp) Bootstrap() error {
 	var err error
 
 	workDir := app.config.WorkDir()
 
-	err = os.MkdirAll(workDir.ImagesDir(), 0755)
-	if err != nil {
-		return err
+	dirs := []string{
+		workDir.SeriesDir(),
 	}
 
-	err = os.MkdirAll(workDir.ChaptersDir(), 0755)
-	if err != nil {
-		return err
+	for _, dir := range dirs {
+		err = os.Mkdir(dir, 0755)
+		if err != nil && !os.IsExist(err) {
+			return err
+		}
 	}
 
 	app.db, err = database.Open(workDir)

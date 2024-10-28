@@ -14,13 +14,14 @@ type Serie struct {
 	Slug         string `json:"slug"`
 	Name         string `json:"name"`
 	Cover        string `json:"cover"`
-	ChapterCount int    `json:"chapterCount"`
+	ChapterCount int64  `json:"chapterCount"`
 }
 
 type Chapter struct {
 	SerieSlug string           `json:"serieSlug"`
 	Slug      string           `json:"slug"`
 	Title     string           `json:"title"`
+	Number    int64            `json:"number"`
 	CoverArt  string           `json:"coverArt"`
 	User      *ChapterUserData `json:"user,omitempty"`
 }

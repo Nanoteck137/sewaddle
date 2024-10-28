@@ -128,10 +128,10 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				user, _ := User(app, c)
 				if user != nil {
-					markedChapters, err = app.DB().GetAllMarkedChapters(c.Request().Context(), user.Id, id)
-					if err != nil {
-						return nil, err
-					}
+					// markedChapters, err = app.DB().GetAllMarkedChapters(c.Request().Context(), user.Id, id)
+					// if err != nil {
+					// 	return nil, err
+					// }
 				}
 
 				isChapterMarked := func(chapterSlug string) bool {
@@ -165,6 +165,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 						SerieSlug: item.SerieSlug,
 						Slug:      item.Slug,
 						Title:     item.Title,
+						Number:    item.Number.Int64,
 						CoverArt:  coverArt,
 						User:      userData,
 					}

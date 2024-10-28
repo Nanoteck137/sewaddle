@@ -8,15 +8,15 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 	goqusqlite3 "github.com/doug-martin/goqu/v9/dialect/sqlite3"
+	"github.com/jmoiron/sqlx"
+	"github.com/nanoteck137/sewaddle/migrations"
 	"github.com/nanoteck137/sewaddle/types"
-	"github.com/pressly/goose/v3"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var (
-	ErrItemNotFound = errors.New("database: item not found")
-)
+var ErrItemNotFound = errors.New("database: item not found")
+var ErrItemAlreadyExists = errors.New("database: item already exists")
 
 var dialect = goqu.Dialect("sqlite_returning")
 
@@ -31,14 +31,16 @@ type Connection interface {
 }
 
 type Database struct {
-	RawConn *sql.DB
-	Conn Connection
+	NewRawConn *sqlx.DB
+	RawConn    *sql.DB
+	Conn       Connection
 }
 
 func New(conn *sql.DB) *Database {
 	return &Database{
-		RawConn: conn,
-		Conn: conn,
+		NewRawConn: sqlx.NewDb(conn, "sqlite3"),
+		RawConn:    conn,
+		Conn:       conn,
 	}
 }
 
@@ -53,15 +55,24 @@ func Open(workDir types.WorkDir) (*Database, error) {
 	return New(conn), nil
 }
 
-func (db *Database) Begin() (*Database, *sql.Tx, error) {
-	tx, err := db.RawConn.Begin()
+func (db *Database) RunMigrateUp() error {
+	return migrations.RunMigrateUp(db.RawConn)
+}
+
+func (db *Database) RunMigrateDown() error {
+	return migrations.RunMigrateDown(db.RawConn)
+}
+
+func (db *Database) Begin() (*Database, *sqlx.Tx, error) {
+	tx, err := db.NewRawConn.Beginx()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	return &Database{
-		RawConn: db.RawConn,
-		Conn: tx,
+		NewRawConn: db.NewRawConn,
+		RawConn:    db.RawConn,
+		Conn:       tx,
 	}, tx, nil
 }
 
@@ -93,8 +104,22 @@ func (db *Database) Exec(ctx context.Context, s ToSQL) (sql.Result, error) {
 	return db.Conn.Exec(sql, params...)
 }
 
-func (db *Database) RunMigrateUp() error {
-	return goose.Up(db.RawConn, ".")
+func (db *Database) Select(dest any, s ToSQL) error {
+	sql, params, err := s.ToSQL()
+	if err != nil {
+		return err
+	}
+
+	return db.NewRawConn.Select(dest, sql, params...)
+}
+
+func (db *Database) Get(dest any, s ToSQL) error {
+	sql, params, err := s.ToSQL()
+	if err != nil {
+		return err
+	}
+
+	return db.NewRawConn.Get(dest, sql, params...)
 }
 
 func init() {
@@ -102,4 +127,3 @@ func init() {
 	opts.SupportsReturn = true
 	goqu.RegisterDialect("sqlite_returning", opts)
 }
-
