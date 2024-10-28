@@ -90,68 +90,6 @@ func (db *Database) GetSerieChaptersById(ctx context.Context, serieSlug string) 
 	return items, nil
 }
 
-func (db *Database) GetNextChapter(ctx context.Context, serieSlug string, currentNumber int) (string, error) {
-	// query := dialect.
-	// 	From("chapters").
-	// 	Select("slug").
-	// 	Where(
-	// 		goqu.And(
-	// 			goqu.C("serie_slug").Eq(serieSlug),
-	// 			goqu.C("number").Gt(currentNumber),
-	// 		),
-	// 	).
-	// 	Order(goqu.C("number").Asc())
-	//
-	// row, err := db.QueryRow(ctx, ds)
-	// if err != nil {
-	// 	return "", err
-	// }
-	//
-	// var item string
-	// err = row.Scan(&item)
-	// if err != nil {
-	// 	if err == sql.ErrNoRows {
-	// 		return "", nil
-	// 	}
-	//
-	// 	return "", err
-	// }
-	//
-	// return item, nil
-	return "", nil
-}
-
-func (db *Database) GetPrevChapter(ctx context.Context, serieSlug string, currentNumber int) (string, error) {
-	// ds := dialect.
-	// 	From("chapters").
-	// 	Select("slug").
-	// 	Where(
-	// 		goqu.And(
-	// 			goqu.C("serie_slug").Eq(serieSlug),
-	// 			goqu.C("number").Lt(currentNumber),
-	// 		),
-	// 	).
-	// 	Order(goqu.C("number").Desc())
-	//
-	// row, err := db.QueryRow(ctx, ds)
-	// if err != nil {
-	// 	return "", err
-	// }
-	//
-	// var item string
-	// err = row.Scan(&item)
-	// if err != nil {
-	// 	if err == sql.ErrNoRows {
-	// 		return "", nil
-	// 	}
-	//
-	// 	return "", err
-	// }
-	//
-	// return item, nil
-	return "", nil
-}
-
 var ErrAlreadyMarked = errors.New("database: chapter already marked")
 
 // TODO(patrik): Fix

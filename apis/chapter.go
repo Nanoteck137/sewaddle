@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -50,29 +51,36 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				serieId := c.Param("serieSlug")
 				slug := c.Param("slug")
 
-				chapter, err := app.DB().GetChapter(c.Request().Context(), serieId, slug)
-				if err != nil {
-					return nil, err
-				}
+				ctx := context.TODO()
 
-				nextChapterSlug, err := app.DB().GetNextChapter(c.Request().Context(), chapter.SerieSlug, 0)
+				chapter, err := app.DB().GetChapter(ctx, serieId, slug)
 				if err != nil {
 					return nil, err
 				}
 
 				var nextChapter *string
-				if nextChapterSlug != "" {
-					nextChapter = &nextChapterSlug
-				}
+				var prevChapter *string
 
-				prevChapterSlug, err := app.DB().GetPrevChapter(c.Request().Context(), chapter.SerieSlug, 0)
+				chapters, err := app.DB().GetSerieChaptersById(ctx, chapter.SerieSlug)
 				if err != nil {
 					return nil, err
 				}
 
-				var prevChapter *string
-				if prevChapterSlug != "" {
-					prevChapter = &prevChapterSlug
+				index := -1
+
+				for i, c := range chapters {
+					if c.Slug == chapter.Slug {
+						index = i
+						break
+					}
+				}
+
+				if index+1 < len(chapters) {
+					nextChapter = &chapters[index+1].Slug
+				}
+
+				if index-1 >= 0 {
+					prevChapter = &chapters[index-1].Slug
 				}
 
 				var userData *types.ChapterUserData
@@ -99,7 +107,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 						SerieSlug: chapter.SerieSlug,
 						Slug:      chapter.Slug,
 						Title:     chapter.Title,
-					Number:    chapter.Number.Int64,
+						Number:    chapter.Number.Int64,
 						CoverArt:  pages[0],
 						User:      userData,
 					},
