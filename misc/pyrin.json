@@ -121,6 +121,11 @@
           "omit": false
         },
         {
+          "name": "number",
+          "type": "int",
+          "omit": false
+        },
+        {
           "name": "coverArt",
           "type": "string",
           "omit": false
@@ -174,6 +179,11 @@
           "omit": false
         },
         {
+          "name": "number",
+          "type": "int",
+          "omit": false
+        },
+        {
           "name": "coverArt",
           "type": "string",
           "omit": false
@@ -196,17 +206,6 @@
         {
           "name": "pages",
           "type": "[]string",
-          "omit": false
-        }
-      ]
-    },
-    {
-      "name": "GetLibraryStatus",
-      "extend": "",
-      "fields": [
-        {
-          "name": "syncing",
-          "type": "bool",
           "omit": false
         }
       ]
@@ -270,32 +269,6 @@
       "fields": [
         {
           "name": "version",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "isSetup",
-          "type": "bool",
-          "omit": false
-        }
-      ]
-    },
-    {
-      "name": "PostSystemSetupBody",
-      "extend": "",
-      "fields": [
-        {
-          "name": "username",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "password",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "passwordConfirm",
           "type": "string",
           "omit": false
         }
@@ -393,151 +366,157 @@
       "method": "GET",
       "path": "/api/v1/series",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "GetSeries",
-      "bodyType": ""
+      "bodyType": "",
+      "requireFormData": false
     },
     {
       "name": "GetSerieById",
       "method": "GET",
       "path": "/api/v1/series/:slug",
       "errorTypes": [
+        "ROUTE_NOT_FOUND",
+        "SERIE_NOT_FOUND",
         "UNKNOWN_ERROR",
-        "SERIE_NOT_FOUND"
+        "VALIDATION_ERROR"
       ],
       "responseType": "GetSerieBySlug",
-      "bodyType": ""
+      "bodyType": "",
+      "requireFormData": false
     },
     {
       "name": "GetSerieChapters",
       "method": "GET",
       "path": "/api/v1/series/:slug/chapters",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "GetSerieChaptersBySlug",
-      "bodyType": ""
+      "bodyType": "",
+      "requireFormData": false
     },
     {
       "name": "GetChapters",
       "method": "GET",
       "path": "/api/v1/chapters",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "GetChapters",
-      "bodyType": ""
+      "bodyType": "",
+      "requireFormData": false
     },
     {
       "name": "GetChapterBySlug",
       "method": "GET",
       "path": "/api/v1/chapters/:serieSlug/:slug",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "GetChapterBySlug",
-      "bodyType": ""
-    },
-    {
-      "name": "GetLibraryStatus",
-      "method": "GET",
-      "path": "/api/v1/library/status",
-      "errorTypes": [
-        "UNKNOWN_ERROR"
-      ],
-      "responseType": "GetLibraryStatus",
-      "bodyType": ""
-    },
-    {
-      "name": "RunLibrarySync",
-      "method": "POST",
-      "path": "/api/v1/library/sync",
-      "errorTypes": [
-        "UNKNOWN_ERROR"
-      ],
-      "responseType": "",
-      "bodyType": ""
+      "bodyType": "",
+      "requireFormData": false
     },
     {
       "name": "MarkChapters",
       "method": "POST",
       "path": "/api/v1/user/markChapters",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "",
-      "bodyType": "PostUserMarkChaptersBody"
+      "bodyType": "PostUserMarkChaptersBody",
+      "requireFormData": false
     },
     {
       "name": "UnmarkChapters",
       "method": "POST",
       "path": "/api/v1/user/unmarkChapters",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "",
-      "bodyType": "PostUserUnmarkChaptersBody"
+      "bodyType": "PostUserUnmarkChaptersBody",
+      "requireFormData": false
     },
     {
       "name": "UpdateBookmark",
       "method": "POST",
       "path": "/api/v1/user/updateBookmark",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "",
-      "bodyType": "PostUserUpdateBookmarkBody"
+      "bodyType": "PostUserUpdateBookmarkBody",
+      "requireFormData": false
     },
     {
       "name": "GetSystemInfo",
       "method": "GET",
       "path": "/api/v1/system/info",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "GetSystemInfo",
-      "bodyType": ""
-    },
-    {
-      "name": "RunSystemSetup",
-      "method": "POST",
-      "path": "/api/v1/system/setup",
-      "errorTypes": [
-        "UNKNOWN_ERROR"
-      ],
-      "responseType": "",
-      "bodyType": "PostSystemSetupBody"
+      "bodyType": "",
+      "requireFormData": false
     },
     {
       "name": "Signup",
       "method": "POST",
       "path": "/api/v1/auth/signup",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "PostAuthSignup",
-      "bodyType": "PostAuthSignupBody"
+      "bodyType": "PostAuthSignupBody",
+      "requireFormData": false
     },
     {
       "name": "Signin",
       "method": "POST",
       "path": "/api/v1/auth/signin",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "PostAuthSignin",
-      "bodyType": "PostAuthSigninBody"
+      "bodyType": "PostAuthSigninBody",
+      "requireFormData": false
     },
     {
       "name": "GetMe",
       "method": "GET",
       "path": "/api/v1/auth/me",
       "errorTypes": [
-        "UNKNOWN_ERROR"
+        "ROUTE_NOT_FOUND",
+        "UNKNOWN_ERROR",
+        "VALIDATION_ERROR"
       ],
       "responseType": "GetAuthMe",
-      "bodyType": ""
+      "bodyType": "",
+      "requireFormData": false
     }
   ]
 }

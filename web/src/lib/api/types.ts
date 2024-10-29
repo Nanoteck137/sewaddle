@@ -42,6 +42,7 @@ export const Chapter = z.object({
   serieSlug: z.string(),
   slug: z.string(),
   title: z.string(),
+  number: z.number(),
   coverArt: z.string(),
   user: ChapterUserData.nullable().optional(),
 });
@@ -61,6 +62,7 @@ export const GetChapterBySlug = z.object({
   serieSlug: z.string(),
   slug: z.string(),
   title: z.string(),
+  number: z.number(),
   coverArt: z.string(),
   user: ChapterUserData.nullable().optional(),
   nextChapter: z.string().nullable(),
@@ -68,11 +70,6 @@ export const GetChapterBySlug = z.object({
   pages: z.array(z.string()),
 });
 export type GetChapterBySlug = z.infer<typeof GetChapterBySlug>;
-
-export const GetLibraryStatus = z.object({
-  syncing: z.boolean(),
-});
-export type GetLibraryStatus = z.infer<typeof GetLibraryStatus>;
 
 export const PostUserMarkChaptersBody = z.object({
   serieSlug: z.string(),
@@ -95,16 +92,8 @@ export type PostUserUpdateBookmarkBody = z.infer<typeof PostUserUpdateBookmarkBo
 
 export const GetSystemInfo = z.object({
   version: z.string(),
-  isSetup: z.boolean(),
 });
 export type GetSystemInfo = z.infer<typeof GetSystemInfo>;
-
-export const PostSystemSetupBody = z.object({
-  username: z.string(),
-  password: z.string(),
-  passwordConfirm: z.string(),
-});
-export type PostSystemSetupBody = z.infer<typeof PostSystemSetupBody>;
 
 export const PostAuthSignup = z.object({
   id: z.string(),
