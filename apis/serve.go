@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/nanoteck137/pyrin"
+	"github.com/nanoteck137/sewaddle"
 	"github.com/nanoteck137/sewaddle/assets"
 	"github.com/nanoteck137/sewaddle/core"
 )
@@ -23,6 +24,7 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 				return pyrin.ServeFile(c.Response(), c.Request(), assets.DefaultImagesFS, image)
 			},
 		},
+
 		pyrin.NormalHandler{
 			Method: http.MethodGet,
 			Path:   "/chapters/:serieSlug/:chapterSlug/:image",
@@ -42,7 +44,7 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 
 func Server(app core.App) (*pyrin.Server, error) {
 	s := pyrin.NewServer(&pyrin.ServerConfig{
-		LogName: "sewaddle",
+		LogName: sewaddle.AppName,
 		RegisterHandlers: func(router pyrin.Router) {
 			RegisterHandlers(app, router)
 		},
