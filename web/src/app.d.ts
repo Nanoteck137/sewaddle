@@ -8,7 +8,7 @@ declare global {
     // interface Error {}
     interface Locals {
       apiClient: ApiClient;
-      loggedIn: boolean;
+      user?: GetAuthMe;
     }
     // interface PageData {}
     // interface PageState {}
