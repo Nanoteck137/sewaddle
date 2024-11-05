@@ -265,7 +265,7 @@ type ChapterChanges struct {
 func (db *Database) UpdateChapter(ctx context.Context, serieSlug, slug string, changes ChapterChanges) error {
 	record := goqu.Record{}
 
-	addToRecord(record, "name", changes.Title)
+	addToRecord(record, "title", changes.Title)
 	addToRecord(record, "pages", changes.Pages)
 	addToRecord(record, "number", changes.Number)
 
