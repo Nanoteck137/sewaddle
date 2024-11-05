@@ -39,20 +39,6 @@ func (d SerieDir) ChaptersDir() string {
 	return path.Join(d.String(), "chapters")
 }
 
-func (d SerieDir) ChapterDir(slug string) ChapterDir {
-	return ChapterDir(path.Join(d.ChaptersDir(), slug))
-}
-
-type ChapterDir string
-
-func (d ChapterDir) String() string {
-	return string(d)
-}
-
-func (d ChapterDir) PagesDir() string {
-	return path.Join(d.String(), "pages")
-}
-
-func (d ChapterDir) ImagesDir() string {
-	return path.Join(d.String(), "images")
+func (d SerieDir) ChapterDir(slug string) string {
+	return path.Join(d.ChaptersDir(), slug)
 }

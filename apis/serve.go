@@ -33,7 +33,7 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 				chapterSlug := c.Param("chapterSlug")
 				image := c.Param("image")
 
-				p := app.WorkDir().SerieDir(serieSlug).ChapterDir(chapterSlug).PagesDir()
+				p := app.WorkDir().SerieDir(serieSlug).ChapterDir(chapterSlug)
 				f := os.DirFS(p)
 
 				return pyrin.ServeFile(c.Response(), c.Request(), f, image)

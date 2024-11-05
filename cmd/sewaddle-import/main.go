@@ -3,8 +3,7 @@ package main
 import (
 	"archive/zip"
 	"context"
-	"database/sql"
-	"encoding/xml"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kr/pretty"
 	"github.com/nanoteck137/sewaddle"
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/database"
@@ -25,6 +23,17 @@ import (
 )
 
 var AppName = sewaddle.AppName + "-import"
+
+type Info struct {
+	Name   string `json:"name"`
+	Series string `json:"series"`
+
+	IsManga        bool `json:"isManga"`
+	PreferVertical bool `json:"preferVertical"`
+
+	Cover string   `json:"cover"`
+	Pages []string `json:"pages"`
+}
 
 var rootCmd = &cobra.Command{
 	Use:     AppName + " <OUT>",
@@ -65,11 +74,7 @@ var rootCmd = &cobra.Command{
 			name := info.Name()
 			ext := path.Ext(name)
 
-			fmt.Printf("name: %v\n", name)
-			fmt.Printf("ext: %v\n", ext)
-
-			if ext == ".cbz" {
-				fmt.Printf("p: %v\n", p)
+			if ext == ".sw" {
 				chapters = append(chapters, p)
 			}
 
@@ -78,6 +83,8 @@ var rootCmd = &cobra.Command{
 
 		fmt.Printf("chapters: %v\n", chapters)
 
+		affectedSeries := make(map[string]struct{})
+
 		for _, p := range chapters {
 			r, err := zip.OpenReader(p)
 			if err != nil {
@@ -85,59 +92,38 @@ var rootCmd = &cobra.Command{
 			}
 			defer r.Close()
 
-			type ComicInfo struct {
-				Title  string
-				Series string
-				Number int64
-			}
+			files := make(map[string]*zip.File)
 
-			var data ComicInfo
-			foundInfo := false
-			var pages []int
-
-			for i, f := range r.File {
+			for _, f := range r.File {
+				files[f.Name] = f
 				fmt.Printf("f.Name: %v\n", f.Name)
-
-				ext := path.Ext(f.Name)
-
-				switch ext {
-				case ".jpeg", ".jpg", ".png":
-					pages = append(pages, i)
-				}
-
-				if f.Name == "ComicInfo.xml" {
-					r, err := f.Open()
-					if err != nil {
-						log.Fatal("Failed to open comic info", "err", err, "chapter", p)
-					}
-					defer r.Close()
-
-					d := xml.NewDecoder(r)
-
-					err = d.Decode(&data)
-					if err != nil {
-						log.Fatal("Failed to unmarshal comic info", "err", err, "chapter", p)
-					}
-
-					pretty.Println(data)
-
-					foundInfo = true
-				}
 			}
 
-			if !foundInfo {
-				fmt.Printf("Skipping %v because no ComicInfo.xml found", p)
-				continue
+			infoFile, exists := files["info.json"]
+			if !exists {
+				log.Fatal("Missing info.json")
 			}
 
-			fmt.Printf("pages: %v\n", pages)
+			infoReader, err := infoFile.Open()
+			if err != nil {
+				log.Fatal("Failed", "err", err)
+			}
+			defer infoReader.Close()
 
-			serie, err := db.GetSerieByName(ctx, data.Series)
+			var info Info
+
+			decoder := json.NewDecoder(infoReader)
+			err = decoder.Decode(&info)
+			if err != nil {
+				log.Fatal("Failed", "err", err)
+			}
+
+			serie, err := db.GetSerieByName(ctx, info.Series)
 			fmt.Printf("err: %v\n", err)
 			if err != nil {
 				if errors.Is(err, database.ErrItemNotFound) {
 					serie, err = db.CreateSerie(ctx, database.CreateSerieParams{
-						Name: data.Series,
+						Name: info.Series,
 					})
 
 					if err != nil {
@@ -166,11 +152,11 @@ var rootCmd = &cobra.Command{
 
 			chapter, err := db.CreateChapter(ctx, database.CreateChapterParams{
 				SerieSlug: serie.Slug,
-				Title:     data.Title,
-				Number: sql.NullInt64{
-					Int64: data.Number,
-					Valid: data.Number != 0,
-				},
+				Title:     info.Name,
+				// Number: sql.NullInt64{
+				// 	Int64: data.Number,
+				// 	Valid: data.Number != 0,
+				// },
 			})
 
 			if err != nil {
@@ -180,23 +166,19 @@ var rootCmd = &cobra.Command{
 			serieDir := workDir.SerieDir(serie.Slug)
 			chapterDir := serieDir.ChapterDir(chapter.Slug)
 
-			dirs := []string{
-				chapterDir.String(),
-				chapterDir.PagesDir(),
-				chapterDir.ImagesDir(),
-			}
-
-			for _, dir := range dirs {
-				err := os.Mkdir(dir, 0755)
-				if err != nil && !os.IsExist(err) {
-					log.Fatal("Failed to create chapater directory", "err", err, "serieSlug", serie.Slug, "chapterSlug", chapter.Slug)
-				}
+			err = os.Mkdir(chapterDir, 0755)
+			if err != nil && !os.IsExist(err) {
+				log.Fatal("Failed to create chapater directory", "err", err, "serieSlug", serie.Slug, "chapterSlug", chapter.Slug)
 			}
 
 			var names []string
 
-			for _, p := range pages {
-				file := r.File[p]
+			for _, p := range info.Pages {
+				file, exists := files[p]
+				if !exists {
+					log.Fatal("Page not found")
+				}
+
 				r, err := file.Open()
 				if err != nil {
 					log.Fatal("Failed to open page file", "err", err)
@@ -205,7 +187,7 @@ var rootCmd = &cobra.Command{
 
 				n := utils.ExtractNumber(file.Name)
 				dstName := strconv.Itoa(n) + path.Ext(file.Name)
-				d := path.Join(chapterDir.PagesDir(), dstName)
+				d := path.Join(chapterDir, dstName)
 				dst, err := os.OpenFile(d, os.O_RDWR|os.O_CREATE, 0644)
 				if err != nil {
 					log.Fatal("Failed to open file for page", "err", err)
@@ -229,6 +211,15 @@ var rootCmd = &cobra.Command{
 
 			if err != nil {
 				log.Fatal("Failed to update chapter", "err", err)
+			}
+
+			affectedSeries[serie.Slug] = struct{}{}
+		}
+
+		for k := range affectedSeries {
+			err := db.RecalculateNumberForSerie(ctx, k)
+			if err != nil {
+				log.Fatal("Failed", "err", err)
 			}
 		}
 	},

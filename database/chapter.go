@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/maruel/natural"
 	"github.com/mattn/go-sqlite3"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
@@ -314,4 +316,47 @@ func (db *Database) UpdateChapterPages(ctx context.Context, serieSlug, slug stri
 
 	return nil
 
+}
+
+func (db *Database) RecalculateNumberForSerie(ctx context.Context, serieSlug string) error {
+	db, tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	chapters, err := db.GetSerieChaptersById(ctx, serieSlug)
+	if err != nil {
+		return err
+	}
+
+	if len(chapters) <= 1 {
+		return nil
+	}
+
+	sort.SliceStable(chapters, func(i, j int) bool {
+		return natural.Less(chapters[i].Title, chapters[j].Title)
+	})
+
+	for i, c := range chapters {
+		err := db.UpdateChapter(ctx, serieSlug, c.Slug, ChapterChanges{
+			Number: types.Change[sql.NullInt64]{
+				Value: sql.NullInt64{
+					Int64: int64(i),
+					Valid: true,
+				},
+				Changed: true,
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
