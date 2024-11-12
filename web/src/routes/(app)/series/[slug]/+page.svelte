@@ -53,7 +53,7 @@
               <a
                 class="line-clamp-1 font-medium"
                 title={chapter.title}
-                href={`/view/${chapter.serieSlug}/${chapter.slug}`}
+                href={`/view/${chapter.serieSlug}/${chapter.slug}/scroll`}
               >
                 {chapter.title}
               </a>

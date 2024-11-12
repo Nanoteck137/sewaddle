@@ -7,52 +7,58 @@ function parseQueryBool(q: string | null) {
   return q === "true";
 }
 
-export const load: PageServerLoad = async ({ params, locals, url }) => {
-  const layoutParam = url.searchParams.get("layout");
-  const showLastPageModal = parseQueryBool(
-    url.searchParams.get("showLastPageModal"),
+export const load: PageServerLoad = async ({ params }) => {
+  // TODO(patrik): Temp
+  throw redirect(
+    301,
+    `/view/${params.serieSlug}/${params.chapterSlug}/scroll`,
   );
 
-  let layout: Layout = "paged";
-  if (layoutParam === "scroll") {
-    layout = "scroll";
-  }
+  // const layoutParam = url.searchParams.get("layout");
+  // const showLastPageModal = parseQueryBool(
+  //   url.searchParams.get("showLastPageModal"),
+  // );
 
-  const page = url.searchParams.get("page");
-  if (!page && layout === "paged") {
-    throw redirect(301, url.pathname + "?page=0");
-  }
+  // let layout: Layout = "paged";
+  // if (layoutParam === "scroll") {
+  //   layout = "scroll";
+  // }
 
-  const chapter = await locals.apiClient.getChapterBySlug(
-    params.serieSlug,
-    params.chapterSlug,
-  );
-  if (!chapter.success) {
-    throw error(chapter.error.code, { message: chapter.error.message });
-  }
+  // const page = url.searchParams.get("page");
+  // if (!page && layout === "paged") {
+  //   throw redirect(301, url.pathname + "?page=0");
+  // }
 
-  let pageNum = 0;
-  if (layout === "paged") {
-    if (page === "last") {
-      throw redirect(
-        301,
-        url.pathname + "?page=" + (chapter.data.pages.length - 1).toString(),
-      );
-    } else {
-      pageNum = parseInt(page || "0");
-    }
-  }
+  // const chapter = await locals.apiClient.getChapterBySlug(
+  //   params.serieSlug,
+  //   params.chapterSlug,
+  // );
+  // if (!chapter.success) {
+  //   throw error(chapter.error.code, { message: chapter.error.message });
+  // }
 
-  const isFirstPage = pageNum <= 0;
-  const isLastPage = pageNum >= chapter.data.pages.length - 1;
+  // let pageNum = 0;
+  // if (layout === "paged") {
+  //   if (page === "last") {
+  //     throw redirect(
+  //       301,
+  //       url.pathname + "?page=" + (chapter.data.pages.length - 1).toString(),
+  //     );
+  //   } else {
+  //     pageNum = parseInt(page || "0");
+  //   }
+  // }
+
+  // const isFirstPage = pageNum <= 0;
+  // const isLastPage = pageNum >= chapter.data.pages.length - 1;
 
   return {
-    chapter: chapter.data,
-    page: pageNum,
-    isFirstPage,
-    isLastPage,
-    layout,
-    showLastPageModal,
+    // chapter: chapter.data,
+    // page: pageNum,
+    // isFirstPage,
+    // isLastPage,
+    // layout,
+    // showLastPageModal,
   };
 };
 

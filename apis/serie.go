@@ -111,7 +111,6 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 			Method:   http.MethodGet,
 			Path:     "/series/:slug/chapters",
 			DataType: types.GetSerieChaptersBySlug{},
-			BodyType: nil,
 			HandlerFunc: func(c pyrin.Context) (any, error) {
 				id := c.Param("slug")
 
