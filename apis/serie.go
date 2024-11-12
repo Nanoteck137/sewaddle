@@ -33,7 +33,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				for i, item := range items {
 					cover := "/files/images/default/default_cover.png"
 					if item.Cover.Valid {
-						cover = "/files/images/" + item.Cover.String
+						cover = "/files/series/" + item.Slug + "/" + item.Cover.String
 					}
 
 					res.Series[i] = types.Serie{
@@ -89,7 +89,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				cover := "/files/images/default/default_cover.png"
 				if serie.Cover.Valid {
-					cover = "/files/images/" + serie.Cover.String
+					cover = "/files/series/" + serie.Slug + "/" + serie.Cover.String
 				}
 
 				res := types.GetSerieBySlug{
@@ -128,10 +128,10 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				user, _ := User(app, c)
 				if user != nil {
-					// markedChapters, err = app.DB().GetAllMarkedChapters(c.Request().Context(), user.Id, id)
-					// if err != nil {
-					// 	return nil, err
-					// }
+					markedChapters, err = app.DB().GetAllMarkedChapters(c.Request().Context(), user.Id, id)
+					if err != nil {
+						return nil, err
+					}
 				}
 
 				isChapterMarked := func(chapterSlug string) bool {
