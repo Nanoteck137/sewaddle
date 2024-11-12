@@ -7,18 +7,19 @@ import (
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
 type Serie struct {
-	Slug         string         `db:"slug"`
-	Name         string         `db:"name"`
-	Cover        sql.NullString `db:"cover"`
+	Slug  string         `db:"slug"`
+	Name  string         `db:"name"`
+	Cover sql.NullString `db:"cover"`
 
-	Created      int64          `db:"created"`
-	Updated      int64          `db:"updated"`
+	Created int64 `db:"created"`
+	Updated int64 `db:"updated"`
 
-	ChapterCount int64          `db:"chapter_count"`
+	ChapterCount int64 `db:"chapter_count"`
 }
 
 func SerieQuery() *goqu.SelectDataset {
@@ -143,17 +144,36 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 	return item, nil
 }
 
-func (db *Database) UpdateSerieCover(ctx context.Context, slug string, coverPath sql.NullString) error {
-	// ds := dialect.Update("series").
-	// 	Set(goqu.Record{"cover": coverPath}).
-	// 	Where(goqu.C("slug").Eq(slug)).
-	// 	Prepared(true)
-	//
-	// _, err := db.Exec(context.Background(), ds)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// return nil
+type SerieChanges struct {
+	Name  types.Change[string]
+	Cover types.Change[sql.NullString]
+}
+
+func (db *Database) UpdateSerie(ctx context.Context, slug string, changes SerieChanges) error {
+	record := goqu.Record{}
+
+	addToRecord(record, "name", changes.Name)
+	addToRecord(record, "cover", changes.Cover)
+
+	if len(record) <= 0 {
+		return nil
+	}
+
+	record["updated"] = time.Now().UnixMilli()
+
+	ds := dialect.Update("series").
+		Set(record).
+		Where(
+			goqu.And(
+				goqu.I("series.slug").Eq(slug),
+			),
+		).
+		Prepared(true)
+
+	_, err := db.Exec(ctx, ds)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
