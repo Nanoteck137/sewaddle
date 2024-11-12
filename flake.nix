@@ -27,7 +27,7 @@
           pname = "sewaddle";
           version = fullVersion;
           src = ./.;
-          subPackages = ["cmd/sewaddle"];
+          subPackages = ["cmd/sewaddle" "cmd/sewaddle-import"];
 
           ldflags = [
             "-X github.com/nanoteck137/sewaddle/cmd.Version=${version}"
