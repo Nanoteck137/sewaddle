@@ -150,6 +150,8 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/moby/term v0.5.0 h1:xt8Q1nalod/v7BqbG21f8mQPqH+xAaC9C3N3wfWbVP0=
 github.com/moby/term v0.5.0/go.mod h1:8FzsFHVUBGZdbDsJw/ot+X+d5HLUbvklYLJ9uGfcI3Y=
+github.com/nanoteck137/packer v0.0.1 h1:GBAiCeg2x9Uu3Lne3IPJP5pRodFqdXN55TwgE7OpizI=
+github.com/nanoteck137/packer v0.0.1/go.mod h1:gyOCRjTc+xqUtXHmTTbra7awLxYwlMhDFSvTpfyV0IY=
 github.com/nanoteck137/pyrin v0.4.0 h1:fIiW+D4IfC0NCaPUXwq5L097QvehIWnjKexHZQLgCqc=
 github.com/nanoteck137/pyrin v0.4.0/go.mod h1:cADbJqk/nCSjbFfVG3d7HmMhQ/qKsrid+rWvcjRWjfA=
 github.com/nanoteck137/pyrin v0.6.5 h1:kmGplrWzT09oDsUUv71ZfgVSTe/qykArpj7zrDHtBfs=

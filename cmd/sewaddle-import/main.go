@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +15,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/kr/pretty"
+	"github.com/mattn/go-sqlite3"
+	"github.com/nanoteck137/packer/metadata"
 	"github.com/nanoteck137/sewaddle"
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/database"
@@ -23,17 +27,6 @@ import (
 )
 
 var AppName = sewaddle.AppName + "-import"
-
-type Info struct {
-	Name   string `json:"name"`
-	Series string `json:"series"`
-
-	IsManga        bool `json:"isManga"`
-	PreferVertical bool `json:"preferVertical"`
-
-	Cover string   `json:"cover"`
-	Pages []string `json:"pages"`
-}
 
 var rootCmd = &cobra.Command{
 	Use:     AppName + " <OUT>",
@@ -68,22 +61,129 @@ var rootCmd = &cobra.Command{
 
 		ctx := context.TODO()
 
+		var series []string
 		var chapters []string
 
 		filepath.Walk(dir, func(p string, info fs.FileInfo, err error) error {
 			name := info.Name()
 			ext := path.Ext(name)
 
-			if ext == ".sw" {
+			switch ext {
+			case ".sw":
 				chapters = append(chapters, p)
+			case ".sws":
+				series = append(series, p)
 			}
 
 			return nil
 		})
 
 		fmt.Printf("chapters: %v\n", chapters)
+		fmt.Printf("series: %v\n", series)
 
 		affectedSeries := make(map[string]struct{})
+
+		for _, p := range series {
+			r, err := zip.OpenReader(p)
+			if err != nil {
+				log.Fatal("Failed to open series", "err", err)
+			}
+			defer r.Close()
+
+			files := make(map[string]*zip.File)
+
+			for _, f := range r.File {
+				files[f.Name] = f
+				fmt.Printf("f.Name: %v\n", f.Name)
+			}
+
+			infoFile, exists := files["info.json"]
+			if !exists {
+				log.Fatal("Missing info.json")
+			}
+
+			infoReader, err := infoFile.Open()
+			if err != nil {
+				log.Fatal("Failed", "err", err)
+			}
+			defer infoReader.Close()
+
+			var info metadata.SeriesInfo
+
+			decoder := json.NewDecoder(infoReader)
+			err = decoder.Decode(&info)
+			if err != nil {
+				log.Fatal("Failed", "err", err)
+			}
+
+			pretty.Println(info)
+
+			serie, err := db.GetSerieByName(ctx, info.Name)
+			if err != nil {
+				if errors.Is(err, database.ErrItemNotFound) {
+					serie, err = db.CreateSerie(ctx, database.CreateSerieParams{
+						Name: info.Name,
+					})
+					if err != nil {
+						log.Fatal("Failed", "err", err)
+					}
+
+					serieDir := workDir.SerieDir(serie.Slug)
+					dirs := []string{
+						serieDir.String(),
+						serieDir.ChaptersDir(),
+						serieDir.ImagesDir(),
+					}
+
+					for _, dir := range dirs {
+						err := os.Mkdir(dir, 0755)
+						if err != nil && !os.IsExist(err) {
+							log.Fatal("Failed to create serie directory", "err", err, "serieSlug", serie.Slug)
+						}
+					}
+				} else {
+					log.Fatal("Failed", "err", err)
+				}
+			}
+
+			serieDir := workDir.SerieDir(serie.Slug)
+
+			{
+				f := files[info.Cover.Small]
+				r, err := f.Open()
+				if err != nil {
+					log.Fatal("Failed", "err", err)
+				}
+				defer r.Close()
+
+
+				dst, err := os.Create(path.Join(serieDir.ImagesDir(), "cover-small.png"))
+				if err != nil {
+					log.Fatal("Failed", "err", err)
+				}
+				defer dst.Close()
+
+				_, err = io.Copy(dst, r)
+				if err != nil {
+					log.Fatal("Failed", "err", err)
+				}
+			}
+
+			err = db.UpdateSerie(ctx, serie.Slug, database.SerieChanges{
+				Cover: types.Change[sql.NullString]{
+					Value: sql.NullString{
+						String: "cover-small.png",
+						Valid:  true,
+					},
+					Changed: true,
+				},
+			})
+			if err != nil {
+				log.Fatal("Failed", "err", err)
+			}
+
+			pretty.Print(serie)
+		}
 
 		for _, p := range chapters {
 			r, err := zip.OpenReader(p)
@@ -110,7 +210,7 @@ var rootCmd = &cobra.Command{
 			}
 			defer infoReader.Close()
 
-			var info Info
+			var info metadata.EntryInfo
 
 			decoder := json.NewDecoder(infoReader)
 			err = decoder.Decode(&info)
@@ -160,6 +260,15 @@ var rootCmd = &cobra.Command{
 			})
 
 			if err != nil {
+				pretty.Println(err)
+				var sqlErr sqlite3.Error
+				if errors.As(err, &sqlErr) {
+					// TODO(patrik): Let chapters re-import 
+					if sqlErr.ExtendedCode == sqlite3.ErrConstraintPrimaryKey {
+						continue
+					}
+				}
+
 				log.Fatal("Failed to create chapter", "err", err)
 			}
 
