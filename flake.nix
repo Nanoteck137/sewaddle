@@ -23,24 +23,25 @@
         version = pkgs.lib.strings.fileContents "${self}/version";
         fullVersion = ''${version}-${self.dirtyShortRev or self.shortRev or "dirty"}'';
 
-        sewaddle = pkgs.buildGoModule {
+        backend = pkgs.buildGoModule {
           pname = "sewaddle";
           version = fullVersion;
           src = ./.;
+          subPackages = ["cmd/sewaddle"];
 
           ldflags = [
             "-X github.com/nanoteck137/sewaddle/cmd.Version=${version}"
             "-X github.com/nanoteck137/sewaddle/cmd.Commit=${self.dirtyRev or self.rev or "no-commit"}"
           ];
 
-          vendorHash = "sha256-6YYgClV9z6sflABBDuwYH24tUrwRfSk0vJmvpuretbU=";
+          vendorHash = "sha256-Jw/k35mjrkhqf+ooD7nOMadWJrQktLw/boTPiJ8+RvA=";
         };
 
-        sewaddleWeb = pkgs.buildNpmPackage {
+        frontend = pkgs.buildNpmPackage {
           name = "sewaddle-web";
           version = fullVersion;
 
-          src = gitignore.lib.gitignoreSource ./.;
+          src = gitignore.lib.gitignoreSource ./web;
           npmDepsHash = "sha256-iExJLb5vqA7wlzhZ3b1TRaS0j34waNGy7lFp8G3fnCo=";
 
           PUBLIC_VERSION=version;
@@ -63,9 +64,8 @@
       in
       {
         packages = {
-          default = sewaddle;
-          sewaddle = sewaddle;
-          sewaddle-web = sewaddleWeb;
+          default = backend;
+          inherit backend frontend;
         };
 
         devShells.default = pkgs.mkShell {
@@ -80,7 +80,7 @@
         }; 
       }
     ) // {
-      nixosModules.sewaddle = import ./nix/sewaddle.nix { inherit self; };
-      nixosModules.sewaddle-web = import ./nix/sewaddle-web.nix { inherit self; };
+      nixosModules.default = import ./nix/backend.nix { inherit self; };
+      nixosModules.frontend = import ./nix/frontend.nix { inherit self; };
     };
 }
