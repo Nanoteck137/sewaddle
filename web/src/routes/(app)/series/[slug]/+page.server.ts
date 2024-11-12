@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
   markChapters: async ({ locals, request }) => {
-    if (!locals.loggedIn) throw error(400, "Not logged in");
+    if (!locals.user) throw error(400, "Not logged in");
 
     const formData = await request.formData();
 
@@ -44,7 +44,7 @@ export const actions: Actions = {
   },
 
   unmarkChapters: async ({ locals, request }) => {
-    if (!locals.loggedIn) throw error(400, "Not logged in");
+    if (!locals.user) throw error(400, "Not logged in");
 
     const formData = await request.formData();
 
@@ -68,7 +68,7 @@ export const actions: Actions = {
   },
 
   setBookmark: async ({ locals, request }) => {
-    if (!locals.loggedIn) throw error(400, "Not logged in");
+    if (!locals.user) throw error(400, "Not logged in");
 
     const formData = await request.formData();
 
