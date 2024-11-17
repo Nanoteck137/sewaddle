@@ -19,12 +19,14 @@ export const actions: Actions = {
       throw error(500, "Missing 'nextChapterId'");
     }
 
-    const res = await locals.apiClient.markChapters({
-      chapters: [currentChapterId.toString()],
-    });
+    if (locals.user) {
+      const res = await locals.apiClient.markChapters({
+        chapters: [currentChapterId.toString()],
+      });
 
-    if (!res.success) {
-      throw error(res.error.code, { message: res.error.message });
+      if (!res.success) {
+        throw error(res.error.code, { message: res.error.message });
+      }
     }
 
     throw redirect(301, `/view/${nextChapterId}/scroll`);
@@ -32,19 +34,19 @@ export const actions: Actions = {
 
   bookmarkChapter: async ({ locals, request }) => {
     const formData = await request.formData();
-    const serieSlug = formData.get("serieSlug");
-    if (!serieSlug) {
-      throw error(500, "Missing 'serieSlug'");
+    const serieId = formData.get("serieId");
+    if (!serieId) {
+      throw error(500, "Missing 'serieId'");
     }
 
-    const chapterSlug = formData.get("chapterSlug");
-    if (!chapterSlug) {
-      throw error(500, "Missing 'chapterSlug'");
+    const chapterId = formData.get("chapterId");
+    if (!chapterId) {
+      throw error(500, "Missing 'chapterId'");
     }
 
     const res = await locals.apiClient.updateBookmark({
-      serieSlug: serieSlug.toString(),
-      chapterSlug: chapterSlug.toString(),
+      serieId: serieId.toString(),
+      chapterId: chapterId.toString(),
       page: 0,
     });
 
