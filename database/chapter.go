@@ -217,7 +217,7 @@ func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParam
 
 	query := dialect.Insert("chapters").
 		Rows(goqu.Record{
-			"id":       utils.CreateId(),
+			"id":       utils.CreateChapterId(),
 			"serie_id": params.SerieId,
 
 			"title":  params.Title,
