@@ -1,13 +1,17 @@
 package main
 
 import (
+	"archive/zip"
 	"context"
 	"database/sql"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -55,15 +59,18 @@ func ReadMangaInfo(p string) (MangaInfo, error) {
 	return res, nil
 }
 
-var importCmd = &cobra.Command{
+var oldFormatCmd = &cobra.Command{
 	Use:  "old-format <INPUT>",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]
 
-		// TODO(patrik): Temp
-		out := "./work"
-		workDir := types.WorkDir(out)
+		dataDir, exists := os.LookupEnv("SEWADDLE_DATA_DIR")
+		if !exists {
+			log.Fatal("Need to set 'SEWADDLE_DATA_DIR' env variable")
+		}
+
+		workDir := types.WorkDir(dataDir)
 
 		dirs := []string{
 			workDir.SeriesDir(),
@@ -88,8 +95,6 @@ var importCmd = &cobra.Command{
 		}
 
 		ctx := context.TODO()
-
-		_ = ctx
 
 		mangaInfo, err := ReadMangaInfo(path.Join(input, "manga.json"))
 		if err != nil {
@@ -280,10 +285,221 @@ var importCmd = &cobra.Command{
 	},
 }
 
+type ComicInfo struct {
+	Title  string
+	Series string
+	Manga  string
+}
+
+func importCbz(ctx context.Context, db *database.Database, workDir types.WorkDir, serieId string, p string) error {
+	z, err := zip.OpenReader(p)
+	if err != nil {
+		return err
+	}
+
+	var comicInfo *zip.File
+	var pages []*zip.File
+
+	for _, f := range z.File {
+		if f.Name == "ComicInfo.xml" {
+			comicInfo = f
+			continue
+		}
+
+		switch path.Ext(f.Name) {
+		case ".png", ".jpeg", ".jpg":
+			pages = append(pages, f)
+		default:
+			log.Warn("Unknown file extention", "file", f.Name)
+		}
+	}
+
+	name := strings.TrimSuffix(path.Base(p), path.Ext(p))
+
+	if comicInfo != nil {
+		r, err := comicInfo.Open()
+		if err != nil {
+			return err
+		}
+		defer r.Close()
+
+		var comicInfo ComicInfo
+
+		d := xml.NewDecoder(r)
+		err = d.Decode(&comicInfo)
+		if err != nil {
+			return err
+		}
+
+		n := strings.TrimSpace(comicInfo.Title)
+		if n != "" {
+			name = n
+		}
+	}
+
+	chapter, err := db.CreateChapter(ctx, database.CreateChapterParams{
+		SerieId: serieId,
+		Title:   name,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	chapterDir := workDir.ChapterDir(chapter.Id)
+
+	err = os.Mkdir(chapterDir, 0755)
+	if err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	copyZipToFs := func(f *zip.File, dst string) error {
+		df, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			return err
+		}
+		defer df.Close()
+
+		src, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer src.Close()
+
+		_, err = io.Copy(df, src)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	var names []string
+	for i, page := range pages {
+		pageName := strconv.Itoa(i) + path.Ext(page.Name)
+		dst := path.Join(chapterDir, pageName)
+		copyZipToFs(page, dst)
+
+		names = append(names, pageName)
+	}
+
+	dname, err := os.MkdirTemp("", "sewaddle")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dname)
+
+	f := pages[0]
+	dst := path.Join(dname, f.Name)
+	err = copyZipToFs(f, dst)
+	if err != nil {
+		return err
+	}
+
+	chapterCoverDst := path.Join(chapterDir, "cover.png")
+	err = utils.CreateResizedImage(dst, chapterCoverDst, 80, 112)
+	if err != nil {
+		return err
+	}
+
+	err = db.UpdateChapter(ctx, chapter.Id, database.ChapterChanges{
+		Pages: types.Change[string]{
+			Value:   strings.Join(names, ","),
+			Changed: true,
+		},
+		Cover: types.Change[sql.NullString]{
+			Value: sql.NullString{
+				String: path.Base(chapterCoverDst),
+				Valid:  true,
+			},
+			Changed: true,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var cbzCmd = &cobra.Command{
+	Use:  "cbz <SERIE_ID>",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		serieId := args[0]
+		dir, _ := cmd.Flags().GetString("dir")
+
+		dataDir, exists := os.LookupEnv("SEWADDLE_DATA_DIR")
+		if !exists {
+			log.Fatal("Need to set 'SEWADDLE_DATA_DIR' env variable")
+		}
+
+		workDir := types.WorkDir(dataDir)
+
+		dirs := []string{
+			workDir.SeriesDir(),
+			workDir.ChaptersDir(),
+		}
+
+		for _, dir := range dirs {
+			err := os.Mkdir(dir, 0755)
+			if err != nil && !os.IsExist(err) {
+				log.Fatal("Failed to create directory", "err", err)
+			}
+		}
+
+		db, err := database.Open(workDir)
+		if err != nil {
+			log.Fatal("Failed to open database", "err", err)
+		}
+
+		err = db.RunMigrateUp()
+		if err != nil {
+			log.Fatal("Failed migrate database", "err", err)
+		}
+
+		ctx := context.TODO()
+
+		_, err = db.GetSerieById(ctx, serieId)
+		if err != nil {
+			log.Fatal("Failed", "err", err)
+		}
+
+		var files []string
+
+		filepath.Walk(dir, func(p string, info fs.FileInfo, err error) error {
+			switch path.Ext(info.Name()) {
+			case ".cbz":
+				files = append(files, p)
+			}
+
+			return nil
+		})
+
+		pretty.Println(files)
+
+		for _, p := range files {
+			err := importCbz(ctx, db, workDir, serieId, p)
+			if err != nil {
+				log.Fatal("Failed to import cbz", "err", err)
+			}
+		}
+
+		err = db.RecalculateNumberForSerie(ctx, serieId)
+		if err != nil {
+			log.Fatal("Failed to recalculate numbers for serie", "err", err)
+		}
+	},
+}
+
 func init() {
 	rootCmd.SetVersionTemplate(sewaddle.VersionTemplate(AppName))
 
-	rootCmd.AddCommand(importCmd)
+	cbzCmd.Flags().StringP("dir", "d", ".", "Directory to search for cbz files")
+
+	rootCmd.AddCommand(oldFormatCmd)
+	rootCmd.AddCommand(cbzCmd)
 }
 
 func Execute() {
