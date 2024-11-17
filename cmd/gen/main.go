@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/nanoteck137/sewaddle/apis"
 	"github.com/nanoteck137/pyrin/spec"
+	"github.com/nanoteck137/sewaddle/apis"
 )
 
 func main() {

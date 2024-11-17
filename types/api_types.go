@@ -144,7 +144,7 @@ type GetAuthMe struct {
 var _ pyrin.Body = (*PostUserMarkChaptersBody)(nil)
 
 type PostUserMarkChaptersBody struct {
-	Chapters  []string `json:"chapters"`
+	Chapters []string `json:"chapters"`
 }
 
 func (b PostUserMarkChaptersBody) Validate(validator validate.Validator) error {
@@ -153,15 +153,15 @@ func (b PostUserMarkChaptersBody) Validate(validator validate.Validator) error {
 
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieId": jio.String().Required(),
-		"chapters":  jio.Array().Items(jio.String()).Min(1).Required(),
+		"serieId":  jio.String().Required(),
+		"chapters": jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
 
 var _ pyrin.Body = (*PostUserUnmarkChaptersBody)(nil)
 
 type PostUserUnmarkChaptersBody struct {
-	Chapters  []string `json:"chapters"`
+	Chapters []string `json:"chapters"`
 }
 
 func (b PostUserUnmarkChaptersBody) Validate(validator validate.Validator) error {
@@ -170,8 +170,8 @@ func (b PostUserUnmarkChaptersBody) Validate(validator validate.Validator) error
 
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieId": jio.String().Required(),
-		"chapters":  jio.Array().Items(jio.String()).Min(1).Required(),
+		"serieId":  jio.String().Required(),
+		"chapters": jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
 
@@ -180,7 +180,7 @@ var _ pyrin.Body = (*PostUserUpdateBookmarkBody)(nil)
 type PostUserUpdateBookmarkBody struct {
 	SerieId   string `json:"serieId"`
 	ChapterId string `json:"chapterId"`
-	Page        int    `json:"page"`
+	Page      int    `json:"page"`
 }
 
 func (b PostUserUpdateBookmarkBody) Validate(validator validate.Validator) error {
@@ -191,6 +191,6 @@ func (b PostUserUpdateBookmarkBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
 		"serieId":   jio.String().Required(),
 		"chapterId": jio.String().Required(),
-		"page":        jio.Number().Integer().Required(),
+		"page":      jio.Number().Integer().Required(),
 	})
 }

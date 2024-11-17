@@ -119,7 +119,7 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 
 	query := dialect.Insert("series").
 		Rows(goqu.Record{
-			"id":  utils.CreateId(),
+			"id":    utils.CreateId(),
 			"name":  params.Name,
 			"cover": params.Cover,
 

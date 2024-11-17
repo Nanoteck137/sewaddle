@@ -9,8 +9,8 @@ var (
 	ErrInvalidToken      = NewApiError(http.StatusUnauthorized, "Invalid Token")
 	ErrIncorrectCreds    = NewApiError(http.StatusUnauthorized, "Incorrect credentials")
 
-	ErrNoChapter  = NewApiError(http.StatusNotFound, "Chapter not found")
-	ErrNoSerie    = NewApiError(http.StatusNotFound, "Serie not found")
+	ErrNoChapter = NewApiError(http.StatusNotFound, "Chapter not found")
+	ErrNoSerie   = NewApiError(http.StatusNotFound, "Serie not found")
 
 	ErrChapterAlreadyMarked = NewApiError(http.StatusBadRequest, "Chapter is already marked")
 	ErrNoChapterToUnmark    = NewApiError(http.StatusBadRequest, "Chapter is already marked")

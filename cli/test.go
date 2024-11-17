@@ -18,12 +18,12 @@ type BookmarkedChapter struct {
 type User struct {
 	Username string `json:"username"`
 
-	MarkedChapters []MarkedChapter `json:"markedChapters"`
+	MarkedChapters     []MarkedChapter     `json:"markedChapters"`
 	BookmarkedChapters []BookmarkedChapter `json:"bookmarkedChapters"`
 }
 
 var importCmd = &cobra.Command{
-	Use: "import <IMPORT_FILE>",
+	Use:  "import <IMPORT_FILE>",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// app := core.NewBaseApp(&config.LoadedConfig)

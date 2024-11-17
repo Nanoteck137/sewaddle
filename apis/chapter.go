@@ -103,12 +103,12 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 
 				res := types.GetChapterById{
 					Chapter: types.Chapter{
-						Id:      chapter.Id,
-						SerieId: chapter.SerieId,
-						Title:     chapter.Title,
-						Number:    chapter.Number.Int64,
-						CoverArt:  pages[0],
-						User:      userData,
+						Id:       chapter.Id,
+						SerieId:  chapter.SerieId,
+						Title:    chapter.Title,
+						Number:   chapter.Number.Int64,
+						CoverArt: pages[0],
+						User:     userData,
 					},
 					NextChapter: nextChapter,
 					PrevChapter: prevChapter,

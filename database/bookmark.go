@@ -9,7 +9,7 @@ import (
 )
 
 type Bookmark struct {
-	UserId      string
+	UserId    string
 	SerieId   string
 	ChapterId string
 }

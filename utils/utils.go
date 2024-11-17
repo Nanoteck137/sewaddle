@@ -92,7 +92,7 @@ func SymlinkReplace(src, dst string) error {
 				return err
 			}
 		} else {
-				return err
+			return err
 		}
 	}
 
