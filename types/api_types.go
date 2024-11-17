@@ -156,7 +156,6 @@ func (b PostUserMarkChaptersBody) Validate(validator validate.Validator) error {
 
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieId":  jio.String().Required(),
 		"chapters": jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
@@ -173,7 +172,6 @@ func (b PostUserUnmarkChaptersBody) Validate(validator validate.Validator) error
 
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieId":  jio.String().Required(),
 		"chapters": jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
