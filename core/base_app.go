@@ -45,6 +45,7 @@ func (app *BaseApp) Bootstrap() error {
 
 	dirs := []string{
 		workDir.SeriesDir(),
+		workDir.ChaptersDir(),
 	}
 
 	for _, dir := range dirs {
