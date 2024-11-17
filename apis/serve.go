@@ -27,12 +27,12 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 
 		pyrin.NormalHandler{
 			Method: http.MethodGet,
-			Path:   "/series/:slug/:image",
+			Path:   "/series/:id/:image",
 			HandlerFunc: func(c pyrin.Context) error {
-				slug := c.Param("slug")
+				id := c.Param("id")
 				image := c.Param("image")
 
-				p := app.WorkDir().SerieDir(slug).ImagesDir()
+				p := app.WorkDir().SerieDir(id).ImagesDir()
 				f := os.DirFS(p)
 
 				return pyrin.ServeFile(c.Response(), c.Request(), f, image)
@@ -41,13 +41,12 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 
 		pyrin.NormalHandler{
 			Method: http.MethodGet,
-			Path:   "/chapters/:serieSlug/:chapterSlug/:image",
+			Path:   "/chapters/:chapterId/:image",
 			HandlerFunc: func(c pyrin.Context) error {
-				serieSlug := c.Param("serieSlug")
-				chapterSlug := c.Param("chapterSlug")
+				chapterId := c.Param("chapterId")
 				image := c.Param("image")
 
-				p := app.WorkDir().SerieDir(serieSlug).ChapterDir(chapterSlug)
+				p := app.WorkDir().ChapterDir(chapterId)
 				f := os.DirFS(p)
 
 				return pyrin.ServeFile(c.Response(), c.Request(), f, image)

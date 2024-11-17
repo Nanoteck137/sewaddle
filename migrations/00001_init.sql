@@ -1,18 +1,18 @@
 -- +goose Up
 CREATE TABLE series (
-    slug TEXT NOT NULL,
+    id TEXT NOT NULL,
     name TEXT NOT NULL,
     cover TEXT,
 
     created INTEGER NOT NULL,
     updated INTEGER NOT NULL,
 
-    CONSTRAINT series_pk PRIMARY KEY(slug)
+    CONSTRAINT series_pk PRIMARY KEY(id)
 );
 
 CREATE TABLE chapters (
-    serie_slug TEXT NOT NULL,
-    slug TEXT NOT NULL,
+    id TEXT NOT NULL,
+    serie_id TEXT NOT NULL,
 
     title TEXT NOT NULL,
     pages TEXT NOT NULL,
@@ -21,10 +21,10 @@ CREATE TABLE chapters (
     created INTEGER NOT NULL,
     updated INTEGER NOT NULL,
 
-    CONSTRAINT chapters_pk PRIMARY KEY(slug, serie_slug),
+    CONSTRAINT chapters_pk PRIMARY KEY(id),
 
-    CONSTRAINT chapters_serie_slug_fk FOREIGN KEY (serie_slug)
-        REFERENCES series(slug)
+    CONSTRAINT chapters_serie_id_fk FOREIGN KEY (serie_id)
+        REFERENCES series(id)
 );
 
 CREATE TABLE users (
@@ -37,36 +37,32 @@ CREATE TABLE users (
 
 CREATE TABLE user_chapter_marked(
     user_id TEXT NOT NULL,
-    serie_slug TEXT NOT NULL,
-    chapter_slug INTEGER NOT NULL,
+    chapter_id TEXT NOT NULL,
 
-    CONSTRAINT user_chapter_marked_pk PRIMARY KEY(user_id, serie_slug, chapter_slug),
+    CONSTRAINT user_chapter_marked_pk PRIMARY KEY(user_id, chapter_id),
 
     CONSTRAINT user_chapter_marked_user_id_fk FOREIGN KEY (user_id)
         REFERENCES users(id),
 
-    CONSTRAINT user_chapter_marked_serie_slug_fk FOREIGN KEY (serie_slug)
-        REFERENCES series(slug),
-
-    CONSTRAINT user_chapter_marked_chapter_fk FOREIGN KEY (serie_slug, chapter_slug)
-        REFERENCES chapters(serie_slug, slug)
+    CONSTRAINT user_chapter_marked_chapter_fk FOREIGN KEY (chapter_id)
+        REFERENCES chapters(id)
 );
 
 CREATE TABLE user_bookmark(
     user_id TEXT NOT NULL,
-    serie_slug TEXT NOT NULL,
-    chapter_slug TEXT NOT NULL,
+    serie_id TEXT NOT NULL,
+    chapter_id TEXT NOT NULL,
 
-    CONSTRAINT user_bookmark_pk PRIMARY KEY(user_id, serie_slug),
+    CONSTRAINT user_bookmark_pk PRIMARY KEY(user_id, serie_id),
 
     CONSTRAINT user_bookmark_user_id_fk FOREIGN KEY (user_id)
         REFERENCES users(id),
 
-    CONSTRAINT user_bookmark_serie_slug_fk FOREIGN KEY (serie_slug)
-        REFERENCES series(slug),
+    CONSTRAINT user_bookmark_serie_id FOREIGN KEY (serie_id)
+        REFERENCES series(id),
 
-    CONSTRAINT user_bookmark_chapter_fk FOREIGN KEY (serie_slug, chapter_slug)
-        REFERENCES chapters(serie_slug, slug)
+    CONSTRAINT user_bookmark_chapter_fk FOREIGN KEY (chapter_id)
+        REFERENCES chapters(id)
 );
 
 -- +goose Down

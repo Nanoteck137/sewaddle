@@ -21,8 +21,16 @@ func (d WorkDir) SeriesDir() string {
 	return path.Join(d.String(), "series")
 }
 
-func (d WorkDir) SerieDir(slug string) SerieDir {
-	return SerieDir(path.Join(d.SeriesDir(), slug))
+func (d WorkDir) SerieDir(id string) SerieDir {
+	return SerieDir(path.Join(d.ChaptersDir(), id))
+}
+
+func (d WorkDir) ChaptersDir() string {
+	return path.Join(d.String(), "chapters")
+}
+
+func (d WorkDir) ChapterDir(id string) string {
+	return path.Join(d.ChaptersDir(), id)
 }
 
 type SerieDir string
@@ -33,12 +41,4 @@ func (d SerieDir) String() string {
 
 func (d SerieDir) ImagesDir() string {
 	return path.Join(d.String(), "images")
-}
-
-func (d SerieDir) ChaptersDir() string {
-	return path.Join(d.String(), "chapters")
-}
-
-func (d SerieDir) ChapterDir(slug string) string {
-	return path.Join(d.ChaptersDir(), slug)
 }

@@ -31,10 +31,10 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 
 				for i, chapter := range chapters {
 					res.Chapters[i] = types.Chapter{
-						SerieSlug: chapter.SerieSlug,
-						Slug:      chapter.Slug,
-						Title:     chapter.Title,
-						Number:    chapter.Number.Int64,
+						Id:      chapter.Id,
+						SerieId: chapter.SerieId,
+						Title:   chapter.Title,
+						Number:  chapter.Number.Int64,
 					}
 				}
 
@@ -45,15 +45,14 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 		pyrin.ApiHandler{
 			Name:     "GetChapterBySlug",
 			Method:   http.MethodGet,
-			Path:     "/chapters/:serieSlug/:slug",
-			DataType: types.GetChapterBySlug{},
+			Path:     "/chapters/:id",
+			DataType: types.GetChapterById{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
-				serieId := c.Param("serieSlug")
-				slug := c.Param("slug")
+				id := c.Param("id")
 
 				ctx := context.TODO()
 
-				chapter, err := app.DB().GetChapter(ctx, serieId, slug)
+				chapter, err := app.DB().GetChapter(ctx, id)
 				if err != nil {
 					return nil, err
 				}
@@ -61,7 +60,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				var nextChapter *string
 				var prevChapter *string
 
-				chapters, err := app.DB().GetSerieChaptersById(ctx, chapter.SerieSlug)
+				chapters, err := app.DB().GetSerieChaptersById(ctx, chapter.SerieId)
 				if err != nil {
 					return nil, err
 				}
@@ -69,25 +68,25 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				index := -1
 
 				for i, c := range chapters {
-					if c.Slug == chapter.Slug {
+					if c.Id == chapter.Id {
 						index = i
 						break
 					}
 				}
 
 				if index+1 < len(chapters) {
-					nextChapter = &chapters[index+1].Slug
+					nextChapter = &chapters[index+1].Id
 				}
 
 				if index-1 >= 0 {
-					prevChapter = &chapters[index-1].Slug
+					prevChapter = &chapters[index-1].Id
 				}
 
 				var userData *types.ChapterUserData
 
 				user, err := User(app, c)
 				if err == nil {
-					isMarked, err := app.DB().IsChapterMarked(c.Request().Context(), user.Id, chapter.SerieSlug, chapter.Slug)
+					isMarked, err := app.DB().IsChapterMarked(c.Request().Context(), user.Id, chapter.Id)
 					if err != nil {
 						return nil, err
 					}
@@ -99,13 +98,13 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 
 				pages := strings.Split(chapter.Pages, ",")
 				for i, page := range pages {
-					pages[i] = utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", chapter.SerieSlug, chapter.Slug, page))
+					pages[i] = utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", chapter.SerieId, chapter.Id, page))
 				}
 
-				res := types.GetChapterBySlug{
+				res := types.GetChapterById{
 					Chapter: types.Chapter{
-						SerieSlug: chapter.SerieSlug,
-						Slug:      chapter.Slug,
+						Id:      chapter.Id,
+						SerieId: chapter.SerieId,
 						Title:     chapter.Title,
 						Number:    chapter.Number.Int64,
 						CoverArt:  pages[0],

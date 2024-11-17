@@ -11,23 +11,23 @@ type Body interface {
 }
 
 type Serie struct {
-	Slug         string `json:"slug"`
+	Id           string `json:"id"`
 	Name         string `json:"name"`
 	Cover        string `json:"cover"`
 	ChapterCount int64  `json:"chapterCount"`
 }
 
 type Chapter struct {
-	SerieSlug string           `json:"serieSlug"`
-	Slug      string           `json:"slug"`
-	Title     string           `json:"title"`
-	Number    int64            `json:"number"`
-	CoverArt  string           `json:"coverArt"`
-	User      *ChapterUserData `json:"user,omitempty"`
+	Id       string           `json:"id"`
+	SerieId  string           `json:"serieId"`
+	Title    string           `json:"title"`
+	Number   int64            `json:"number"`
+	CoverArt string           `json:"coverArt"`
+	User     *ChapterUserData `json:"user,omitempty"`
 }
 
 type Bookmark struct {
-	ChapterSlug string `json:"chapterSlug"`
+	ChapterId string `json:"chapterId"`
 }
 
 type SerieUserData struct {
@@ -42,12 +42,12 @@ type GetSeries struct {
 	Series []Serie `json:"series"`
 }
 
-type GetSerieBySlug struct {
+type GetSerieById struct {
 	Serie
 	User *SerieUserData `json:"user,omitempty"`
 }
 
-type GetSerieChaptersBySlug struct {
+type GetSerieChaptersById struct {
 	Chapters []Chapter `json:"chapters"`
 }
 
@@ -55,7 +55,7 @@ type GetChapters struct {
 	Chapters []Chapter `json:"chapters"`
 }
 
-type GetChapterBySlug struct {
+type GetChapterById struct {
 	Chapter
 	NextChapter *string  `json:"nextChapter"`
 	PrevChapter *string  `json:"prevChapter"`
@@ -144,7 +144,6 @@ type GetAuthMe struct {
 var _ pyrin.Body = (*PostUserMarkChaptersBody)(nil)
 
 type PostUserMarkChaptersBody struct {
-	SerieSlug string   `json:"serieSlug"`
 	Chapters  []string `json:"chapters"`
 }
 
@@ -154,7 +153,7 @@ func (b PostUserMarkChaptersBody) Validate(validator validate.Validator) error {
 
 func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieSlug": jio.String().Required(),
+		"serieId": jio.String().Required(),
 		"chapters":  jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
@@ -162,7 +161,6 @@ func (b PostUserMarkChaptersBody) Schema() jio.Schema {
 var _ pyrin.Body = (*PostUserUnmarkChaptersBody)(nil)
 
 type PostUserUnmarkChaptersBody struct {
-	SerieSlug string   `json:"serieSlug"`
 	Chapters  []string `json:"chapters"`
 }
 
@@ -172,7 +170,7 @@ func (b PostUserUnmarkChaptersBody) Validate(validator validate.Validator) error
 
 func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieSlug": jio.String().Required(),
+		"serieId": jio.String().Required(),
 		"chapters":  jio.Array().Items(jio.String()).Min(1).Required(),
 	})
 }
@@ -180,8 +178,8 @@ func (b PostUserUnmarkChaptersBody) Schema() jio.Schema {
 var _ pyrin.Body = (*PostUserUpdateBookmarkBody)(nil)
 
 type PostUserUpdateBookmarkBody struct {
-	SerieSlug   string `json:"serieSlug"`
-	ChapterSlug string `json:"chapterSlug"`
+	SerieId   string `json:"serieId"`
+	ChapterId string `json:"chapterId"`
 	Page        int    `json:"page"`
 }
 
@@ -191,8 +189,8 @@ func (b PostUserUpdateBookmarkBody) Validate(validator validate.Validator) error
 
 func (b PostUserUpdateBookmarkBody) Schema() jio.Schema {
 	return jio.Object().Keys(jio.K{
-		"serieSlug":   jio.String().Required(),
-		"chapterSlug": jio.String().Required(),
+		"serieId":   jio.String().Required(),
+		"chapterId": jio.String().Required(),
 		"page":        jio.Number().Integer().Required(),
 	})
 }

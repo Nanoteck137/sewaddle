@@ -16,7 +16,7 @@ import (
 var CreateId = createIdGenerator()
 
 func createIdGenerator() func() string {
-	res, err := cuid2.Init(cuid2.WithLength(32))
+	res, err := cuid2.Init(cuid2.WithLength(8))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -12,7 +12,7 @@ import (
 )
 
 type Serie struct {
-	Slug  string         `db:"slug"`
+	Id    string         `db:"id"`
 	Name  string         `db:"name"`
 	Cover sql.NullString `db:"cover"`
 
@@ -34,7 +34,7 @@ func SerieQuery() *goqu.SelectDataset {
 
 	return dialect.From("series").
 		Select(
-			"series.slug",
+			"series.id",
 			"series.name",
 			"series.cover",
 
@@ -69,10 +69,9 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 	return items, nil
 }
 
-// TODO(patrik): Rename to GetSerieBySlug
-func (db *Database) GetSerieById(ctx context.Context, slug string) (Serie, error) {
+func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) {
 	query := SerieQuery().
-		Where(goqu.C("slug").Eq(slug))
+		Where(goqu.C("series.id").Eq(id))
 
 	var item Serie
 	err := db.Get(&item, query)
@@ -105,7 +104,6 @@ func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, err
 }
 
 type CreateSerieParams struct {
-	Slug    string
 	Name    string
 	Cover   sql.NullString
 	Updated int64
@@ -119,20 +117,16 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 		params.Updated = t
 	}
 
-	if params.Slug == "" {
-		params.Slug = utils.Slug(params.Name)
-	}
-
 	query := dialect.Insert("series").
 		Rows(goqu.Record{
-			"slug":  params.Slug,
+			"id":  utils.CreateId(),
 			"name":  params.Name,
 			"cover": params.Cover,
 
 			"created": params.Created,
 			"updated": params.Updated,
 		}).
-		Returning("slug", "name", "cover", "updated", "created").
+		Returning("id", "name", "cover", "updated", "created").
 		Prepared(true)
 
 	var item Serie
@@ -149,7 +143,7 @@ type SerieChanges struct {
 	Cover types.Change[sql.NullString]
 }
 
-func (db *Database) UpdateSerie(ctx context.Context, slug string, changes SerieChanges) error {
+func (db *Database) UpdateSerie(ctx context.Context, id string, changes SerieChanges) error {
 	record := goqu.Record{}
 
 	addToRecord(record, "name", changes.Name)
@@ -165,7 +159,7 @@ func (db *Database) UpdateSerie(ctx context.Context, slug string, changes SerieC
 		Set(record).
 		Where(
 			goqu.And(
-				goqu.I("series.slug").Eq(slug),
+				goqu.I("series.id").Eq(id),
 			),
 		).
 		Prepared(true)

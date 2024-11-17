@@ -65,6 +65,7 @@ var importCmd = &cobra.Command{
 
 		dirs := []string{
 			workDir.SeriesDir(),
+			workDir.ChaptersDir(),
 		}
 
 		for _, dir := range dirs {
@@ -104,17 +105,16 @@ var importCmd = &cobra.Command{
 					log.Fatal("Failed", "err", err)
 				}
 
-				serieDir := workDir.SerieDir(serie.Slug)
+				serieDir := workDir.SerieDir(serie.Id)
 				dirs := []string{
 					serieDir.String(),
-					serieDir.ChaptersDir(),
 					serieDir.ImagesDir(),
 				}
 
 				for _, dir := range dirs {
 					err := os.Mkdir(dir, 0755)
 					if err != nil && !os.IsExist(err) {
-						log.Fatal("Failed to create serie directory", "err", err, "serieSlug", serie.Slug)
+						log.Fatal("Failed to create serie directory", "err", err, "serieId", serie.Id)
 					}
 				}
 			} else {
@@ -123,8 +123,6 @@ var importCmd = &cobra.Command{
 		}
 
 		pretty.Println(serie)
-
-		serieDir := workDir.SerieDir(serie.Slug)
 
 		for _, c := range mangaInfo.Chapters {
 			func() {
@@ -138,8 +136,8 @@ var importCmd = &cobra.Command{
 				}
 
 				chapter, err := db.CreateChapter(ctx, database.CreateChapterParams{
-					SerieSlug: serie.Slug,
-					Title:     c.Name,
+					SerieId: serie.Id,
+					Title:   c.Name,
 				})
 
 				if err != nil {
@@ -154,11 +152,11 @@ var importCmd = &cobra.Command{
 					log.Fatal("Failed to create chapter", "err", err)
 				}
 
-				chapterDir := serieDir.ChapterDir(chapter.Slug)
+				chapterDir := workDir.ChapterDir(chapter.Id)
 
 				err = os.Mkdir(chapterDir, 0755)
 				if err != nil && !os.IsExist(err) {
-					log.Fatal("Failed to create chapater directory", "err", err, "serieSlug", serie.Slug, "chapterSlug", chapter.Slug)
+					log.Fatal("Failed to create chapater directory", "err", err, "chapterId", chapter.Id)
 				}
 
 				var names []string
@@ -185,7 +183,7 @@ var importCmd = &cobra.Command{
 					names = append(names, dstName)
 				}
 
-				err = db.UpdateChapter(ctx, serie.Slug, chapter.Slug, database.ChapterChanges{
+				err = db.UpdateChapter(ctx, chapter.Id, database.ChapterChanges{
 					Pages: types.Change[string]{
 						Value:   strings.Join(names, ","),
 						Changed: true,
@@ -198,7 +196,7 @@ var importCmd = &cobra.Command{
 			}()
 		}
 
-		err = db.RecalculateNumberForSerie(ctx, serie.Slug)
+		err = db.RecalculateNumberForSerie(ctx, serie.Id)
 		if err != nil {
 			log.Fatal("Failed", err)
 		}

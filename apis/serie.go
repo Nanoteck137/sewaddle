@@ -33,11 +33,11 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				for i, item := range items {
 					cover := "/files/images/default/default_cover.png"
 					if item.Cover.Valid {
-						cover = "/files/series/" + item.Slug + "/" + item.Cover.String
+						cover = "/files/series/" + item.Id + "/" + item.Cover.String
 					}
 
 					res.Series[i] = types.Serie{
-						Slug:         item.Slug,
+						Id:           item.Id,
 						Name:         item.Name,
 						Cover:        utils.ConvertURL(c, cover),
 						ChapterCount: item.ChapterCount,
@@ -51,11 +51,11 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 		pyrin.ApiHandler{
 			Name:     "GetSerieById",
 			Method:   http.MethodGet,
-			Path:     "/series/:slug",
-			DataType: types.GetSerieBySlug{},
+			Path:     "/series/:id",
+			DataType: types.GetSerieById{},
 			Errors:   []pyrin.ErrorType{TypeSerieNotFound},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
-				id := c.Param("slug")
+				id := c.Param("id")
 				serie, err := app.DB().GetSerieById(c.Request().Context(), id)
 				if err != nil {
 					if errors.Is(err, database.ErrItemNotFound) {
@@ -70,7 +70,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				user, err := User(app, c)
 				if user != nil {
 
-					dbBookmark, err := app.DB().GetBookmark(c.Request().Context(), user.Id, serie.Slug)
+					dbBookmark, err := app.DB().GetBookmark(c.Request().Context(), user.Id, serie.Id)
 					if err != nil && err != database.ErrItemNotFound {
 						return nil, err
 					}
@@ -78,7 +78,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 					var bookmark *types.Bookmark
 					if err != database.ErrItemNotFound {
 						bookmark = &types.Bookmark{
-							ChapterSlug: dbBookmark.ChapterSlug,
+							ChapterId: dbBookmark.ChapterId,
 						}
 					}
 
@@ -89,12 +89,12 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				cover := "/files/images/default/default_cover.png"
 				if serie.Cover.Valid {
-					cover = "/files/series/" + serie.Slug + "/" + serie.Cover.String
+					cover = "/files/series/" + serie.Id + "/" + serie.Cover.String
 				}
 
-				res := types.GetSerieBySlug{
+				res := types.GetSerieById{
 					Serie: types.Serie{
-						Slug:         serie.Slug,
+						Id:           serie.Id,
 						Name:         serie.Name,
 						Cover:        utils.ConvertURL(c, cover),
 						ChapterCount: serie.ChapterCount,
@@ -109,17 +109,17 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 		pyrin.ApiHandler{
 			Name:     "GetSerieChapters",
 			Method:   http.MethodGet,
-			Path:     "/series/:slug/chapters",
-			DataType: types.GetSerieChaptersBySlug{},
+			Path:     "/series/:id/chapters",
+			DataType: types.GetSerieChaptersById{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
-				id := c.Param("slug")
+				id := c.Param("id")
 
 				items, err := app.DB().GetSerieChaptersById(c.Request().Context(), id)
 				if err != nil {
 					return nil, err
 				}
 
-				res := types.GetSerieChaptersBySlug{
+				res := types.GetSerieChaptersById{
 					Chapters: make([]types.Chapter, len(items)),
 				}
 
@@ -133,13 +133,13 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 					}
 				}
 
-				isChapterMarked := func(chapterSlug string) bool {
+				isChapterMarked := func(chapterId string) bool {
 					if markedChapters == nil {
 						return false
 					}
 
 					for _, item := range markedChapters {
-						if item == chapterSlug {
+						if item == chapterId {
 							return true
 						}
 					}
@@ -149,11 +149,11 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				for i, item := range items {
 					pages := strings.Split(item.Pages, ",")
-					coverArt := utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", item.SerieSlug, item.Slug, pages[0]))
+					coverArt := utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", item.SerieId, item.Id, pages[0]))
 
 					var userData *types.ChapterUserData
 					if user != nil {
-						isMarked := isChapterMarked(item.Slug)
+						isMarked := isChapterMarked(item.Id)
 
 						userData = &types.ChapterUserData{
 							IsMarked: isMarked,
@@ -161,12 +161,12 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 					}
 
 					res.Chapters[i] = types.Chapter{
-						SerieSlug: item.SerieSlug,
-						Slug:      item.Slug,
-						Title:     item.Title,
-						Number:    item.Number.Int64,
-						CoverArt:  coverArt,
-						User:      userData,
+						SerieId:  item.SerieId,
+						Id:       item.Id,
+						Title:    item.Title,
+						Number:   item.Number.Int64,
+						CoverArt: coverArt,
+						User:     userData,
 					}
 				}
 

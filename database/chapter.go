@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -17,20 +16,20 @@ import (
 )
 
 type Chapter struct {
-	SerieSlug string        `db:"serie_slug"`
-	Slug      string        `db:"slug"`
-	Title     string        `db:"title"`
-	Pages     string        `db:"pages"`
-	Number    sql.NullInt64 `db:"number"`
-	Created   int64         `db:"created"`
-	Updated   int64         `db:"updated"`
+	Id      string        `db:"id"`
+	SerieId string        `db:"serie_id"`
+	Title   string        `db:"title"`
+	Pages   string        `db:"pages"`
+	Number  sql.NullInt64 `db:"number"`
+	Created int64         `db:"created"`
+	Updated int64         `db:"updated"`
 }
 
 func ChapterQuery() *goqu.SelectDataset {
 	return dialect.From("chapters").
 		Select(
-			"chapters.serie_slug",
-			"chapters.slug",
+			"chapters.id",
+			"chapters.serie_id",
 
 			"chapters.title",
 			"chapters.pages",
@@ -57,14 +56,9 @@ func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
 	return items, nil
 }
 
-func (db *Database) GetChapter(ctx context.Context, serieSlug, slug string) (Chapter, error) {
+func (db *Database) GetChapter(ctx context.Context, id string) (Chapter, error) {
 	query := ChapterQuery().
-		Where(
-			goqu.And(
-				goqu.I("chapters.serie_slug").Eq(serieSlug),
-				goqu.I("chapters.slug").Eq(slug),
-			),
-		)
+		Where(goqu.I("chapters.id").Eq(id))
 
 	var item Chapter
 	err := db.Get(&item, query)
@@ -79,9 +73,9 @@ func (db *Database) GetChapter(ctx context.Context, serieSlug, slug string) (Cha
 	return item, nil
 }
 
-func (db *Database) GetSerieChaptersById(ctx context.Context, serieSlug string) ([]Chapter, error) {
+func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([]Chapter, error) {
 	query := ChapterQuery().
-		Where(goqu.I("chapters.serie_slug").Eq(serieSlug))
+		Where(goqu.I("chapters.serie_id").Eq(serieId))
 
 	var items []Chapter
 	err := db.Select(&items, query)
@@ -95,11 +89,10 @@ func (db *Database) GetSerieChaptersById(ctx context.Context, serieSlug string) 
 var ErrAlreadyMarked = errors.New("database: chapter already marked")
 
 // TODO(patrik): Fix
-func (db *Database) MarkChapter(ctx context.Context, userId, serieSlug, chapterSlug string) error {
+func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string) error {
 	ds := dialect.Insert("user_chapter_marked").Rows(goqu.Record{
-		"user_id":      userId,
-		"serie_slug":   serieSlug,
-		"chapter_slug": chapterSlug,
+		"user_id":    userId,
+		"chapter_id": chapterId,
 	}).Prepared(true)
 
 	tag, err := db.Exec(ctx, ds)
@@ -119,13 +112,12 @@ func (db *Database) MarkChapter(ctx context.Context, userId, serieSlug, chapterS
 	return nil
 }
 
-func (db *Database) UnmarkChapter(ctx context.Context, userId, serieSlug, chapterSlug string) error {
+func (db *Database) UnmarkChapter(ctx context.Context, userId, chapterId string) error {
 	ds := dialect.Delete("user_chapter_marked").
 		Where(
 			goqu.And(
 				goqu.C("user_id").Eq(userId),
-				goqu.C("serie_slug").Eq(serieSlug),
-				goqu.C("chapter_slug").Eq(chapterSlug),
+				goqu.C("chapter_id").Eq(chapterId),
 			),
 		).
 		Prepared(true)
@@ -146,6 +138,9 @@ func (db *Database) UnmarkChapter(ctx context.Context, userId, serieSlug, chapte
 }
 
 func (db *Database) GetAllMarkedChapters(ctx context.Context, userId, serieSlug string) ([]string, error) {
+	return nil, nil
+
+	// TODO(patrik): FIIIIX
 	ds := dialect.From("user_chapter_marked").
 		Select("chapter_slug").
 		Where(
@@ -172,14 +167,13 @@ func (db *Database) GetAllMarkedChapters(ctx context.Context, userId, serieSlug 
 	return items, nil
 }
 
-func (db *Database) IsChapterMarked(ctx context.Context, userId, serieSlug, chapterSlug string) (bool, error) {
+func (db *Database) IsChapterMarked(ctx context.Context, userId, chapterId string) (bool, error) {
 	ds := dialect.From("user_chapter_marked").
 		Select(goqu.L("1")).
 		Where(
 			goqu.And(
 				goqu.C("user_id").Eq(userId),
-				goqu.C("serie_slug").Eq(serieSlug),
-				goqu.C("chapter_slug").Eq(chapterSlug),
+				goqu.C("chapter_id").Eq(chapterId),
 			),
 		).
 		Prepared(true)
@@ -203,13 +197,12 @@ func (db *Database) IsChapterMarked(ctx context.Context, userId, serieSlug, chap
 }
 
 type CreateChapterParams struct {
-	SerieSlug string
-	Slug      string
-	Title     string
-	Pages     string
-	Number    sql.NullInt64
-	Created   int64
-	Updated   int64
+	SerieId string
+	Title   string
+	Pages   string
+	Number  sql.NullInt64
+	Created int64
+	Updated int64
 }
 
 func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParams) (Chapter, error) {
@@ -221,14 +214,10 @@ func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParam
 		params.Updated = t
 	}
 
-	if params.Slug == "" {
-		params.Slug = utils.Slug(params.Title)
-	}
-
 	query := dialect.Insert("chapters").
 		Rows(goqu.Record{
-			"serie_slug": params.SerieSlug,
-			"slug":       params.Slug,
+			"id":       utils.CreateId(),
+			"serie_id": params.SerieId,
 
 			"title":  params.Title,
 			"pages":  params.Pages,
@@ -237,7 +226,7 @@ func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParam
 			"created": params.Created,
 			"updated": params.Updated,
 		}).
-		Returning("serie_slug", "slug", "title", "pages", "number", "created", "updated").
+		Returning("id", "serie_id", "title", "pages", "number", "created", "updated").
 		Prepared(true)
 
 	var item Chapter
@@ -257,12 +246,12 @@ func addToRecord[T any](record goqu.Record, name string, change types.Change[T])
 }
 
 type ChapterChanges struct {
-	Title     types.Change[string]
-	Pages     types.Change[string]
-	Number    types.Change[sql.NullInt64]
+	Title  types.Change[string]
+	Pages  types.Change[string]
+	Number types.Change[sql.NullInt64]
 }
 
-func (db *Database) UpdateChapter(ctx context.Context, serieSlug, slug string, changes ChapterChanges) error {
+func (db *Database) UpdateChapter(ctx context.Context, id string, changes ChapterChanges) error {
 	record := goqu.Record{}
 
 	addToRecord(record, "title", changes.Title)
@@ -278,10 +267,7 @@ func (db *Database) UpdateChapter(ctx context.Context, serieSlug, slug string, c
 	ds := dialect.Update("chapters").
 		Set(record).
 		Where(
-			goqu.And(
-				goqu.I("chapters.serie_slug").Eq(serieSlug),
-				goqu.I("chapters.slug").Eq(slug),
-			),
+			goqu.I("chapters.id").Eq(id),
 		).
 		Prepared(true)
 
@@ -293,39 +279,14 @@ func (db *Database) UpdateChapter(ctx context.Context, serieSlug, slug string, c
 	return nil
 }
 
-func (db *Database) UpdateChapterPages(ctx context.Context, serieSlug, slug string, pages []string, number int) error {
-	ds := dialect.Update("chapters").
-		Set(
-			goqu.Record{
-				"pages":  strings.Join(pages, ","),
-				"number": number,
-			},
-		).
-		Where(
-			goqu.And(
-				goqu.C("serie_slug").Eq(serieSlug),
-				goqu.C("slug").Eq(slug),
-			),
-		).
-		Prepared(true)
-
-	_, err := db.Exec(ctx, ds)
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-func (db *Database) RecalculateNumberForSerie(ctx context.Context, serieSlug string) error {
+func (db *Database) RecalculateNumberForSerie(ctx context.Context, serieId string) error {
 	db, tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	chapters, err := db.GetSerieChaptersById(ctx, serieSlug)
+	chapters, err := db.GetSerieChaptersById(ctx, serieId)
 	if err != nil {
 		return err
 	}
@@ -339,7 +300,7 @@ func (db *Database) RecalculateNumberForSerie(ctx context.Context, serieSlug str
 	})
 
 	for i, c := range chapters {
-		err := db.UpdateChapter(ctx, serieSlug, c.Slug, ChapterChanges{
+		err := db.UpdateChapter(ctx, c.Id, ChapterChanges{
 			Number: types.Change[sql.NullInt64]{
 				Value: sql.NullInt64{
 					Int64: int64(i),

@@ -10,8 +10,8 @@ import (
 
 type Bookmark struct {
 	UserId      string
-	SerieSlug   string
-	ChapterSlug string
+	SerieId   string
+	ChapterId string
 }
 
 func (db *Database) GetBookmark(ctx context.Context, userId, serieSlug string) (Bookmark, error) {
@@ -28,7 +28,7 @@ func (db *Database) GetBookmark(ctx context.Context, userId, serieSlug string) (
 	row, err := db.QueryRow(ctx, ds)
 
 	var item Bookmark
-	err = row.Scan(&item.UserId, &item.SerieSlug, &item.ChapterSlug)
+	err = row.Scan(&item.UserId, &item.SerieId, &item.ChapterId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return Bookmark{}, ErrItemNotFound

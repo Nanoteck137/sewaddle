@@ -28,13 +28,8 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 					return nil, err
 				}
 
-				serie, err := app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
-				if err != nil {
-					return nil, err
-				}
-
 				for _, chapter := range body.Chapters {
-					err := app.DB().MarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
+					err := app.DB().MarkChapter(c.Request().Context(), user.Id, chapter)
 					if err != nil && !errors.Is(err, database.ErrAlreadyMarked) {
 						return nil, err
 					}
@@ -61,13 +56,8 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 					return nil, err
 				}
 
-				serie, err := app.DB().GetSerieById(c.Request().Context(), body.SerieSlug)
-				if err != nil {
-					return nil, err
-				}
-
 				for _, chapter := range body.Chapters {
-					err := app.DB().UnmarkChapter(c.Request().Context(), user.Id, serie.Slug, chapter)
+					err := app.DB().UnmarkChapter(c.Request().Context(), user.Id, chapter)
 					if err != nil {
 						return nil, err
 					}
@@ -96,28 +86,28 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 
 				ctx := c.Request().Context()
 
-				serie, err := app.DB().GetSerieById(ctx, body.SerieSlug)
+				serie, err := app.DB().GetSerieById(ctx, body.SerieId)
 				if err != nil {
 					return nil, err
 				}
 
-				chapter, err := app.DB().GetChapter(ctx, serie.Slug, body.ChapterSlug)
+				chapter, err := app.DB().GetChapter(ctx, body.ChapterId)
 				if err != nil {
 					return nil, err
 				}
 
-				hasBookmark, err := app.DB().HasBookmark(ctx, user.Id, serie.Slug)
+				hasBookmark, err := app.DB().HasBookmark(ctx, user.Id, serie.Id)
 				if err != nil {
 					return nil, err
 				}
 
 				if hasBookmark {
-					err := app.DB().UpdateBookmark(ctx, user.Id, serie.Slug, chapter.Slug)
+					err := app.DB().UpdateBookmark(ctx, user.Id, serie.Id, chapter.Id)
 					if err != nil {
 						return nil, err
 					}
 				} else {
-					err := app.DB().CreateBookmark(ctx, user.Id, serie.Slug, chapter.Slug)
+					err := app.DB().CreateBookmark(ctx, user.Id, serie.Id, chapter.Id)
 					if err != nil {
 						return nil, err
 					}
