@@ -3,10 +3,10 @@ import * as api from "./types";
 import { BaseApiClient, type ExtraOptions } from "./base-client";
 
 export const GET_SERIES_URL = "/api/v1/series"
-export const GET_SERIE_BY_ID_URL = "/api/v1/series/:slug"
-export const GET_SERIE_CHAPTERS_URL = "/api/v1/series/:slug/chapters"
+export const GET_SERIE_BY_ID_URL = "/api/v1/series/:id"
+export const GET_SERIE_CHAPTERS_URL = "/api/v1/series/:id/chapters"
 export const GET_CHAPTERS_URL = "/api/v1/chapters"
-export const GET_CHAPTER_BY_SLUG_URL = "/api/v1/chapters/:serieSlug/:slug"
+export const GET_CHAPTER_BY_ID_URL = "/api/v1/chapters/:id"
 export const MARK_CHAPTERS_URL = "/api/v1/user/markChapters"
 export const UNMARK_CHAPTERS_URL = "/api/v1/user/unmarkChapters"
 export const UPDATE_BOOKMARK_URL = "/api/v1/user/updateBookmark"
@@ -24,20 +24,20 @@ export class ApiClient extends BaseApiClient {
     return this.request("/api/v1/series", "GET", api.GetSeries, z.undefined(), undefined, options)
   }
   
-  getSerieById(slug: string, options?: ExtraOptions) {
-    return this.request(`/api/v1/series/${slug}`, "GET", api.GetSerieBySlug, z.undefined(), undefined, options)
+  getSerieById(id: string, options?: ExtraOptions) {
+    return this.request(`/api/v1/series/${id}`, "GET", api.GetSerieById, z.undefined(), undefined, options)
   }
   
-  getSerieChapters(slug: string, options?: ExtraOptions) {
-    return this.request(`/api/v1/series/${slug}/chapters`, "GET", api.GetSerieChaptersBySlug, z.undefined(), undefined, options)
+  getSerieChapters(id: string, options?: ExtraOptions) {
+    return this.request(`/api/v1/series/${id}/chapters`, "GET", api.GetSerieChaptersById, z.undefined(), undefined, options)
   }
   
   getChapters(options?: ExtraOptions) {
     return this.request("/api/v1/chapters", "GET", api.GetChapters, z.undefined(), undefined, options)
   }
   
-  getChapterBySlug(serieSlug: string, slug: string, options?: ExtraOptions) {
-    return this.request(`/api/v1/chapters/${serieSlug}/${slug}`, "GET", api.GetChapterBySlug, z.undefined(), undefined, options)
+  getChapterById(id: string, options?: ExtraOptions) {
+    return this.request(`/api/v1/chapters/${id}`, "GET", api.GetChapterById, z.undefined(), undefined, options)
   }
   
   markChapters(body: api.PostUserMarkChaptersBody, options?: ExtraOptions) {

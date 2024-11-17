@@ -43,7 +43,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 		},
 
 		pyrin.ApiHandler{
-			Name:     "GetChapterBySlug",
+			Name:     "GetChapterById",
 			Method:   http.MethodGet,
 			Path:     "/chapters/:id",
 			DataType: types.GetChapterById{},
@@ -98,7 +98,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 
 				pages := strings.Split(chapter.Pages, ",")
 				for i, page := range pages {
-					pages[i] = utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", chapter.SerieId, chapter.Id, page))
+					pages[i] = utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s", chapter.Id, page))
 				}
 
 				res := types.GetChapterById{

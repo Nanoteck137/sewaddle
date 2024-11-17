@@ -69,7 +69,6 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				user, err := User(app, c)
 				if user != nil {
-
 					dbBookmark, err := app.DB().GetBookmark(c.Request().Context(), user.Id, serie.Id)
 					if err != nil && err != database.ErrItemNotFound {
 						return nil, err
@@ -149,7 +148,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				for i, item := range items {
 					pages := strings.Split(item.Pages, ",")
-					coverArt := utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s/%s", item.SerieId, item.Id, pages[0]))
+					coverArt := utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s", item.Id, pages[0]))
 
 					var userData *types.ChapterUserData
 					if user != nil {

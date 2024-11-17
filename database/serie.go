@@ -71,7 +71,7 @@ func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
 
 func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) {
 	query := SerieQuery().
-		Where(goqu.C("series.id").Eq(id))
+		Where(goqu.I("series.id").Eq(id))
 
 	var item Serie
 	err := db.Get(&item, query)

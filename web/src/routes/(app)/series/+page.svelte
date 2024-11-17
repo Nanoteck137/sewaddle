@@ -9,7 +9,7 @@
     {#each data.series as serie}
       <div class="flex flex-col items-center">
         <div class="group">
-          <a class="relative" href={`/series/${serie.slug}`}>
+          <a class="relative" href={`/series/${serie.id}`}>
             <img
               class="h-56 w-40 rounded object-cover group-hover:brightness-75"
               loading="lazy"
@@ -25,7 +25,7 @@
           <a
             class="line-clamp-2 w-40 text-sm font-medium group-hover:underline"
             title={serie.name}
-            href={`/series/${serie.slug}`}
+            href={`/series/${serie.id}`}
           >
             {serie.name}
           </a>

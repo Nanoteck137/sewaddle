@@ -8,31 +8,26 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
   updateAndNextChapter: async ({ locals, request }) => {
     const formData = await request.formData();
-    const serieSlug = formData.get("serieSlug");
-    if (!serieSlug) {
-      throw error(500, "Missing 'serieSlug'");
+
+    const currentChapterId = formData.get("currentChapterId");
+    if (!currentChapterId) {
+      throw error(500, "Missing 'currentChapterId'");
     }
 
-    const currentChapterSlug = formData.get("currentChapterSlug");
-    if (!currentChapterSlug) {
-      throw error(500, "Missing 'currentChapterSlug'");
-    }
-
-    const nextChapterSlug = formData.get("nextChapterSlug");
-    if (!nextChapterSlug) {
-      throw error(500, "Missing 'nextChapterSlug'");
+    const nextChapterId = formData.get("nextChapterId");
+    if (!nextChapterId) {
+      throw error(500, "Missing 'nextChapterId'");
     }
 
     const res = await locals.apiClient.markChapters({
-      serieSlug: serieSlug.toString(),
-      chapters: [currentChapterSlug.toString()],
+      chapters: [currentChapterId.toString()],
     });
 
     if (!res.success) {
       throw error(res.error.code, { message: res.error.message });
     }
 
-    throw redirect(301, `/view/${serieSlug}/${nextChapterSlug}/scroll`);
+    throw redirect(301, `/view/${nextChapterId}/scroll`);
   },
 
   bookmarkChapter: async ({ locals, request }) => {

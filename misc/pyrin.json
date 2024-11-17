@@ -5,7 +5,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "slug",
+          "name": "id",
           "type": "string",
           "omit": false
         },
@@ -42,7 +42,7 @@
       "extend": "",
       "fields": [
         {
-          "name": "chapterSlug",
+          "name": "chapterId",
           "type": "string",
           "omit": false
         }
@@ -60,11 +60,11 @@
       ]
     },
     {
-      "name": "GetSerieBySlug",
+      "name": "GetSerieById",
       "extend": "",
       "fields": [
         {
-          "name": "slug",
+          "name": "id",
           "type": "string",
           "omit": false
         },
@@ -106,12 +106,12 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieSlug",
+          "name": "id",
           "type": "string",
           "omit": false
         },
         {
-          "name": "slug",
+          "name": "serieId",
           "type": "string",
           "omit": false
         },
@@ -138,7 +138,7 @@
       ]
     },
     {
-      "name": "GetSerieChaptersBySlug",
+      "name": "GetSerieChaptersById",
       "extend": "",
       "fields": [
         {
@@ -160,16 +160,16 @@
       ]
     },
     {
-      "name": "GetChapterBySlug",
+      "name": "GetChapterById",
       "extend": "",
       "fields": [
         {
-          "name": "serieSlug",
+          "name": "id",
           "type": "string",
           "omit": false
         },
         {
-          "name": "slug",
+          "name": "serieId",
           "type": "string",
           "omit": false
         },
@@ -215,11 +215,6 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieSlug",
-          "type": "string",
-          "omit": false
-        },
-        {
           "name": "chapters",
           "type": "[]string",
           "omit": false
@@ -230,11 +225,6 @@
       "name": "PostUserUnmarkChaptersBody",
       "extend": "",
       "fields": [
-        {
-          "name": "serieSlug",
-          "type": "string",
-          "omit": false
-        },
         {
           "name": "chapters",
           "type": "[]string",
@@ -247,12 +237,12 @@
       "extend": "",
       "fields": [
         {
-          "name": "serieSlug",
+          "name": "serieId",
           "type": "string",
           "omit": false
         },
         {
-          "name": "chapterSlug",
+          "name": "chapterId",
           "type": "string",
           "omit": false
         },
@@ -377,27 +367,27 @@
     {
       "name": "GetSerieById",
       "method": "GET",
-      "path": "/api/v1/series/:slug",
+      "path": "/api/v1/series/:id",
       "errorTypes": [
         "ROUTE_NOT_FOUND",
         "SERIE_NOT_FOUND",
         "UNKNOWN_ERROR",
         "VALIDATION_ERROR"
       ],
-      "responseType": "GetSerieBySlug",
+      "responseType": "GetSerieById",
       "bodyType": "",
       "requireFormData": false
     },
     {
       "name": "GetSerieChapters",
       "method": "GET",
-      "path": "/api/v1/series/:slug/chapters",
+      "path": "/api/v1/series/:id/chapters",
       "errorTypes": [
         "ROUTE_NOT_FOUND",
         "UNKNOWN_ERROR",
         "VALIDATION_ERROR"
       ],
-      "responseType": "GetSerieChaptersBySlug",
+      "responseType": "GetSerieChaptersById",
       "bodyType": "",
       "requireFormData": false
     },
@@ -415,15 +405,15 @@
       "requireFormData": false
     },
     {
-      "name": "GetChapterBySlug",
+      "name": "GetChapterById",
       "method": "GET",
-      "path": "/api/v1/chapters/:serieSlug/:slug",
+      "path": "/api/v1/chapters/:id",
       "errorTypes": [
         "ROUTE_NOT_FOUND",
         "UNKNOWN_ERROR",
         "VALIDATION_ERROR"
       ],
-      "responseType": "GetChapterBySlug",
+      "responseType": "GetChapterById",
       "bodyType": "",
       "requireFormData": false
     },

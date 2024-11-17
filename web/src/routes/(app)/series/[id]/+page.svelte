@@ -14,9 +14,9 @@
   let showPopupMenu = $state("");
   let selectedChapters = $state<string[]>([]);
 
-  function isSelected(chapterSlug: string) {
+  function isSelected(chapterId: string) {
     for (let i = 0; i < selectedChapters.length; i++) {
-      if (selectedChapters[i] === chapterSlug) {
+      if (selectedChapters[i] === chapterId) {
         return true;
       }
     }
@@ -35,7 +35,7 @@
       />
       <div class="h-2"></div>
       <p class="line-clamp-2 text-center font-bold">{data.serie.name}</p>
-      <p>{data.serie.user?.bookmark?.chapterSlug}</p>
+      <p>{data.serie.user?.bookmark?.chapterId}</p>
     </div>
   </div>
   <div class="md:ml-4 md:pl-[280px]">
@@ -53,7 +53,7 @@
               <a
                 class="line-clamp-1 font-medium"
                 title={chapter.title}
-                href={`/view/${chapter.serieSlug}/${chapter.slug}/scroll`}
+                href={`/view/${chapter.id}/scroll`}
               >
                 {chapter.title}
               </a>
@@ -66,7 +66,7 @@
             <button
               class="block rounded-full p-1 hover:bg-black/20"
               onclick={() => {
-                showPopupMenu = chapter.slug;
+                showPopupMenu = chapter.id;
               }}
             >
               <EllipsisVertical size="25" />
@@ -74,25 +74,20 @@
             <button
               class="flex h-6 w-6 items-center justify-center rounded border"
               onclick={() => {
-                selectedChapters.push(chapter.slug);
+                selectedChapters.push(chapter.id);
               }}
             >
-              {#if isSelected(chapter.slug)}
+              {#if isSelected(chapter.id)}
                 <Check size="18" />
               {/if}
             </button>
           </div>
           <div
-            class={`popup absolute right-7 top-full z-50 -translate-y-4 rounded bg-red-400 ${showPopupMenu === chapter.slug ? "" : "hidden"}`}
+            class={`popup absolute right-7 top-full z-50 -translate-y-4 rounded bg-red-400 ${showPopupMenu === chapter.id ? "" : "hidden"}`}
           >
             <div class="flex flex-col">
               <form action="?/markChapters" method="post">
-                <input
-                  name="serieSlug"
-                  value={data.serie.slug}
-                  type="hidden"
-                />
-                <input name="chapters[]" value={chapter.slug} type="hidden" />
+                <input name="chapters[]" value={chapter.id} type="hidden" />
                 <button
                   class="flex w-full gap-1 rounded px-4 py-2 hover:bg-red-200"
                 >
@@ -102,12 +97,7 @@
               </form>
 
               <form action="?/unmarkChapters" method="post">
-                <input
-                  name="serieSlug"
-                  value={data.serie.slug}
-                  type="hidden"
-                />
-                <input name="chapters[]" value={chapter.slug} type="hidden" />
+                <input name="chapters[]" value={chapter.id} type="hidden" />
                 <button
                   class="flex w-full gap-1 rounded px-4 py-2 hover:bg-red-200"
                 >
@@ -117,12 +107,8 @@
               </form>
 
               <form action="?/setBookmark" method="post">
-                <input
-                  name="serieSlug"
-                  value={data.serie.slug}
-                  type="hidden"
-                />
-                <input name="chapterSlug" value={chapter.slug} type="hidden" />
+                <input name="serieId" value={data.serie.id} type="hidden" />
+                <input name="chapterId" value={chapter.id} type="hidden" />
                 <button
                   class="flex w-full gap-1 rounded px-4 py-2 hover:bg-red-200"
                 >
@@ -142,7 +128,7 @@
             if (e.shiftKey) {
               const firstSelected = selectedChapters[0];
               let first = data.chapters.findIndex(
-                (i) => i.slug === firstSelected,
+                (i) => i.id === firstSelected,
               );
 
               let last = index;
@@ -158,15 +144,15 @@
                 items.push(first + i);
               }
 
-              const slugs = items.map((i) => data.chapters[i].slug);
-              selectedChapters = slugs;
+              const ids = items.map((i) => data.chapters[i].id);
+              selectedChapters = ids;
             } else {
-              if (isSelected(chapter.slug)) {
+              if (isSelected(chapter.id)) {
                 selectedChapters = selectedChapters.filter(
-                  (slug) => slug !== chapter.slug,
+                  (id) => id !== chapter.id,
                 );
               } else {
-                selectedChapters.push(chapter.slug);
+                selectedChapters.push(chapter.id);
               }
             }
           }}
@@ -182,7 +168,7 @@
               <a
                 class="line-clamp-1 font-medium"
                 title={chapter.title}
-                href={`/view/${chapter.serieSlug}/${chapter.slug}`}
+                href={`/view/${chapter.id}`}
               >
                 {chapter.title}
               </a>
@@ -195,7 +181,7 @@
             <div
               class="flex h-6 w-6 items-center justify-center rounded border"
             >
-              {#if isSelected(chapter.slug)}
+              {#if isSelected(chapter.id)}
                 <Check size="18" />
               {/if}
             </div>
@@ -227,7 +213,6 @@
 {#if selectedChapters.length > 0}
   <div class="fixed bottom-0 left-1/2 bg-red-300 p-10">
     <form action="?/markChapters" method="post">
-      <input name="serieSlug" value={data.serie.slug} type="hidden" />
       {#each selectedChapters as chapter}
         <input name="chapters[]" value={chapter} type="hidden" />
       {/each}
@@ -236,7 +221,6 @@
     </form>
 
     <form action="?/unmarkChapters" method="post">
-      <input name="serieSlug" value={data.serie.slug} type="hidden" />
       {#each selectedChapters as chapter}
         <input name="chapters[]" value={chapter} type="hidden" />
       {/each}

@@ -2,12 +2,12 @@ import { error } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-  const serie = await locals.apiClient.getSerieById(params.slug);
+  const serie = await locals.apiClient.getSerieById(params.id);
   if (!serie.success) {
     throw error(serie.error.code, { message: serie.error.message });
   }
 
-  const chapters = await locals.apiClient.getSerieChapters(params.slug);
+  const chapters = await locals.apiClient.getSerieChapters(params.id);
   if (!chapters.success) {
     throw error(chapters.error.code, { message: chapters.error.message });
   }
@@ -24,16 +24,10 @@ export const actions: Actions = {
 
     const formData = await request.formData();
 
-    const serieSlug = formData.get("serieSlug");
-    if (!serieSlug) {
-      throw error(500, "'serieSlug' not set");
-    }
-
     const chapters = formData.getAll("chapters[]");
     if (chapters.length > 0) {
       const chapterSlugs = chapters.map((c) => c.toString());
       const res = await locals.apiClient.markChapters({
-        serieSlug: serieSlug.toString(),
         chapters: chapterSlugs,
       });
 
@@ -48,17 +42,11 @@ export const actions: Actions = {
 
     const formData = await request.formData();
 
-    const serieSlug = formData.get("serieSlug");
-    if (!serieSlug) {
-      throw error(500, "'serieSlug' not set");
-    }
-
     const chapters = formData.getAll("chapters[]");
     if (chapters.length > 0) {
-      const chapterSlugs = chapters.map((c) => c.toString());
+      const chapterIds = chapters.map((c) => c.toString());
       const res = await locals.apiClient.unmarkChapters({
-        serieSlug: serieSlug.toString(),
-        chapters: chapterSlugs,
+        chapters: chapterIds,
       });
 
       if (!res.success) {
@@ -72,19 +60,19 @@ export const actions: Actions = {
 
     const formData = await request.formData();
 
-    const serieSlug = formData.get("serieSlug");
-    if (!serieSlug) {
-      throw error(500, "'serieSlug' not set");
+    const serieId = formData.get("serieSlug");
+    if (!serieId) {
+      throw error(500, "'serieId' not set");
     }
 
-    const chapterSlug = formData.get("chapterSlug");
-    if (!chapterSlug) {
-      throw error(500, "'chapterSlug' not set");
+    const chapterId = formData.get("chapterId");
+    if (!chapterId) {
+      throw error(500, "'chapterId' not set");
     }
 
     const res = await locals.apiClient.updateBookmark({
-      serieSlug: serieSlug.toString(),
-      chapterSlug: chapterSlug.toString(),
+      serieId: serieId.toString(),
+      chapterId: chapterId.toString(),
       page: 0,
     });
 

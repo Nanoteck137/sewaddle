@@ -2,7 +2,7 @@
 import { z } from "zod";
 
 export const Serie = z.object({
-  slug: z.string(),
+  id: z.string(),
   name: z.string(),
   cover: z.string(),
   chapterCount: z.number(),
@@ -15,7 +15,7 @@ export const GetSeries = z.object({
 export type GetSeries = z.infer<typeof GetSeries>;
 
 export const Bookmark = z.object({
-  chapterSlug: z.string(),
+  chapterId: z.string(),
 });
 export type Bookmark = z.infer<typeof Bookmark>;
 
@@ -24,14 +24,14 @@ export const SerieUserData = z.object({
 });
 export type SerieUserData = z.infer<typeof SerieUserData>;
 
-export const GetSerieBySlug = z.object({
-  slug: z.string(),
+export const GetSerieById = z.object({
+  id: z.string(),
   name: z.string(),
   cover: z.string(),
   chapterCount: z.number(),
   user: SerieUserData.nullable().optional(),
 });
-export type GetSerieBySlug = z.infer<typeof GetSerieBySlug>;
+export type GetSerieById = z.infer<typeof GetSerieById>;
 
 export const ChapterUserData = z.object({
   isMarked: z.boolean(),
@@ -39,8 +39,8 @@ export const ChapterUserData = z.object({
 export type ChapterUserData = z.infer<typeof ChapterUserData>;
 
 export const Chapter = z.object({
-  serieSlug: z.string(),
-  slug: z.string(),
+  id: z.string(),
+  serieId: z.string(),
   title: z.string(),
   number: z.number(),
   coverArt: z.string(),
@@ -48,19 +48,19 @@ export const Chapter = z.object({
 });
 export type Chapter = z.infer<typeof Chapter>;
 
-export const GetSerieChaptersBySlug = z.object({
+export const GetSerieChaptersById = z.object({
   chapters: z.array(Chapter),
 });
-export type GetSerieChaptersBySlug = z.infer<typeof GetSerieChaptersBySlug>;
+export type GetSerieChaptersById = z.infer<typeof GetSerieChaptersById>;
 
 export const GetChapters = z.object({
   chapters: z.array(Chapter),
 });
 export type GetChapters = z.infer<typeof GetChapters>;
 
-export const GetChapterBySlug = z.object({
-  serieSlug: z.string(),
-  slug: z.string(),
+export const GetChapterById = z.object({
+  id: z.string(),
+  serieId: z.string(),
   title: z.string(),
   number: z.number(),
   coverArt: z.string(),
@@ -69,23 +69,21 @@ export const GetChapterBySlug = z.object({
   prevChapter: z.string().nullable(),
   pages: z.array(z.string()),
 });
-export type GetChapterBySlug = z.infer<typeof GetChapterBySlug>;
+export type GetChapterById = z.infer<typeof GetChapterById>;
 
 export const PostUserMarkChaptersBody = z.object({
-  serieSlug: z.string(),
   chapters: z.array(z.string()),
 });
 export type PostUserMarkChaptersBody = z.infer<typeof PostUserMarkChaptersBody>;
 
 export const PostUserUnmarkChaptersBody = z.object({
-  serieSlug: z.string(),
   chapters: z.array(z.string()),
 });
 export type PostUserUnmarkChaptersBody = z.infer<typeof PostUserUnmarkChaptersBody>;
 
 export const PostUserUpdateBookmarkBody = z.object({
-  serieSlug: z.string(),
-  chapterSlug: z.string(),
+  serieId: z.string(),
+  chapterId: z.string(),
   page: z.number(),
 });
 export type PostUserUpdateBookmarkBody = z.infer<typeof PostUserUpdateBookmarkBody>;

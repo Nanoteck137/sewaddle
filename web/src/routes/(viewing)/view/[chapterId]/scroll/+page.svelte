@@ -17,9 +17,7 @@
 
 <div class="flex justify-center py-20">
   {#if data.chapter.prevChapter}
-    <a
-      class="text-3xl"
-      href={`/view/${data.chapter.serieSlug}/${data.chapter.prevChapter}/scroll`}
+    <a class="text-3xl" href={`/view/${data.chapter.prevChapter}/scroll`}
       >Previous Chapter</a
     >
   {/if}
@@ -34,14 +32,9 @@
 <div class="flex justify-center py-20">
   {#if data.chapter.nextChapter}
     <form action="?/updateAndNextChapter" method="post">
-      <input name="serieSlug" value={data.chapter.serieSlug} type="hidden" />
+      <input name="currentChapterId" value={data.chapter.id} type="hidden" />
       <input
-        name="currentChapterSlug"
-        value={data.chapter.slug}
-        type="hidden"
-      />
-      <input
-        name="nextChapterSlug"
+        name="nextChapterId"
         value={data.chapter.nextChapter}
         type="hidden"
       />
@@ -108,15 +101,15 @@
     {/if} -->
 
     <form action="?/bookmarkChapter" method="post">
-      <input name="serieSlug" value={data.chapter.serieSlug} type="hidden" />
-      <input name="chapterSlug" value={data.chapter.slug} type="hidden" />
+      <input name="serieId" value={data.chapter.serieId} type="hidden" />
+      <input name="chapterId" value={data.chapter.id} type="hidden" />
       {@render menuButton("Update Bookmark", Bookmark)}
     </form>
 
     {@render menuButton(
       "Go back",
       ArrowBigLeft,
-      `/series/${data.chapter.serieSlug}`,
+      `/series/${data.chapter.serieId}`,
       () => {
         sideMenuOpen = false;
       },
