@@ -3,9 +3,7 @@ package apis
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/sewaddle/core"
@@ -14,7 +12,7 @@ import (
 	"github.com/nanoteck137/sewaddle/utils"
 )
 
-func ConverSerieImage(c pyrin.Context, serieId string, image sql.NullString) string {
+func ConvertSerieImage(c pyrin.Context, serieId string, image sql.NullString) string {
 	res := "/files/images/default/default_cover.png"
 	if image.Valid {
 		res = "/files/series/" + serieId + "/" + image.String
@@ -23,14 +21,14 @@ func ConverSerieImage(c pyrin.Context, serieId string, image sql.NullString) str
 	return utils.ConvertURL(c, res)
 }
 
-func ConverDBSerie(c pyrin.Context, serie database.Serie) types.Serie {
+func ConvertDBSerie(c pyrin.Context, serie database.Serie) types.Serie {
 	return types.Serie{
 		Id:            serie.Id,
 		Name:          serie.Name,
-		CoverOriginal: ConverSerieImage(c, serie.Id, serie.CoverOriginal),
-		CoverLarge:    ConverSerieImage(c, serie.Id, serie.CoverLarge),
-		CoverMedium:   ConverSerieImage(c, serie.Id, serie.CoverMedium),
-		CoverSmall:    ConverSerieImage(c, serie.Id, serie.CoverSmall),
+		CoverOriginal: ConvertSerieImage(c, serie.Id, serie.CoverOriginal),
+		CoverLarge:    ConvertSerieImage(c, serie.Id, serie.CoverLarge),
+		CoverMedium:   ConvertSerieImage(c, serie.Id, serie.CoverMedium),
+		CoverSmall:    ConvertSerieImage(c, serie.Id, serie.CoverSmall),
 		ChapterCount:  serie.ChapterCount,
 	}
 }
@@ -53,7 +51,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				}
 
 				for i, item := range items {
-					res.Series[i] = ConverDBSerie(c, item)
+					res.Series[i] = ConvertDBSerie(c, item)
 				}
 
 				return res, nil
@@ -99,7 +97,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				}
 
 				res := types.GetSerieById{
-					Serie: ConverDBSerie(c, serie),
+					Serie: ConvertDBSerie(c, serie),
 					User:  userData,
 				}
 
@@ -149,9 +147,6 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				}
 
 				for i, item := range items {
-					pages := strings.Split(item.Pages, ",")
-					coverArt := utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s", item.Id, pages[0]))
-
 					var userData *types.ChapterUserData
 					if user != nil {
 						isMarked := isChapterMarked(item.Id)
@@ -161,14 +156,9 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 						}
 					}
 
-					res.Chapters[i] = types.Chapter{
-						SerieId:  item.SerieId,
-						Id:       item.Id,
-						Title:    item.Title,
-						Number:   item.Number.Int64,
-						CoverArt: coverArt,
-						User:     userData,
-					}
+					ch := ConvertDBChapter(c, item)
+					ch.User = userData
+					res.Chapters[i] = ch 
 				}
 
 				return res, nil
