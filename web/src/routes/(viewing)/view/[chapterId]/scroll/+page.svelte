@@ -32,6 +32,7 @@
 <div class="flex justify-center py-20">
   {#if data.chapter.nextChapter}
     <form action="?/updateAndNextChapter" method="post">
+      <input name="serieId" value={data.chapter.serieId} type="hidden" />
       <input name="currentChapterId" value={data.chapter.id} type="hidden" />
       <input
         name="nextChapterId"

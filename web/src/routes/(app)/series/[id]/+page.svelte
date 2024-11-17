@@ -35,7 +35,8 @@
       />
       <div class="h-2"></div>
       <p class="line-clamp-2 text-center font-bold">{data.serie.name}</p>
-      <p>{data.serie.user?.bookmark?.chapterId}</p>
+      <a href="/view/{data.serie.user?.bookmark?.chapterId}/scroll">Continue</a
+      >
     </div>
   </div>
   <div class="md:ml-4 md:pl-[280px]">

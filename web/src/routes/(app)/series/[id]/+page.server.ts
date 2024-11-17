@@ -60,7 +60,7 @@ export const actions: Actions = {
 
     const formData = await request.formData();
 
-    const serieId = formData.get("serieSlug");
+    const serieId = formData.get("serieId");
     if (!serieId) {
       throw error(500, "'serieId' not set");
     }
