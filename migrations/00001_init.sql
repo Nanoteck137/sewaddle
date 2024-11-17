@@ -2,7 +2,11 @@
 CREATE TABLE series (
     id TEXT NOT NULL,
     name TEXT NOT NULL,
-    cover TEXT,
+
+    cover_original TEXT,
+    cover_large TEXT,
+    cover_medium TEXT,
+    cover_small TEXT,
 
     created INTEGER NOT NULL,
     updated INTEGER NOT NULL,

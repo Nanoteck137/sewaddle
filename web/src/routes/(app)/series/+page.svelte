@@ -13,7 +13,7 @@
             <img
               class="h-56 w-40 rounded object-cover group-hover:brightness-75"
               loading="lazy"
-              src={serie.cover}
+              src={serie.coverSmall}
               alt={`${serie.name} Cover`}
             />
 

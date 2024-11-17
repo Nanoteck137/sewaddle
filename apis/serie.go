@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,6 +13,27 @@ import (
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
+
+func ConverSerieImage(c pyrin.Context, serieId string, image sql.NullString) string {
+	res := "/files/images/default/default_cover.png"
+	if image.Valid {
+		res = "/files/series/" + serieId + "/" + image.String
+	}
+
+	return utils.ConvertURL(c, res)
+}
+
+func ConverDBSerie(c pyrin.Context, serie database.Serie) types.Serie {
+	return types.Serie{
+		Id:            serie.Id,
+		Name:          serie.Name,
+		CoverOriginal: ConverSerieImage(c, serie.Id, serie.CoverOriginal),
+		CoverLarge:    ConverSerieImage(c, serie.Id, serie.CoverLarge),
+		CoverMedium:   ConverSerieImage(c, serie.Id, serie.CoverMedium),
+		CoverSmall:    ConverSerieImage(c, serie.Id, serie.CoverSmall),
+		ChapterCount:  serie.ChapterCount,
+	}
+}
 
 func InstallSerieHandlers(app core.App, group pyrin.Group) {
 	group.Register(
@@ -31,17 +53,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				}
 
 				for i, item := range items {
-					cover := "/files/images/default/default_cover.png"
-					if item.Cover.Valid {
-						cover = "/files/series/" + item.Id + "/" + item.Cover.String
-					}
-
-					res.Series[i] = types.Serie{
-						Id:           item.Id,
-						Name:         item.Name,
-						Cover:        utils.ConvertURL(c, cover),
-						ChapterCount: item.ChapterCount,
-					}
+					res.Series[i] = ConverDBSerie(c, item)
 				}
 
 				return res, nil
@@ -86,19 +98,9 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 					}
 				}
 
-				cover := "/files/images/default/default_cover.png"
-				if serie.Cover.Valid {
-					cover = "/files/series/" + serie.Id + "/" + serie.Cover.String
-				}
-
 				res := types.GetSerieById{
-					Serie: types.Serie{
-						Id:           serie.Id,
-						Name:         serie.Name,
-						Cover:        utils.ConvertURL(c, cover),
-						ChapterCount: serie.ChapterCount,
-					},
-					User: userData,
+					Serie: ConverDBSerie(c, serie),
+					User:  userData,
 				}
 
 				return res, nil

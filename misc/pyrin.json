@@ -15,7 +15,22 @@
           "omit": false
         },
         {
-          "name": "cover",
+          "name": "coverOriginal",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverLarge",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverMedium",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverSmall",
           "type": "string",
           "omit": false
         },
@@ -74,7 +89,22 @@
           "omit": false
         },
         {
-          "name": "cover",
+          "name": "coverOriginal",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverLarge",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverMedium",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverSmall",
           "type": "string",
           "omit": false
         },

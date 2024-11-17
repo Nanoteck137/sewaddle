@@ -22,7 +22,7 @@ func (d WorkDir) SeriesDir() string {
 }
 
 func (d WorkDir) SerieDir(id string) SerieDir {
-	return SerieDir(path.Join(d.ChaptersDir(), id))
+	return SerieDir(path.Join(d.SeriesDir(), id))
 }
 
 func (d WorkDir) ChaptersDir() string {

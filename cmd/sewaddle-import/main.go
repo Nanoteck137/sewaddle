@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -16,6 +17,7 @@ import (
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
+	"github.com/nanoteck137/sewaddle/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -123,6 +125,67 @@ var importCmd = &cobra.Command{
 		}
 
 		pretty.Println(serie)
+
+		if mangaInfo.Cover != "" {
+			p := path.Join(input, "images", mangaInfo.Cover)
+
+			src, err := os.Open(p)
+			if err != nil {
+				log.Fatal("Failed to open cover image", "err", err)
+			}
+			defer src.Close()
+
+			dstDir := workDir.SerieDir(serie.Id).ImagesDir()
+			dstPath := path.Join(dstDir, "cover-original"+path.Ext(p))
+			dst, err := os.OpenFile(dstPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+			if err != nil {
+				log.Fatal("Failed to open cover dst image", "err", err)
+			}
+			defer dst.Close()
+
+			_, err = io.Copy(dst, src)
+			if err != nil {
+				log.Fatal("Failed to copy original cover image", "err", err)
+			}
+
+			large := path.Join(dstDir, "cover-large.png")
+			err = utils.CreateResizedImage(dstPath, large, 360, 480)
+			if err != nil {
+				log.Fatal("Failed to create large cover image", "err", err)
+			}
+
+			medium := path.Join(dstDir, "cover-medium.png")
+			err = utils.CreateResizedImage(dstPath, medium, 270, 360)
+			if err != nil {
+				log.Fatal("Failed to create medium cover image", "err", err)
+			}
+
+			small := path.Join(dstDir, "cover-small.png")
+			err = utils.CreateResizedImage(dstPath, small, 180, 240)
+			if err != nil {
+				log.Fatal("Failed to create small cover image", "err", err)
+			}
+
+			createChange := func(p string) types.Change[sql.NullString] {
+				return types.Change[sql.NullString]{
+					Value: sql.NullString{
+						String: p,
+						Valid:  true,
+					},
+					Changed: true,
+				}
+			}
+
+			err = db.UpdateSerie(ctx, serie.Id, database.SerieChanges{
+				CoverOriginal: createChange(path.Base(dstPath)),
+				CoverLarge:    createChange(path.Base(large)),
+				CoverMedium:   createChange(path.Base(medium)),
+				CoverSmall:    createChange(path.Base(small)),
+			})
+			if err != nil {
+				log.Fatal("Failed to update serie cover", "err", err)
+			}
+		}
 
 		for _, c := range mangaInfo.Chapters {
 			func() {

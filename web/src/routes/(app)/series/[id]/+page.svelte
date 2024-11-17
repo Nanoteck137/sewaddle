@@ -30,7 +30,7 @@
     <div class="w-[280px]">
       <img
         class="h-[360px] w-[280px] rounded object-cover"
-        src={data.serie.cover}
+        src={data.serie.coverMedium}
         alt=""
       />
       <div class="h-2"></div>

@@ -12,9 +12,13 @@ import (
 )
 
 type Serie struct {
-	Id    string         `db:"id"`
-	Name  string         `db:"name"`
-	Cover sql.NullString `db:"cover"`
+	Id   string `db:"id"`
+	Name string `db:"name"`
+
+	CoverOriginal sql.NullString `db:"cover_original"`
+	CoverLarge    sql.NullString `db:"cover_large"`
+	CoverMedium   sql.NullString `db:"cover_medium"`
+	CoverSmall    sql.NullString `db:"cover_small"`
 
 	Created int64 `db:"created"`
 	Updated int64 `db:"updated"`
@@ -36,7 +40,11 @@ func SerieQuery() *goqu.SelectDataset {
 		Select(
 			"series.id",
 			"series.name",
-			"series.cover",
+
+			"series.cover_original",
+			"series.cover_large",
+			"series.cover_medium",
+			"series.cover_small",
 
 			"series.created",
 			"series.updated",
@@ -104,8 +112,13 @@ func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, err
 }
 
 type CreateSerieParams struct {
-	Name    string
-	Cover   sql.NullString
+	Name string
+
+	CoverOriginal sql.NullString
+	CoverLarge    sql.NullString
+	CoverMedium   sql.NullString
+	CoverSmall    sql.NullString
+
 	Updated int64
 	Created int64
 }
@@ -119,14 +132,29 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 
 	query := dialect.Insert("series").
 		Rows(goqu.Record{
-			"id":    utils.CreateId(),
-			"name":  params.Name,
-			"cover": params.Cover,
+			"id":   utils.CreateId(),
+			"name": params.Name,
+
+			"cover_original": params.CoverOriginal,
+			"cover_large":    params.CoverLarge,
+			"cover_medium":   params.CoverMedium,
+			"cover_small":    params.CoverSmall,
 
 			"created": params.Created,
 			"updated": params.Updated,
 		}).
-		Returning("id", "name", "cover", "updated", "created").
+		Returning(
+			"series.id",
+			"series.name",
+
+			"series.cover_original",
+			"series.cover_large",
+			"series.cover_medium",
+			"series.cover_small",
+
+			"series.created",
+			"series.updated",
+		).
 		Prepared(true)
 
 	var item Serie
@@ -140,14 +168,22 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 
 type SerieChanges struct {
 	Name  types.Change[string]
-	Cover types.Change[sql.NullString]
+
+	CoverOriginal types.Change[sql.NullString]
+	CoverLarge types.Change[sql.NullString]
+	CoverMedium types.Change[sql.NullString]
+	CoverSmall types.Change[sql.NullString]
 }
 
 func (db *Database) UpdateSerie(ctx context.Context, id string, changes SerieChanges) error {
 	record := goqu.Record{}
 
 	addToRecord(record, "name", changes.Name)
-	addToRecord(record, "cover", changes.Cover)
+
+	addToRecord(record, "cover_original", changes.CoverOriginal)
+	addToRecord(record, "cover_large", changes.CoverLarge)
+	addToRecord(record, "cover_medium", changes.CoverMedium)
+	addToRecord(record, "cover_small", changes.CoverSmall)
 
 	if len(record) <= 0 {
 		return nil

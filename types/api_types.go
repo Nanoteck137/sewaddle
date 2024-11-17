@@ -11,10 +11,13 @@ type Body interface {
 }
 
 type Serie struct {
-	Id           string `json:"id"`
-	Name         string `json:"name"`
-	Cover        string `json:"cover"`
-	ChapterCount int64  `json:"chapterCount"`
+	Id            string `json:"id"`
+	Name          string `json:"name"`
+	CoverOriginal string `json:"coverOriginal"`
+	CoverLarge    string `json:"coverLarge"`
+	CoverMedium   string `json:"coverMedium"`
+	CoverSmall    string `json:"coverSmall"`
+	ChapterCount  int64  `json:"chapterCount"`
 }
 
 type Chapter struct {

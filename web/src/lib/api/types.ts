@@ -4,7 +4,10 @@ import { z } from "zod";
 export const Serie = z.object({
   id: z.string(),
   name: z.string(),
-  cover: z.string(),
+  coverOriginal: z.string(),
+  coverLarge: z.string(),
+  coverMedium: z.string(),
+  coverSmall: z.string(),
   chapterCount: z.number(),
 });
 export type Serie = z.infer<typeof Serie>;
@@ -27,7 +30,10 @@ export type SerieUserData = z.infer<typeof SerieUserData>;
 export const GetSerieById = z.object({
   id: z.string(),
   name: z.string(),
-  cover: z.string(),
+  coverOriginal: z.string(),
+  coverLarge: z.string(),
+  coverMedium: z.string(),
+  coverSmall: z.string(),
   chapterCount: z.number(),
   user: SerieUserData.nullable().optional(),
 });

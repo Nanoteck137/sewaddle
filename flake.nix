@@ -35,6 +35,11 @@
           ];
 
           vendorHash = "sha256-Jw/k35mjrkhqf+ooD7nOMadWJrQktLw/boTPiJ8+RvA=";
+
+          postFixup = ''
+            wrapProgram $out/bin/sewaddle --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.imagemagick ]}
+            wrapProgram $out/bin/sewaddle-import --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.imagemagick ]}
+          '';
         };
 
         frontend = pkgs.buildNpmPackage {
@@ -74,6 +79,7 @@
             go
             gopls
             nodejs
+            imagemagick
 
             tools.publishVersion
           ];
