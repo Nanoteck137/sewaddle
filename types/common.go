@@ -17,6 +17,10 @@ func (d WorkDir) DatabaseFile() string {
 	return path.Join(d.String(), "data.db")
 }
 
+func (d WorkDir) ExportFile() string {
+	return path.Join(d.String(), "export.json")
+}
+
 func (d WorkDir) SeriesDir() string {
 	return path.Join(d.String(), "series")
 }
