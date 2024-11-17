@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"sort"
 	"time"
 
@@ -99,7 +98,7 @@ func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string) e
 		"chapter_id": chapterId,
 	}).Prepared(true)
 
-	tag, err := db.Exec(ctx, ds)
+	_, err := db.Exec(ctx, ds)
 	if err != nil {
 		var sqlerr sqlite3.Error
 		if errors.As(err, &sqlerr) {
@@ -110,8 +109,6 @@ func (db *Database) MarkChapter(ctx context.Context, userId, chapterId string) e
 
 		return err
 	}
-
-	fmt.Printf("tag: %v\n", tag)
 
 	return nil
 }
@@ -136,21 +133,18 @@ func (db *Database) UnmarkChapter(ctx context.Context, userId, chapterId string)
 		return errors.New("No chapter to unmark")
 	}
 
-	fmt.Printf("tag: %v\n", tag)
-
 	return nil
 }
 
-func (db *Database) GetAllMarkedChapters(ctx context.Context, userId, serieSlug string) ([]string, error) {
-	return nil, nil
-
+func (db *Database) GetAllMarkedChapters(ctx context.Context, userId, serieId string) ([]string, error) {
 	// TODO(patrik): FIIIIX
 	ds := dialect.From("user_chapter_marked").
-		Select("chapter_slug").
+		Select("chapter_id").
+		Join(goqu.I("chapters"), goqu.On(goqu.I("chapters.id").Eq(goqu.I("user_chapter_marked.chapter_id")))).
 		Where(
 			goqu.And(
-				goqu.C("user_id").Eq(userId),
-				goqu.C("serie_slug").Eq(serieSlug),
+				goqu.I("user_chapter_marked.user_id").Eq(userId),
+				goqu.I("chapters.serie_id").Eq(serieId),
 			),
 		).
 		Prepared(true)
