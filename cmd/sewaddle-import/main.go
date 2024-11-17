@@ -246,9 +246,23 @@ var importCmd = &cobra.Command{
 					names = append(names, dstName)
 				}
 
+				chapterCover := path.Join(p, c.Pages[0])
+				chapterCoverDst := path.Join(chapterDir, "cover.png")
+				err = utils.CreateResizedImage(chapterCover, chapterCoverDst, 80, 112)
+				if err != nil {
+					log.Fatal("Failed to create chapter cover", "err", err)
+				}
+
 				err = db.UpdateChapter(ctx, chapter.Id, database.ChapterChanges{
 					Pages: types.Change[string]{
 						Value:   strings.Join(names, ","),
+						Changed: true,
+					},
+					Cover: types.Change[sql.NullString]{
+						Value: sql.NullString{
+							String: path.Base(chapterCoverDst),
+							Valid:  true,
+						},
 						Changed: true,
 					},
 				})

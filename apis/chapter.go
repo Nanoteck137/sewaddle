@@ -2,15 +2,35 @@ package apis
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"net/http"
 	"strings"
 
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/sewaddle/core"
+	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
+
+func ConvertChapterImage(c pyrin.Context, chapterId string, image sql.NullString) string {
+	res := "/files/images/default/default_cover.png"
+	if image.Valid {
+		res = "/files/chapters/" + chapterId + "/" + image.String
+	}
+
+	return utils.ConvertURL(c, res)
+}
+
+func ConvertDBChapter(c pyrin.Context, chapter database.Chapter) types.Chapter {
+	return types.Chapter{
+		Id:       chapter.Id,
+		SerieId:  chapter.SerieId,
+		Title:    chapter.Title,
+		Number:   chapter.Number.Int64,
+		CoverArt: ConvertChapterImage(c, chapter.Id, chapter.Cover),
+	}
+}
 
 func InstallChapterHandlers(app core.App, group pyrin.Group) {
 	group.Register(
@@ -30,12 +50,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				}
 
 				for i, chapter := range chapters {
-					res.Chapters[i] = types.Chapter{
-						Id:      chapter.Id,
-						SerieId: chapter.SerieId,
-						Title:   chapter.Title,
-						Number:  chapter.Number.Int64,
-					}
+					res.Chapters[i] = ConvertDBChapter(c, chapter)
 				}
 
 				return res, nil
@@ -98,18 +113,17 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 
 				pages := strings.Split(chapter.Pages, ",")
 				for i, page := range pages {
-					pages[i] = utils.ConvertURL(c, fmt.Sprintf("/files/chapters/%s/%s", chapter.Id, page))
+					pages[i] = ConvertChapterImage(c, chapter.Id, sql.NullString{
+						String: page,
+						Valid:  true,
+					})
 				}
 
+				ch := ConvertDBChapter(c, chapter)
+				ch.User = userData
+
 				res := types.GetChapterById{
-					Chapter: types.Chapter{
-						Id:       chapter.Id,
-						SerieId:  chapter.SerieId,
-						Title:    chapter.Title,
-						Number:   chapter.Number.Int64,
-						CoverArt: pages[0],
-						User:     userData,
-					},
+					Chapter:     ch,
 					NextChapter: nextChapter,
 					PrevChapter: prevChapter,
 					Pages:       pages,

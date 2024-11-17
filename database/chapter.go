@@ -16,13 +16,16 @@ import (
 )
 
 type Chapter struct {
-	Id      string        `db:"id"`
-	SerieId string        `db:"serie_id"`
-	Title   string        `db:"title"`
-	Pages   string        `db:"pages"`
-	Number  sql.NullInt64 `db:"number"`
-	Created int64         `db:"created"`
-	Updated int64         `db:"updated"`
+	Id      string `db:"id"`
+	SerieId string `db:"serie_id"`
+
+	Title  string         `db:"title"`
+	Pages  string         `db:"pages"`
+	Number sql.NullInt64  `db:"number"`
+	Cover  sql.NullString `db:"cover"`
+
+	Created int64 `db:"created"`
+	Updated int64 `db:"updated"`
 }
 
 func ChapterQuery() *goqu.SelectDataset {
@@ -34,6 +37,7 @@ func ChapterQuery() *goqu.SelectDataset {
 			"chapters.title",
 			"chapters.pages",
 			"chapters.number",
+			"chapters.cover",
 
 			"chapters.created",
 			"chapters.updated",
@@ -198,9 +202,12 @@ func (db *Database) IsChapterMarked(ctx context.Context, userId, chapterId strin
 
 type CreateChapterParams struct {
 	SerieId string
-	Title   string
-	Pages   string
-	Number  sql.NullInt64
+
+	Title  string
+	Pages  string
+	Number sql.NullInt64
+	Cover  sql.NullString
+
 	Created int64
 	Updated int64
 }
@@ -222,11 +229,23 @@ func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParam
 			"title":  params.Title,
 			"pages":  params.Pages,
 			"number": params.Number,
+			"cover":  params.Cover,
 
 			"created": params.Created,
 			"updated": params.Updated,
 		}).
-		Returning("id", "serie_id", "title", "pages", "number", "created", "updated").
+		Returning(
+			"chapters.id",
+			"chapters.serie_id",
+
+			"chapters.title",
+			"chapters.pages",
+			"chapters.number",
+			"chapters.cover",
+
+			"chapters.created",
+			"chapters.updated",
+		).
 		Prepared(true)
 
 	var item Chapter
@@ -249,6 +268,7 @@ type ChapterChanges struct {
 	Title  types.Change[string]
 	Pages  types.Change[string]
 	Number types.Change[sql.NullInt64]
+	Cover  types.Change[sql.NullString]
 }
 
 func (db *Database) UpdateChapter(ctx context.Context, id string, changes ChapterChanges) error {
@@ -257,6 +277,7 @@ func (db *Database) UpdateChapter(ctx context.Context, id string, changes Chapte
 	addToRecord(record, "title", changes.Title)
 	addToRecord(record, "pages", changes.Pages)
 	addToRecord(record, "number", changes.Number)
+	addToRecord(record, "cover", changes.Cover)
 
 	if len(record) <= 0 {
 		return nil

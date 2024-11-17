@@ -21,6 +21,7 @@ CREATE TABLE chapters (
     title TEXT NOT NULL,
     pages TEXT NOT NULL,
     number INT,
+    cover TEXT,
 
     created INTEGER NOT NULL,
     updated INTEGER NOT NULL,
