@@ -34,7 +34,9 @@
             "-X github.com/nanoteck137/sewaddle/cmd.Commit=${self.dirtyRev or self.rev or "no-commit"}"
           ];
 
-          vendorHash = "sha256-Jw/k35mjrkhqf+ooD7nOMadWJrQktLw/boTPiJ8+RvA=";
+          vendorHash = "sha256-tJFaEaMSa/7u1LD2gSsKH/2ozZmpcXwmSEElAiy5xI0=";
+
+          nativeBuildInputs = [ pkgs.makeWrapper ];
 
           postFixup = ''
             wrapProgram $out/bin/sewaddle --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.imagemagick ]}
