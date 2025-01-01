@@ -9,7 +9,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	goqusqlite3 "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
-	"github.com/nanoteck137/sewaddle/migrations"
+	"github.com/nanoteck137/sewaddle/database/migrations"
 	"github.com/nanoteck137/sewaddle/types"
 
 	_ "github.com/mattn/go-sqlite3"

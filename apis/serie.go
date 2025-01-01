@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net/http"
@@ -8,9 +9,13 @@ import (
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
-	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
+
+type Serie struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
 
 func ConvertSerieImage(c pyrin.Context, serieId string, image sql.NullString) string {
 	res := "/files/images/default/default_cover.png"
@@ -21,36 +26,52 @@ func ConvertSerieImage(c pyrin.Context, serieId string, image sql.NullString) st
 	return utils.ConvertURL(c, res)
 }
 
-func ConvertDBSerie(c pyrin.Context, serie database.Serie) types.Serie {
-	return types.Serie{
-		Id:            serie.Id,
-		Name:          serie.Name,
-		CoverOriginal: ConvertSerieImage(c, serie.Id, serie.CoverOriginal),
-		CoverLarge:    ConvertSerieImage(c, serie.Id, serie.CoverLarge),
-		CoverMedium:   ConvertSerieImage(c, serie.Id, serie.CoverMedium),
-		CoverSmall:    ConvertSerieImage(c, serie.Id, serie.CoverSmall),
-		ChapterCount:  serie.ChapterCount,
+func ConvertDBSerie(c pyrin.Context, serie database.Serie) Serie {
+	return Serie{
+		Id:   serie.Id,
+		Name: serie.Name,
 	}
+}
+
+type Bookmark struct {
+	ChapterId string `json:"chapterId"`
+}
+
+type GetSeries struct {
+	Series []Serie `json:"series"`
+}
+
+type SerieUserData struct {
+	Bookmark *Bookmark `json:"bookmark,omitempty"`
+}
+
+type GetSerieById struct {
+	Serie
+	User *SerieUserData `json:"user,omitempty"`
+}
+
+type GetSerieChapters struct {
+	Chapters []Chapter `json:"chapters"`
 }
 
 func InstallSerieHandlers(app core.App, group pyrin.Group) {
 	group.Register(
 		pyrin.ApiHandler{
-			Name:     "GetSeries",
-			Method:   http.MethodGet,
-			Path:     "/series",
-			DataType: types.GetSeries{},
+			Name:         "GetSeries",
+			Method:       http.MethodGet,
+			Path:         "/series",
+			ResponseType: GetSeries{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
-				items, err := app.DB().GetAllSeries(c.Request().Context())
+				series, err := app.DB().GetAllSeries(c.Request().Context())
 				if err != nil {
 					return nil, err
 				}
 
-				res := types.GetSeries{
-					Series: make([]types.Serie, len(items)),
+				res := GetSeries{
+					Series: make([]Serie, len(series)),
 				}
 
-				for i, item := range items {
+				for i, item := range series {
 					res.Series[i] = ConvertDBSerie(c, item)
 				}
 
@@ -59,11 +80,11 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 		},
 
 		pyrin.ApiHandler{
-			Name:     "GetSerieById",
-			Method:   http.MethodGet,
-			Path:     "/series/:id",
-			DataType: types.GetSerieById{},
-			Errors:   []pyrin.ErrorType{TypeSerieNotFound},
+			Name:         "GetSerieById",
+			Method:       http.MethodGet,
+			Path:         "/series/:id",
+			ResponseType: GetSerieById{},
+			Errors:       []pyrin.ErrorType{ErrTypeSerieNotFound},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
 				id := c.Param("id")
 				serie, err := app.DB().GetSerieById(c.Request().Context(), id)
@@ -75,7 +96,7 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 					return nil, err
 				}
 
-				var userData *types.SerieUserData
+				var userData *SerieUserData
 
 				user, err := User(app, c)
 				if user != nil {
@@ -84,19 +105,19 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 						return nil, err
 					}
 
-					var bookmark *types.Bookmark
+					var bookmark *Bookmark
 					if err != database.ErrItemNotFound {
-						bookmark = &types.Bookmark{
+						bookmark = &Bookmark{
 							ChapterId: dbBookmark.ChapterId,
 						}
 					}
 
-					userData = &types.SerieUserData{
+					userData = &SerieUserData{
 						Bookmark: bookmark,
 					}
 				}
 
-				res := types.GetSerieById{
+				res := GetSerieById{
 					Serie: ConvertDBSerie(c, serie),
 					User:  userData,
 				}
@@ -106,27 +127,29 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 		},
 
 		pyrin.ApiHandler{
-			Name:     "GetSerieChapters",
-			Method:   http.MethodGet,
-			Path:     "/series/:id/chapters",
-			DataType: types.GetSerieChaptersById{},
+			Name:         "GetSerieChapters",
+			Method:       http.MethodGet,
+			Path:         "/series/:id/chapters",
+			ResponseType: GetSerieChapters{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
 				id := c.Param("id")
 
-				items, err := app.DB().GetSerieChaptersById(c.Request().Context(), id)
+				ctx := context.TODO()
+
+				chapters, err := app.DB().GetSerieChapters(ctx, id)
 				if err != nil {
 					return nil, err
 				}
 
-				res := types.GetSerieChaptersById{
-					Chapters: make([]types.Chapter, len(items)),
+				res := GetSerieChapters{
+					Chapters: make([]Chapter, len(chapters)),
 				}
 
 				var markedChapters []string
 
 				user, _ := User(app, c)
 				if user != nil {
-					markedChapters, err = app.DB().GetAllMarkedChapters(c.Request().Context(), user.Id, id)
+					markedChapters, err = app.DB().GetAllMarkedChapters(ctx, user.Id, id)
 					if err != nil {
 						return nil, err
 					}
@@ -146,19 +169,21 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 					return false
 				}
 
-				for i, item := range items {
-					var userData *types.ChapterUserData
-					if user != nil {
-						isMarked := isChapterMarked(item.Id)
+				_ = isChapterMarked
 
-						userData = &types.ChapterUserData{
-							IsMarked: isMarked,
-						}
-					}
+				for i, chapter := range chapters {
+					// var userData *types.ChapterUserData
+					// if user != nil {
+					// 	isMarked := isChapterMarked(item.Id)
+					//
+					// 	userData = &types.ChapterUserData{
+					// 		IsMarked: isMarked,
+					// 	}
+					// }
 
-					ch := ConvertDBChapter(c, item)
-					ch.User = userData
-					res.Chapters[i] = ch 
+					ch := ConvertDBChapter(c, chapter)
+					// ch.User = userData
+					res.Chapters[i] = ch
 				}
 
 				return res, nil

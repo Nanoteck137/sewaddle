@@ -15,13 +15,14 @@ import (
 )
 
 type Chapter struct {
-	Id      string `db:"id"`
+	Id   string `db:"id"`
+	Name string `db:"name"`
+
 	SerieId string `db:"serie_id"`
 
-	Title  string         `db:"title"`
 	Pages  string         `db:"pages"`
-	Number sql.NullInt64  `db:"number"`
-	Cover  sql.NullString `db:"cover"`
+	Number int64          `db:"number"`
+	CoverArt  sql.NullString `db:"cover_art"`
 
 	Created int64 `db:"created"`
 	Updated int64 `db:"updated"`
@@ -31,12 +32,13 @@ func ChapterQuery() *goqu.SelectDataset {
 	return dialect.From("chapters").
 		Select(
 			"chapters.id",
+			"chapters.name",
+
 			"chapters.serie_id",
 
-			"chapters.title",
 			"chapters.pages",
 			"chapters.number",
-			"chapters.cover",
+			"chapters.cover_art",
 
 			"chapters.created",
 			"chapters.updated",
@@ -59,7 +61,7 @@ func (db *Database) GetAllChapters(ctx context.Context) ([]Chapter, error) {
 	return items, nil
 }
 
-func (db *Database) GetChapter(ctx context.Context, id string) (Chapter, error) {
+func (db *Database) GetChapterById(ctx context.Context, id string) (Chapter, error) {
 	query := ChapterQuery().
 		Where(goqu.I("chapters.id").Eq(id))
 
@@ -76,7 +78,7 @@ func (db *Database) GetChapter(ctx context.Context, id string) (Chapter, error) 
 	return item, nil
 }
 
-func (db *Database) GetSerieChaptersById(ctx context.Context, serieId string) ([]Chapter, error) {
+func (db *Database) GetSerieChapters(ctx context.Context, serieId string) ([]Chapter, error) {
 	query := ChapterQuery().
 		Where(goqu.I("chapters.serie_id").Eq(serieId))
 
@@ -140,7 +142,10 @@ func (db *Database) GetAllMarkedChapters(ctx context.Context, userId, serieId st
 	// TODO(patrik): FIIIIX
 	ds := dialect.From("user_chapter_marked").
 		Select("chapter_id").
-		Join(goqu.I("chapters"), goqu.On(goqu.I("chapters.id").Eq(goqu.I("user_chapter_marked.chapter_id")))).
+		Join(
+			goqu.I("chapters"),
+			goqu.On(goqu.I("chapters.id").Eq(goqu.I("user_chapter_marked.chapter_id"))),
+		).
 		Where(
 			goqu.And(
 				goqu.I("user_chapter_marked.user_id").Eq(userId),
@@ -259,19 +264,29 @@ func addToRecord[T any](record goqu.Record, name string, change types.Change[T])
 }
 
 type ChapterChanges struct {
-	Title  types.Change[string]
-	Pages  types.Change[string]
-	Number types.Change[sql.NullInt64]
-	Cover  types.Change[sql.NullString]
+	Name types.Change[string]
+
+	SerieId types.Change[string]
+
+	Pages    types.Change[string]
+	Number   types.Change[int64]
+	CoverArt types.Change[sql.NullString]
+
+	Created types.Change[int64]
 }
 
 func (db *Database) UpdateChapter(ctx context.Context, id string, changes ChapterChanges) error {
 	record := goqu.Record{}
 
-	addToRecord(record, "title", changes.Title)
+	addToRecord(record, "name", changes.Name)
+
+	addToRecord(record, "serie_id", changes.SerieId)
+
 	addToRecord(record, "pages", changes.Pages)
 	addToRecord(record, "number", changes.Number)
-	addToRecord(record, "cover", changes.Cover)
+	addToRecord(record, "cover_art", changes.CoverArt)
+
+	addToRecord(record, "created", changes.Created)
 
 	if len(record) <= 0 {
 		return nil
@@ -301,7 +316,7 @@ func (db *Database) RecalculateNumberForSerie(ctx context.Context, serieId strin
 	}
 	defer tx.Rollback()
 
-	chapters, err := db.GetSerieChaptersById(ctx, serieId)
+	chapters, err := db.GetSerieChapters(ctx, serieId)
 	if err != nil {
 		return err
 	}
@@ -311,16 +326,13 @@ func (db *Database) RecalculateNumberForSerie(ctx context.Context, serieId strin
 	}
 
 	sort.SliceStable(chapters, func(i, j int) bool {
-		return natural.Less(chapters[i].Title, chapters[j].Title)
+		return natural.Less(chapters[i].Name, chapters[j].Name)
 	})
 
 	for i, c := range chapters {
 		err := db.UpdateChapter(ctx, c.Id, ChapterChanges{
-			Number: types.Change[sql.NullInt64]{
-				Value: sql.NullInt64{
-					Int64: int64(i),
-					Valid: true,
-				},
+			Number: types.Change[int64]{
+				Value:   int64(i),
 				Changed: true,
 			},
 		})

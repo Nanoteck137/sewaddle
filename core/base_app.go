@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/nanoteck137/sewaddle/config"
+	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
 )
@@ -46,6 +47,7 @@ func (app *BaseApp) Bootstrap() error {
 	dirs := []string{
 		workDir.SeriesDir(),
 		workDir.ChaptersDir(),
+		workDir.Trash(),
 	}
 
 	for _, dir := range dirs {
@@ -65,38 +67,26 @@ func (app *BaseApp) Bootstrap() error {
 		return err
 	}
 
-	app.dbConfig, err = app.db.GetConfig(context.Background())
-	if err != nil {
-		if errors.Is(err, database.ErrItemNotFound) {
-			db, tx, err := app.DB().Begin()
-			if err != nil {
-				return err
-			}
-			defer tx.Rollback()
+	_, err = os.Stat(workDir.SetupFile())
+	if errors.Is(err, os.ErrNotExist) {
+		log.Info("Server not setup, creating the initial user")
 
-			ctx := context.Background()
-			username := app.config.Username
-			password := app.config.InitialPassword
+		ctx := context.Background()
 
-			user, err := db.CreateUser(ctx, username, password)
-			if err != nil {
-				return err
-			}
-
-			conf, err := db.CreateConfig(ctx, user.Id)
-			if err != nil {
-				return err
-			}
-
-			err = tx.Commit()
-			if err != nil {
-				return err
-			}
-
-			app.dbConfig = &conf
-		} else {
+		_, err := app.db.CreateUser(ctx, database.CreateUserParams{
+			Username: app.config.Username,
+			Password: app.config.InitialPassword,
+			Role:     types.RoleSuperUser,
+		})
+		if err != nil {
 			return err
 		}
+
+		f, err := os.Create(workDir.SetupFile())
+		if err != nil {
+			return err
+		}
+		f.Close()
 	}
 
 	return nil

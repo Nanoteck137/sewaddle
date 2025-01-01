@@ -21,7 +21,7 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 			Path:   "/images/default/:image",
 			HandlerFunc: func(c pyrin.Context) error {
 				image := c.Param("image")
-				return pyrin.ServeFile(c.Response(), c.Request(), assets.DefaultImagesFS, image)
+				return pyrin.ServeFile(c, assets.DefaultImagesFS, image)
 			},
 		},
 
@@ -35,7 +35,7 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 				p := app.WorkDir().SerieDir(id).ImagesDir()
 				f := os.DirFS(p)
 
-				return pyrin.ServeFile(c.Response(), c.Request(), f, image)
+				return pyrin.ServeFile(c, f, image)
 			},
 		},
 
@@ -49,7 +49,7 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 				p := app.WorkDir().ChapterDir(chapterId)
 				f := os.DirFS(p)
 
-				return pyrin.ServeFile(c.Response(), c.Request(), f, image)
+				return pyrin.ServeFile(c, f, image)
 			},
 		},
 	)

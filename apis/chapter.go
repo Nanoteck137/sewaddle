@@ -9,9 +9,23 @@ import (
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
-	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 )
+
+type ChapterUserData struct {
+	IsMarked bool `json:"isMarked"`
+}
+
+type Chapter struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+
+	SerieId string `json:"serieId"`
+
+	Pages    []string `json:"pages"`
+	Number   int64    `json:"number"`
+	CoverArt string   `json:"coverArt"`
+}
 
 func ConvertChapterImage(c pyrin.Context, chapterId string, image sql.NullString) string {
 	res := "/files/images/default/default_cover.png"
@@ -22,31 +36,43 @@ func ConvertChapterImage(c pyrin.Context, chapterId string, image sql.NullString
 	return utils.ConvertURL(c, res)
 }
 
-func ConvertDBChapter(c pyrin.Context, chapter database.Chapter) types.Chapter {
-	return types.Chapter{
+func ConvertDBChapter(c pyrin.Context, chapter database.Chapter) Chapter {
+	return Chapter{
 		Id:       chapter.Id,
+		Name:     chapter.Name,
 		SerieId:  chapter.SerieId,
-		Title:    chapter.Title,
-		Number:   chapter.Number.Int64,
-		CoverArt: ConvertChapterImage(c, chapter.Id, chapter.Cover),
+		Pages:    strings.Split(chapter.Pages, ","),
+		Number:   chapter.Number,
+		CoverArt: ConvertChapterImage(c, chapter.Id, chapter.CoverArt),
 	}
+}
+
+type GetChapters struct {
+	Chapters []Chapter `json:"chapters"`
+}
+
+type GetChapterById struct {
+	Chapter
+
+	NextChapter *string `json:"nextChapter"`
+	PrevChapter *string `json:"prevChapter"`
 }
 
 func InstallChapterHandlers(app core.App, group pyrin.Group) {
 	group.Register(
 		pyrin.ApiHandler{
-			Name:     "GetChapters",
-			Method:   http.MethodGet,
-			Path:     "/chapters",
-			DataType: types.GetChapters{},
+			Name:         "GetChapters",
+			Method:       http.MethodGet,
+			Path:         "/chapters",
+			ResponseType: GetChapters{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
 				chapters, err := app.DB().GetAllChapters(c.Request().Context())
 				if err != nil {
 					return nil, err
 				}
 
-				res := types.GetChapters{
-					Chapters: make([]types.Chapter, len(chapters)),
+				res := GetChapters{
+					Chapters: make([]Chapter, len(chapters)),
 				}
 
 				for i, chapter := range chapters {
@@ -58,16 +84,16 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 		},
 
 		pyrin.ApiHandler{
-			Name:     "GetChapterById",
-			Method:   http.MethodGet,
-			Path:     "/chapters/:id",
-			DataType: types.GetChapterById{},
+			Name:         "GetChapterById",
+			Method:       http.MethodGet,
+			Path:         "/chapters/:id",
+			ResponseType: GetChapterById{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
 				id := c.Param("id")
 
 				ctx := context.TODO()
 
-				chapter, err := app.DB().GetChapter(ctx, id)
+				chapter, err := app.DB().GetChapterById(ctx, id)
 				if err != nil {
 					return nil, err
 				}
@@ -75,7 +101,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				var nextChapter *string
 				var prevChapter *string
 
-				chapters, err := app.DB().GetSerieChaptersById(ctx, chapter.SerieId)
+				chapters, err := app.DB().GetSerieChapters(ctx, chapter.SerieId)
 				if err != nil {
 					return nil, err
 				}
@@ -97,7 +123,8 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 					prevChapter = &chapters[index-1].Id
 				}
 
-				var userData *types.ChapterUserData
+				var userData *ChapterUserData
+				_ = userData
 
 				user, err := User(app, c)
 				if err == nil {
@@ -106,7 +133,7 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 						return nil, err
 					}
 
-					userData = &types.ChapterUserData{
+					userData = &ChapterUserData{
 						IsMarked: isMarked,
 					}
 				}
@@ -120,16 +147,13 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				}
 
 				ch := ConvertDBChapter(c, chapter)
-				ch.User = userData
+				// ch.User = userData
 
-				res := types.GetChapterById{
+				return GetChapterById{
 					Chapter:     ch,
 					NextChapter: nextChapter,
 					PrevChapter: prevChapter,
-					Pages:       pages,
-				}
-
-				return res, nil
+				}, nil
 			},
 		},
 	)

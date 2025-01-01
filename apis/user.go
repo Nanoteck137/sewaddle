@@ -23,7 +23,7 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 					return nil, err
 				}
 
-				body, err := Body[types.PostUserMarkChaptersBody](c)
+				body, err := pyrin.Body[types.PostUserMarkChaptersBody](c)
 				if err != nil {
 					return nil, err
 				}
@@ -43,7 +43,6 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 			Name:     "UnmarkChapters",
 			Method:   http.MethodPost,
 			Path:     "/user/unmarkChapters",
-			DataType: nil,
 			BodyType: types.PostUserUnmarkChaptersBody{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
 				user, err := User(app, c)
@@ -51,7 +50,7 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 					return nil, err
 				}
 
-				body, err := Body[types.PostUserUnmarkChaptersBody](c)
+				body, err := pyrin.Body[types.PostUserUnmarkChaptersBody](c)
 				if err != nil {
 					return nil, err
 				}
@@ -71,7 +70,6 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 			Name:     "UpdateBookmark",
 			Method:   http.MethodPost,
 			Path:     "/user/updateBookmark",
-			DataType: nil,
 			BodyType: types.PostUserUpdateBookmarkBody{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
 				user, err := User(app, c)
@@ -79,19 +77,21 @@ func InstallUserHandlers(app core.App, group pyrin.Group) {
 					return nil, err
 				}
 
-				body, err := Body[types.PostUserUpdateBookmarkBody](c)
+				body, err := pyrin.Body[types.PostUserUpdateBookmarkBody](c)
 				if err != nil {
 					return nil, err
 				}
 
 				ctx := c.Request().Context()
 
+				// TODO(patrik): Handle errors
 				serie, err := app.DB().GetSerieById(ctx, body.SerieId)
 				if err != nil {
 					return nil, err
 				}
 
-				chapter, err := app.DB().GetChapter(ctx, body.ChapterId)
+				chapter, err := app.DB().GetChapterById(ctx, body.ChapterId)
+				// TODO(patrik): Handle errors
 				if err != nil {
 					return nil, err
 				}

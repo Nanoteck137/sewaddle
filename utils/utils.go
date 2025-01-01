@@ -11,7 +11,6 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/mitchellh/mapstructure"
-	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nrednav/cuid2"
 )
 
@@ -69,17 +68,17 @@ func Decode(input interface{}, output interface{}) error {
 	return decoder.Decode(input)
 }
 
-func ParseAuthHeader(authHeader string) (string, error) {
+func ParseAuthHeader(authHeader string) string {
 	splits := strings.Split(authHeader, " ")
 	if len(splits) != 2 {
-		return "", types.ErrInvalidAuthHeader
+		return ""
 	}
 
 	if splits[0] != "Bearer" {
-		return "", types.ErrInvalidAuthHeader
+		return ""
 	}
 
-	return splits[1], nil
+	return splits[1]
 }
 
 func SymlinkReplace(src, dst string) error {

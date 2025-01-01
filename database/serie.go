@@ -15,10 +15,7 @@ type Serie struct {
 	Id   string `db:"id"`
 	Name string `db:"name"`
 
-	CoverOriginal sql.NullString `db:"cover_original"`
-	CoverLarge    sql.NullString `db:"cover_large"`
-	CoverMedium   sql.NullString `db:"cover_medium"`
-	CoverSmall    sql.NullString `db:"cover_small"`
+	CoverArt sql.NullString `db:"cover_art"`
 
 	Created int64 `db:"created"`
 	Updated int64 `db:"updated"`
@@ -41,10 +38,7 @@ func SerieQuery() *goqu.SelectDataset {
 			"series.id",
 			"series.name",
 
-			"series.cover_original",
-			"series.cover_large",
-			"series.cover_medium",
-			"series.cover_small",
+			"series.cover_art",
 
 			"series.created",
 			"series.updated",
@@ -60,9 +54,7 @@ func SerieQuery() *goqu.SelectDataset {
 		// 		},
 		// 	),
 		// ).
-		Order(
-			goqu.I("series.name").Asc(),
-		)
+		Order(goqu.I("series.name").Asc())
 }
 
 func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
@@ -94,51 +86,37 @@ func (db *Database) GetSerieById(ctx context.Context, id string) (Serie, error) 
 	return item, nil
 }
 
-func (db *Database) GetSerieByName(ctx context.Context, name string) (Serie, error) {
-	query := SerieQuery().
-		Where(goqu.I("series.name").Eq(name))
-
-	var item Serie
-	err := db.Get(&item, query)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return Serie{}, ErrItemNotFound
-		}
-
-		return Serie{}, err
-	}
-
-	return item, nil
-}
-
 type CreateSerieParams struct {
+	Id   string
 	Name string
 
-	CoverOriginal sql.NullString
-	CoverLarge    sql.NullString
-	CoverMedium   sql.NullString
-	CoverSmall    sql.NullString
+	CoverArt sql.NullString
 
-	Updated int64
 	Created int64
+	Updated int64
 }
 
 func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (Serie, error) {
-	if params.Created == 0 && params.Updated == 0 {
-		t := time.Now().UnixMilli()
-		params.Created = t
-		params.Updated = t
+	t := time.Now().UnixMilli()
+	created := params.Created
+	updated := params.Updated
+
+	if created == 0 && updated == 0 {
+		created = t
+		updated = t
+	}
+
+	id := params.Id
+	if id == "" {
+		id = utils.CreateSerieId()
 	}
 
 	query := dialect.Insert("series").
 		Rows(goqu.Record{
-			"id":   utils.CreateSerieId(),
+			"id":   id,
 			"name": params.Name,
 
-			"cover_original": params.CoverOriginal,
-			"cover_large":    params.CoverLarge,
-			"cover_medium":   params.CoverMedium,
-			"cover_small":    params.CoverSmall,
+			"cover_art": params.CoverArt,
 
 			"created": params.Created,
 			"updated": params.Updated,
@@ -147,10 +125,7 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 			"series.id",
 			"series.name",
 
-			"series.cover_original",
-			"series.cover_large",
-			"series.cover_medium",
-			"series.cover_small",
+			"series.cover_art",
 
 			"series.created",
 			"series.updated",
@@ -167,12 +142,11 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 }
 
 type SerieChanges struct {
-	Name  types.Change[string]
+	Name types.Change[string]
 
-	CoverOriginal types.Change[sql.NullString]
-	CoverLarge types.Change[sql.NullString]
-	CoverMedium types.Change[sql.NullString]
-	CoverSmall types.Change[sql.NullString]
+	CoverArt types.Change[sql.NullString]
+
+	Created types.Change[int64]
 }
 
 func (db *Database) UpdateSerie(ctx context.Context, id string, changes SerieChanges) error {
@@ -180,12 +154,11 @@ func (db *Database) UpdateSerie(ctx context.Context, id string, changes SerieCha
 
 	addToRecord(record, "name", changes.Name)
 
-	addToRecord(record, "cover_original", changes.CoverOriginal)
-	addToRecord(record, "cover_large", changes.CoverLarge)
-	addToRecord(record, "cover_medium", changes.CoverMedium)
-	addToRecord(record, "cover_small", changes.CoverSmall)
+	addToRecord(record, "cover_art", changes.CoverArt)
 
-	if len(record) <= 0 {
+	addToRecord(record, "created", changes.Created)
+
+	if len(record) == 0 {
 		return nil
 	}
 
@@ -193,11 +166,7 @@ func (db *Database) UpdateSerie(ctx context.Context, id string, changes SerieCha
 
 	ds := dialect.Update("series").
 		Set(record).
-		Where(
-			goqu.And(
-				goqu.I("series.id").Eq(id),
-			),
-		).
+		Where(goqu.I("series.id").Eq(id)).
 		Prepared(true)
 
 	_, err := db.Exec(ctx, ds)
