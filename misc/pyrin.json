@@ -11,6 +11,27 @@
   ],
   "types": [
     {
+      "name": "Images",
+      "extend": "",
+      "fields": [
+        {
+          "name": "small",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "medium",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "large",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
       "name": "Serie",
       "extend": "",
       "fields": [
@@ -22,6 +43,11 @@
         {
           "name": "name",
           "type": "string",
+          "omit": false
+        },
+        {
+          "name": "coverArt",
+          "type": "Images",
           "omit": false
         }
       ]
@@ -74,9 +100,25 @@
           "omit": false
         },
         {
+          "name": "coverArt",
+          "type": "Images",
+          "omit": false
+        },
+        {
           "name": "user",
           "type": "*SerieUserData",
           "omit": true
+        }
+      ]
+    },
+    {
+      "name": "ChapterUserData",
+      "extend": "",
+      "fields": [
+        {
+          "name": "isMarked",
+          "type": "bool",
+          "omit": false
         }
       ]
     },
@@ -105,14 +147,14 @@
           "omit": false
         },
         {
-          "name": "number",
-          "type": "int",
+          "name": "coverArt",
+          "type": "Images",
           "omit": false
         },
         {
-          "name": "coverArt",
-          "type": "string",
-          "omit": false
+          "name": "user",
+          "type": "*ChapterUserData",
+          "omit": true
         }
       ]
     },
@@ -123,6 +165,28 @@
         {
           "name": "chapters",
           "type": "[]Chapter",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "CreateSerie",
+      "extend": "",
+      "fields": [
+        {
+          "name": "serieId",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "CreateSerieBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
           "omit": false
         }
       ]
@@ -163,14 +227,14 @@
           "omit": false
         },
         {
-          "name": "number",
-          "type": "int",
+          "name": "coverArt",
+          "type": "Images",
           "omit": false
         },
         {
-          "name": "coverArt",
-          "type": "string",
-          "omit": false
+          "name": "user",
+          "type": "*ChapterUserData",
+          "omit": true
         },
         {
           "name": "nextChapter",
@@ -180,6 +244,22 @@
         {
           "name": "prevChapter",
           "type": "*string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "UploadChapterBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "serieId",
+          "type": "string",
           "omit": false
         }
       ]
@@ -378,6 +458,13 @@
       "bodyType": ""
     },
     {
+      "name": "CreateSerie",
+      "method": "POST",
+      "path": "/api/v1/series",
+      "responseType": "CreateSerie",
+      "bodyType": "CreateSerieBody"
+    },
+    {
       "name": "GetChapters",
       "method": "GET",
       "path": "/api/v1/chapters",
@@ -448,7 +535,22 @@
       "bodyType": ""
     }
   ],
-  "formApiEndpoints": null,
+  "formApiEndpoints": [
+    {
+      "name": "ChangeSerieCover",
+      "method": "POST",
+      "path": "/api/v1/series/:id/cover",
+      "responseType": "",
+      "bodyType": ""
+    },
+    {
+      "name": "UploadChapter",
+      "method": "POST",
+      "path": "/api/v1/chapters",
+      "responseType": "",
+      "bodyType": "UploadChapterBody"
+    }
+  ],
   "normalEndpoints": [
     {
       "name": "",

@@ -1,17 +1,34 @@
 <script lang="ts">
+  import { goto, invalidateAll } from "$app/navigation";
+  import { createApiClient, formatError } from "$lib";
+  import { Serie } from "$lib/api/types.js";
+  import { cn } from "$lib/utils.js";
+  import {
+    Button,
+    buttonVariants,
+    Checkbox,
+    DropdownMenu,
+  } from "@nanoteck137/nano-ui";
   import {
     Bookmark,
+    BookmarkMinus,
+    BookmarkPlus,
+    BookmarkX,
     BookMinus,
+    BookOpen,
     BookPlus,
     Check,
     EllipsisVertical,
+    Users,
+    X,
   } from "lucide-svelte";
+  import toast from "svelte-5-french-toast";
 
   const { data } = $props();
+  const apiClient = createApiClient(data);
 
   type Chapter = (typeof data.chapters)[number];
 
-  let showPopupMenu = $state("");
   let selectedChapters = $state<string[]>([]);
 
   function isSelected(chapterId: string) {
@@ -25,207 +42,276 @@
   }
 </script>
 
-<div class="flex flex-col gap-2 px-5">
-  <div class="flex justify-center md:fixed md:h-full">
-    <div class="w-[280px]">
-      <img class="h-[360px] w-[280px] rounded object-cover" src={""} alt="" />
-      <div class="h-2"></div>
-      <p class="line-clamp-2 text-center font-bold">{data.serie.name}</p>
-      {#if data.serie.user?.bookmark?.chapterId}
-        <a href="/view/{data.serie.user?.bookmark?.chapterId}/scroll">
-          Continue
-        </a>
-      {/if}
-    </div>
-  </div>
-  <div class="md:ml-4 md:pl-[280px]">
-    <div class="flex flex-col gap-2">
-      {#snippet normalChapter(chapter: Chapter)}
-        <div class="group relative flex items-center gap-2 border-b pb-1 pr-4">
-          <div class="flex flex-grow items-center gap-2">
-            <img
-              class="h-14 w-10 rounded object-cover"
-              loading="lazy"
-              src={chapter.coverArt}
-              alt="Chapter Cover"
-            />
-            <div class="flex flex-col gap-1">
-              <a
-                class="line-clamp-1 font-medium"
-                title={chapter.name}
-                href={`/view/${chapter.id}/scroll`}
-              >
-                {chapter.name}
-              </a>
-              <!-- {#if chapter.user?.isMarked}
-                <p class="line-clamp-1 text-sm font-light">Read</p>
-              {/if} -->
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button
-              class="block rounded-full p-1 hover:bg-black/20"
-              onclick={() => {
-                showPopupMenu = chapter.id;
-              }}
-            >
-              <EllipsisVertical size="25" />
-            </button>
-            <button
-              class="flex h-6 w-6 items-center justify-center rounded border"
-              onclick={() => {
-                selectedChapters.push(chapter.id);
-              }}
-            >
-              {#if isSelected(chapter.id)}
-                <Check size="18" />
-              {/if}
-            </button>
-          </div>
-          <div
-            class={`popup absolute right-7 top-full z-50 -translate-y-4 rounded bg-red-400 ${showPopupMenu === chapter.id ? "" : "hidden"}`}
-          >
-            <div class="flex flex-col">
-              <form action="?/markChapters" method="post">
-                <input name="chapters[]" value={chapter.id} type="hidden" />
-                <button
-                  class="flex w-full gap-1 rounded px-4 py-2 hover:bg-red-200"
-                >
-                  <BookPlus />
-                  <p>Mark as Read</p>
-                </button>
-              </form>
+<div class="flex flex-col items-center gap-2">
+  <img
+    class="h-[360px] w-[280px] rounded object-cover"
+    src={data.serie.coverArt.large}
+    alt=""
+  />
 
-              <form action="?/unmarkChapters" method="post">
-                <input name="chapters[]" value={chapter.id} type="hidden" />
-                <button
-                  class="flex w-full gap-1 rounded px-4 py-2 hover:bg-red-200"
-                >
-                  <BookMinus />
-                  <p>Mark as not Read</p>
-                </button>
-              </form>
+  <p class="line-clamp-2 text-center font-bold">{data.serie.name}</p>
 
-              <form action="?/setBookmark" method="post">
-                <input name="serieId" value={data.serie.id} type="hidden" />
-                <input name="chapterId" value={chapter.id} type="hidden" />
-                <button
-                  class="flex w-full gap-1 rounded px-4 py-2 hover:bg-red-200"
-                >
-                  <Bookmark />
-                  <p>Set as Bookmark</p>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      {/snippet}
-
-      {#snippet editChapter(chapter: Chapter, index: number)}
-        <button
-          class="group relative flex items-center gap-2 border-b pb-1 pr-4"
-          onclick={(e) => {
-            if (e.shiftKey) {
-              const firstSelected = selectedChapters[0];
-              let first = data.chapters.findIndex(
-                (i) => i.id === firstSelected,
-              );
-
-              let last = index;
-              if (first > last) {
-                const tmp = last;
-                last = first;
-                first = tmp;
-              }
-
-              const items = [];
-              const numItems = last - first + 1;
-              for (let i = 0; i < numItems; i++) {
-                items.push(first + i);
-              }
-
-              const ids = items.map((i) => data.chapters[i].id);
-              selectedChapters = ids;
-            } else {
-              if (isSelected(chapter.id)) {
-                selectedChapters = selectedChapters.filter(
-                  (id) => id !== chapter.id,
-                );
-              } else {
-                selectedChapters.push(chapter.id);
-              }
-            }
-          }}
-        >
-          <div class="flex flex-grow items-center gap-2">
-            <img
-              class="h-14 w-10 rounded object-cover"
-              loading="lazy"
-              src={chapter.coverArt}
-              alt="Chapter Cover"
-            />
-            <div class="flex flex-col gap-1">
-              <a
-                class="line-clamp-1 font-medium"
-                title={chapter.name}
-                href={`/view/${chapter.id}`}
-              >
-                {chapter.name}
-              </a>
-              <!-- {#if chapter.user?.isMarked}
-                <p class="line-clamp-1 text-start text-sm font-light">Read</p>
-              {/if} -->
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <div
-              class="flex h-6 w-6 items-center justify-center rounded border"
-            >
-              {#if isSelected(chapter.id)}
-                <Check size="18" />
-              {/if}
-            </div>
-          </div>
-        </button>
-      {/snippet}
-
-      {#each data.chapters as chapter, i}
-        {#if selectedChapters.length > 0}
-          {@render editChapter(chapter, i)}
-        {:else}
-          {@render normalChapter(chapter)}
-        {/if}
-      {/each}
-    </div>
-  </div>
+  {#if data.serie.user?.bookmark?.chapterId}
+    <Button
+      href="/view/{data.serie.user?.bookmark?.chapterId}/scroll"
+      variant="outline"
+    >
+      Continue
+    </Button>
+  {/if}
 </div>
 
-{#if showPopupMenu !== ""}
-  <button
-    class="fixed inset-0 z-40 bg-purple-400/50"
-    onclick={() => {
-      showPopupMenu = "";
-    }}
-  >
-  </button>
-{/if}
+<div class="h-4"></div>
 
-{#if selectedChapters.length > 0}
-  <div class="fixed bottom-0 left-1/2 bg-red-300 p-10">
-    <form action="?/markChapters" method="post">
-      {#each selectedChapters as chapter}
-        <input name="chapters[]" value={chapter} type="hidden" />
-      {/each}
+<div>
+  <div class={`flex flex-col gap-2 ${selectedChapters.length > 0 ? "" : ""}`}>
+    {#snippet normalChapter(chapter: Chapter)}
+      <div class="group relative flex items-center gap-2 border-b pb-1 pr-4">
+        <div class="flex flex-grow items-center gap-2">
+          <img
+            class="h-14 w-10 rounded object-cover"
+            loading="lazy"
+            src={chapter.coverArt.small}
+            alt="Chapter Cover"
+          />
+          <div class="flex flex-col gap-1">
+            <a
+              class="line-clamp-1 flex items-center gap-2 font-medium"
+              title={chapter.name}
+              href={`/view/${chapter.id}/scroll`}
+            >
+              {#if data.serie.user?.bookmark?.chapterId === chapter.id}
+                <Check size={14} />
+              {/if}
+              {chapter.name}
+            </a>
+            {#if chapter.user?.isMarked}
+              <p class="line-clamp-1 text-sm font-light">Read</p>
+            {/if}
+          </div>
+        </div>
 
-      <button>Mark Chapters</button>
-    </form>
+        <div class="flex items-center gap-2">
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger
+              class={cn(
+                buttonVariants({ variant: "ghost", size: "icon" }),
+                "rounded-full",
+              )}
+            >
+              <EllipsisVertical />
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end">
+              <DropdownMenu.Group>
+                <DropdownMenu.Item
+                  onSelect={async () => {
+                    goto(`/view/${chapter.id}/scroll`);
+                  }}
+                >
+                  <BookOpen />
+                  Read Chapter
+                </DropdownMenu.Item>
 
-    <form action="?/unmarkChapters" method="post">
-      {#each selectedChapters as chapter}
-        <input name="chapters[]" value={chapter} type="hidden" />
-      {/each}
+                {#if data.user}
+                  {#if !chapter.user?.isMarked}
+                    <DropdownMenu.Item
+                      onSelect={async () => {
+                        const res = await apiClient.markChapters({
+                          chapters: [chapter.id],
+                        });
+                        if (!res.success) {
+                          toast.error("Error: " + formatError(res.error));
+                          console.error(formatError(res.error));
+                        }
 
-      <button>Unmark Chapters</button>
-    </form>
+                        await invalidateAll();
+                      }}
+                    >
+                      <BookPlus />
+                      Mark as Read
+                    </DropdownMenu.Item>
+                  {:else}
+                    <DropdownMenu.Item
+                      onSelect={async () => {
+                        const res = await apiClient.unmarkChapters({
+                          chapters: [chapter.id],
+                        });
+                        if (!res.success) {
+                          toast.error("Error: " + formatError(res.error));
+                          console.error(formatError(res.error));
+                        }
+
+                        await invalidateAll();
+                      }}
+                    >
+                      <BookMinus />
+                      Mark as not Read
+                    </DropdownMenu.Item>
+                  {/if}
+                {/if}
+
+                {#if data.user}
+                  <DropdownMenu.Item
+                    onSelect={async () => {
+                      const res = await apiClient.updateBookmark({
+                        serieId: data.serie.id,
+                        chapterId: chapter.id,
+                        page: 0,
+                      });
+                      if (!res.success) {
+                        toast.error("Error: " + formatError(res.error));
+                        console.error(formatError(res.error));
+                      }
+
+                      await invalidateAll();
+                    }}
+                  >
+                    <Bookmark />
+                    Set as Bookmark
+                  </DropdownMenu.Item>
+                {/if}
+              </DropdownMenu.Group>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+
+          <Checkbox
+            checked={false}
+            onCheckedChange={() => {
+              selectedChapters.push(chapter.id);
+            }}
+          />
+        </div>
+      </div>
+    {/snippet}
+
+    {#snippet editChapter(chapter: Chapter, index: number)}
+      <button
+        class="group relative flex items-center gap-2 border-b pb-1 pr-4"
+        onclick={(e) => {
+          if (e.shiftKey) {
+            const firstSelected =
+              selectedChapters.length <= 0 ? 0 : selectedChapters[0];
+            let first = data.chapters.findIndex((i) => i.id === firstSelected);
+
+            let last = index;
+            if (first > last) {
+              const tmp = last;
+              last = first;
+              first = tmp;
+            }
+
+            const items = [];
+            const numItems = last - first + 1;
+            for (let i = 0; i < numItems; i++) {
+              items.push(first + i);
+            }
+
+            const ids = items.map((i) => data.chapters[i].id);
+            selectedChapters = ids;
+          } else {
+            if (isSelected(chapter.id)) {
+              selectedChapters = selectedChapters.filter(
+                (id) => id !== chapter.id,
+              );
+            } else {
+              selectedChapters.push(chapter.id);
+            }
+          }
+        }}
+      >
+        <div class="flex flex-grow items-center gap-2">
+          <img
+            class="h-14 w-10 rounded object-cover"
+            loading="lazy"
+            src={chapter.coverArt.small}
+            alt="Chapter Cover"
+          />
+          <div class="flex flex-col gap-1">
+            <a
+              class="line-clamp-1 font-medium"
+              title={chapter.name}
+              href={`/view/${chapter.id}`}
+            >
+              {chapter.name}
+            </a>
+            <!-- {#if chapter.user?.isMarked}
+                <p class="line-clamp-1 text-start text-sm font-light">Read</p>
+              {/if} -->
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <Checkbox checked={isSelected(chapter.id)} />
+        </div>
+      </button>
+    {/snippet}
+
+    {#each data.chapters as chapter, i}
+      {#if selectedChapters.length > 0}
+        {@render editChapter(chapter, i)}
+      {:else}
+        {@render normalChapter(chapter)}
+      {/if}
+    {/each}
   </div>
-{/if}
+
+  <div class="h-4"></div>
+
+  {#if selectedChapters.length > 0}
+    <div
+      class="sticky bottom-4 border bg-background px-6 py-3 text-foreground"
+    >
+      <div class="flex flex-col justify-center gap-2 md:flex-row">
+        <div class="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onclick={() => {
+              selectedChapters = [];
+            }}
+          >
+            <X />
+          </Button>
+
+          <Button
+            class="flex-grow"
+            variant="outline"
+            onclick={async () => {
+              const res = await apiClient.markChapters({
+                chapters: selectedChapters,
+              });
+              if (!res.success) {
+                toast.error("Error: " + formatError(res.error));
+                console.error(formatError(res.error));
+              }
+
+              selectedChapters = [];
+              await invalidateAll();
+            }}
+          >
+            <BookmarkPlus />
+            Mark Chapters
+          </Button>
+        </div>
+
+        <Button
+          variant="outline"
+          onclick={async () => {
+            const res = await apiClient.unmarkChapters({
+              chapters: selectedChapters,
+            });
+            if (!res.success) {
+              toast.error("Error: " + formatError(res.error));
+              console.error(formatError(res.error));
+            }
+
+            selectedChapters = [];
+            await invalidateAll();
+          }}
+        >
+          <BookmarkMinus />
+          Unmark Chapters
+        </Button>
+      </div>
+    </div>
+  {/if}
+</div>

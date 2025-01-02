@@ -8,7 +8,9 @@ declare global {
   namespace App {
     // interface Error {}
     interface Locals {
+      apiAddress: string;
       apiClient: ApiClient;
+      token?: string;
       user?: GetAuthMe;
     }
     // interface PageData {}

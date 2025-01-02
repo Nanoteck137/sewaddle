@@ -20,6 +20,10 @@ export class ApiClient extends BaseApiClient {
     return this.request(`/api/v1/series/${id}/chapters`, "GET", api.GetSerieChapters, z.any(), undefined, options)
   }
   
+  createSerie(body: api.CreateSerieBody, options?: ExtraOptions) {
+    return this.request("/api/v1/series", "POST", api.CreateSerie, z.any(), body, options)
+  }
+  
   getChapters(options?: ExtraOptions) {
     return this.request("/api/v1/chapters", "GET", api.GetChapters, z.any(), undefined, options)
   }
@@ -58,5 +62,13 @@ export class ApiClient extends BaseApiClient {
   
   getMe(options?: ExtraOptions) {
     return this.request("/api/v1/auth/me", "GET", api.GetMe, z.any(), undefined, options)
+  }
+  
+  changeSerieCover(id: string, formData: FormData, options?: ExtraOptions) {
+    return this.requestWithFormData(`/api/v1/series/${id}/cover`, "POST", z.undefined(), z.undefined(), formData, options)
+  }
+  
+  uploadChapter(formData: FormData, options?: ExtraOptions) {
+    return this.requestWithFormData("/api/v1/chapters", "POST", z.undefined(), z.undefined(), formData, options)
   }
 }

@@ -13,6 +13,7 @@
   import "../../app.css";
   import { fade, fly } from "svelte/transition";
   import Link from "$lib/components/Link.svelte";
+  import { Toaster } from "svelte-5-french-toast";
 
   const { data, children } = $props();
 
@@ -22,6 +23,12 @@
     showSideMenu = false;
   }
 </script>
+
+<svelte:head>
+  <title>Sewaddle</title>
+</svelte:head>
+
+<Toaster position="bottom-right" />
 
 <header
   class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
