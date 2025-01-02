@@ -4,13 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"io"
 	"net/http"
 	"os"
+	"path"
 
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/pyrin/tools/transform"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
+	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 	"github.com/nanoteck137/validate"
 )
@@ -18,21 +21,32 @@ import (
 type Serie struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
+	CoverArt types.Images `json:"coverArt"`
 }
 
-func ConvertSerieImage(c pyrin.Context, serieId string, image sql.NullString) string {
-	res := "/files/images/default/default_cover.png"
-	if image.Valid {
-		res = "/files/series/" + serieId + "/" + image.String
+func ConvertSerieImage(c pyrin.Context, serieId string, val sql.NullString) types.Images {
+	if val.Valid && val.String != "" {
+		first := "/files/series/" + serieId + "/"
+		return types.Images{
+			Small:    utils.ConvertURL(c, first+"cover-128.png"),
+			Medium:   utils.ConvertURL(c, first+"cover-256.png"),
+			Large:    utils.ConvertURL(c, first+"cover-512.png"),
+		}
 	}
 
-	return utils.ConvertURL(c, res)
+	url := utils.ConvertURL(c, "/files/images/default/default_cover.png")
+	return types.Images{
+		Small:    url,
+		Medium:   url,
+		Large:    url,
+	}
 }
 
 func ConvertDBSerie(c pyrin.Context, serie database.Serie) Serie {
 	return Serie{
-		Id:   serie.Id,
-		Name: serie.Name,
+		Id:       serie.Id,
+		Name:     serie.Name,
+		CoverArt: ConvertSerieImage(c, serie.Id, serie.CoverArt),
 	}
 }
 
@@ -190,20 +204,18 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 					return false
 				}
 
-				_ = isChapterMarked
-
 				for i, chapter := range chapters {
-					// var userData *types.ChapterUserData
-					// if user != nil {
-					// 	isMarked := isChapterMarked(item.Id)
-					//
-					// 	userData = &types.ChapterUserData{
-					// 		IsMarked: isMarked,
-					// 	}
-					// }
+					var userData *ChapterUserData
+					if user != nil {
+						isMarked := isChapterMarked(chapter.Id)
+
+						userData = &ChapterUserData{
+							IsMarked: isMarked,
+						}
+					}
 
 					ch := ConvertDBChapter(c, chapter)
-					// ch.User = userData
+					ch.User = userData
 					res.Chapters[i] = ch
 				}
 
@@ -243,6 +255,93 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				return CreateSerie{
 					SerieId: id,
 				}, nil
+			},
+		},
+
+		pyrin.FormApiHandler{
+			Name:   "ChangeSerieCover",
+			Method: http.MethodPost,
+			Path:   "/series/:id/cover",
+			Spec: pyrin.FormSpec{
+				Files: map[string]pyrin.FormFileSpec{
+					"cover": {
+						NumExpected: 1,
+					},
+				},
+			},
+			Errors: []pyrin.ErrorType{ErrTypeSerieNotFound},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				id := c.Param("id")
+
+				ctx := context.TODO()
+
+				serie, err := app.DB().GetSerieById(ctx, id)
+				if err != nil {
+					return nil, SerieNotFound()
+				}
+
+				artistDir := app.WorkDir().SerieDir(serie.Id)
+
+				files, err := pyrin.FormFiles(c, "cover")
+				if err != nil {
+					return nil, err
+				}
+
+				file := files[0]
+
+				src, err := file.Open()
+				if err != nil {
+					return nil, err
+				}
+				defer src.Close()
+
+				name := "cover-original" + path.Ext(file.Filename)
+				dstName := path.Join(artistDir, name)
+				dst, err := os.OpenFile(dstName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+				if err != nil {
+					return nil, err
+				}
+				defer dst.Close()
+
+				_, err = io.Copy(dst, src)
+				if err != nil {
+					return nil, err
+				}
+
+				dst.Close()
+
+				i := path.Join(artistDir, "cover-128.png")
+				err = utils.CreateResizedImage(dstName, i, 128, 165)
+				if err != nil {
+					return nil, err
+				}
+
+				i = path.Join(artistDir, "cover-256.png")
+				err = utils.CreateResizedImage(dstName, i, 256, 329)
+				if err != nil {
+					return nil, err
+				}
+
+				i = path.Join(artistDir, "cover-512.png")
+				err = utils.CreateResizedImage(dstName, i, 512, 658)
+				if err != nil {
+					return nil, err
+				}
+
+				err = app.DB().UpdateSerie(ctx, serie.Id, database.SerieChanges{
+					CoverArt: types.Change[sql.NullString]{
+						Value: sql.NullString{
+							String: name,
+							Valid:  true,
+						},
+						Changed: true,
+					},
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				return nil, nil
 			},
 		},
 	)
