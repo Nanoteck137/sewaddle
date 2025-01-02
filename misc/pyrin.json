@@ -485,6 +485,13 @@
       "bodyType": "CreateSerieBody"
     },
     {
+      "name": "DeleteSerie",
+      "method": "DELETE",
+      "path": "/api/v1/series/:id",
+      "responseType": "",
+      "bodyType": ""
+    },
+    {
       "name": "GetChapters",
       "method": "GET",
       "path": "/api/v1/chapters",
@@ -496,6 +503,13 @@
       "method": "GET",
       "path": "/api/v1/chapters/:id",
       "responseType": "GetChapterById",
+      "bodyType": ""
+    },
+    {
+      "name": "RemoveChapter",
+      "method": "DELETE",
+      "path": "/api/v1/chapters/:id",
+      "responseType": "",
       "bodyType": ""
     },
     {

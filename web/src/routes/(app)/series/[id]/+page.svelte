@@ -4,6 +4,7 @@
   import { Serie } from "$lib/api/types.js";
   import { cn } from "$lib/utils.js";
   import {
+    Breadcrumb,
     Button,
     buttonVariants,
     Checkbox,
@@ -43,6 +44,22 @@
     return false;
   }
 </script>
+
+<div class="py-2">
+  <Breadcrumb.Root>
+    <Breadcrumb.List>
+      <Breadcrumb.Item>
+        <Breadcrumb.Link href="/series">Series</Breadcrumb.Link>
+      </Breadcrumb.Item>
+      <Breadcrumb.Separator />
+      <Breadcrumb.Item>
+        <Breadcrumb.Page>
+          {data.serie.name}
+        </Breadcrumb.Page>
+      </Breadcrumb.Item>
+    </Breadcrumb.List>
+  </Breadcrumb.Root>
+</div>
 
 <div class="flex flex-col items-center gap-2">
   <img
@@ -84,6 +101,8 @@
         Go to AniList
       </Button>
     {/if}
+
+    <Button href="/series/{data.serie.id}/edit" variant="outline">Edit</Button>
   </div>
 </div>
 

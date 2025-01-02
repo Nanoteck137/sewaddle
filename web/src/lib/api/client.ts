@@ -24,12 +24,20 @@ export class ApiClient extends BaseApiClient {
     return this.request("/api/v1/series", "POST", api.CreateSerie, z.any(), body, options)
   }
   
+  deleteSerie(id: string, options?: ExtraOptions) {
+    return this.request(`/api/v1/series/${id}`, "DELETE", z.undefined(), z.any(), undefined, options)
+  }
+  
   getChapters(options?: ExtraOptions) {
     return this.request("/api/v1/chapters", "GET", api.GetChapters, z.any(), undefined, options)
   }
   
   getChapterById(id: string, options?: ExtraOptions) {
     return this.request(`/api/v1/chapters/${id}`, "GET", api.GetChapterById, z.any(), undefined, options)
+  }
+  
+  removeChapter(id: string, options?: ExtraOptions) {
+    return this.request(`/api/v1/chapters/${id}`, "DELETE", z.undefined(), z.any(), undefined, options)
   }
   
   markChapters(body: api.PostUserMarkChaptersBody, options?: ExtraOptions) {

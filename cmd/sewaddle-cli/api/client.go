@@ -65,6 +65,22 @@ func (c *Client) CreateSerie(body CreateSerieBody, options Options) (*CreateSeri
 	return Request[CreateSerie](data)
 }
 
+func (c *Client) DeleteSerie(id string, options Options) (*any, error) {
+	path := Sprintf("/api/v1/series/%v", id)
+	url, err := createUrl(c.addr, path, options.QueryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	data := RequestData{
+		Url: url,
+		Method: "DELETE",
+		Token: c.token,
+		Body: nil,
+	}
+	return Request[any](data)
+}
+
 func (c *Client) GetChapters(options Options) (*GetChapters, error) {
 	path := "/api/v1/chapters"
 	url, err := createUrl(c.addr, path, options.QueryParams)
@@ -95,6 +111,22 @@ func (c *Client) GetChapterById(id string, options Options) (*GetChapterById, er
 		Body: nil,
 	}
 	return Request[GetChapterById](data)
+}
+
+func (c *Client) RemoveChapter(id string, options Options) (*any, error) {
+	path := Sprintf("/api/v1/chapters/%v", id)
+	url, err := createUrl(c.addr, path, options.QueryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	data := RequestData{
+		Url: url,
+		Method: "DELETE",
+		Token: c.token,
+		Body: nil,
+	}
+	return Request[any](data)
 }
 
 func (c *Client) MarkChapters(body PostUserMarkChaptersBody, options Options) (*any, error) {
