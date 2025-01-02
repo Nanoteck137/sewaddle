@@ -17,6 +17,9 @@ type Serie struct {
 
 	CoverArt sql.NullString `db:"cover_art"`
 
+	MalId     sql.NullString `db:"mal_id"`
+	AnilistId sql.NullString `db:"anilist_id"`
+
 	Created int64 `db:"created"`
 	Updated int64 `db:"updated"`
 
@@ -39,6 +42,9 @@ func SerieQuery() *goqu.SelectDataset {
 			"series.name",
 
 			"series.cover_art",
+
+			"series.mal_id",
+			"series.anilist_id",
 
 			"series.created",
 			"series.updated",
@@ -92,6 +98,9 @@ type CreateSerieParams struct {
 
 	CoverArt sql.NullString
 
+	MalId     sql.NullString
+	AnilistId sql.NullString
+
 	Created int64
 	Updated int64
 }
@@ -118,6 +127,9 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 
 			"cover_art": params.CoverArt,
 
+			"mal_id":     params.MalId,
+			"anilist_id": params.AnilistId,
+
 			"created": created,
 			"updated": updated,
 		}).
@@ -126,6 +138,9 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 			"series.name",
 
 			"series.cover_art",
+
+			"series.mal_id",
+			"series.anilist_id",
 
 			"series.created",
 			"series.updated",
@@ -146,6 +161,9 @@ type SerieChanges struct {
 
 	CoverArt types.Change[sql.NullString]
 
+	MalId     types.Change[sql.NullString]
+	AnilistId types.Change[sql.NullString]
+
 	Created types.Change[int64]
 }
 
@@ -155,6 +173,9 @@ func (db *Database) UpdateSerie(ctx context.Context, id string, changes SerieCha
 	addToRecord(record, "name", changes.Name)
 
 	addToRecord(record, "cover_art", changes.CoverArt)
+
+	addToRecord(record, "mal_id", changes.MalId)
+	addToRecord(record, "anilist_id", changes.AnilistId)
 
 	addToRecord(record, "created", changes.Created)
 

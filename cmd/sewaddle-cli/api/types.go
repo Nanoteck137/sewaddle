@@ -11,6 +11,8 @@ type Serie struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
 	CoverArt Images `json:"coverArt"`
+	MalId *string `json:"malId,omitempty"`
+	AnilistId *string `json:"anilistId,omitempty"`
 }
 
 type GetSeries struct {
@@ -29,6 +31,8 @@ type GetSerieById struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
 	CoverArt Images `json:"coverArt"`
+	MalId *string `json:"malId,omitempty"`
+	AnilistId *string `json:"anilistId,omitempty"`
 	User *SerieUserData `json:"user,omitempty"`
 }
 

@@ -12,6 +12,8 @@ export const Serie = z.object({
   id: z.string(),
   name: z.string(),
   coverArt: Images,
+  malId: z.string().nullable(),
+  anilistId: z.string().nullable(),
 });
 export type Serie = z.infer<typeof Serie>;
 
@@ -34,6 +36,8 @@ export const GetSerieById = z.object({
   id: z.string(),
   name: z.string(),
   coverArt: Images,
+  malId: z.string().nullable(),
+  anilistId: z.string().nullable(),
   user: SerieUserData.nullable().optional(),
 });
 export type GetSerieById = z.infer<typeof GetSerieById>;

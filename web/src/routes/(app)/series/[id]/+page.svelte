@@ -55,14 +55,36 @@
     {data.serie.name}
   </p>
 
-  {#if data.serie.user?.bookmark?.chapterId}
-    <Button
-      href="/view/{data.serie.user?.bookmark?.chapterId}/scroll"
-      variant="outline"
-    >
-      Continue
-    </Button>
-  {/if}
+  <div class="flex gap-2">
+    {#if data.serie.user?.bookmark?.chapterId}
+      <Button
+        href="/view/{data.serie.user?.bookmark?.chapterId}/scroll"
+        variant="outline"
+      >
+        Continue
+      </Button>
+    {/if}
+
+    {#if data.serie.malId}
+      <Button
+        href="https://myanimelist.net/manga/{data.serie.malId}"
+        variant="outline"
+        target="_blank"
+      >
+        Go to MyAnimeList
+      </Button>
+    {/if}
+
+    {#if data.serie.anilistId}
+      <Button
+        href="https://anilist.co/manga/{data.serie.anilistId}"
+        variant="outline"
+        target="_blank"
+      >
+        Go to AniList
+      </Button>
+    {/if}
+  </div>
 </div>
 
 <div class="h-2"></div>

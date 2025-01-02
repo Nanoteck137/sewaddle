@@ -32,6 +32,9 @@ CREATE TABLE series (
 
     cover_art TEXT,
 
+    mal_id TEXT,
+    anilist_id TEXT,
+
     created INTEGER NOT NULL,
     updated INTEGER NOT NULL
 );

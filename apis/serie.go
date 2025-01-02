@@ -21,7 +21,11 @@ import (
 type Serie struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
+
 	CoverArt types.Images `json:"coverArt"`
+
+	MalId *string `json:"malId"`
+	AnilistId *string `json:"anilistId"`
 }
 
 func ConvertSerieImage(c pyrin.Context, serieId string, val sql.NullString) types.Images {
@@ -44,9 +48,11 @@ func ConvertSerieImage(c pyrin.Context, serieId string, val sql.NullString) type
 
 func ConvertDBSerie(c pyrin.Context, serie database.Serie) Serie {
 	return Serie{
-		Id:       serie.Id,
-		Name:     serie.Name,
-		CoverArt: ConvertSerieImage(c, serie.Id, serie.CoverArt),
+		Id:        serie.Id,
+		Name:      serie.Name,
+		CoverArt:  ConvertSerieImage(c, serie.Id, serie.CoverArt),
+		MalId:     ConvertSqlNullString(serie.MalId),
+		AnilistId:     ConvertSqlNullString(serie.AnilistId),
 	}
 }
 
