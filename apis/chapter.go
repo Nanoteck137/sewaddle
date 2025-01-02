@@ -334,5 +334,35 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				return nil, nil
 			},
 		},
+
+		pyrin.ApiHandler{
+			Name:         "RemoveChapter",
+			Method:       http.MethodDelete,
+			Path:         "/chapters/:id",
+			Errors:       []pyrin.ErrorType{},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				// TODO(patrik): Move the chapter files to a trash can system
+				id := c.Param("id")
+
+				db, tx, err := app.DB().Begin()
+				if err != nil {
+					return nil, err
+				}
+				defer tx.Rollback()
+
+				ctx := context.TODO()
+				err = db.RemoveChapter(ctx, id)
+				if err != nil {
+					return nil, err
+				}
+
+				err = tx.Commit()
+				if err != nil {
+					return nil, err
+				}
+
+				return nil, nil
+			},
+		},
 	)
 }

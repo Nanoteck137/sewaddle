@@ -319,6 +319,19 @@ func (db *Database) UpdateChapter(ctx context.Context, id string, changes Chapte
 	return nil
 }
 
+func (db *Database) RemoveChapter(ctx context.Context, id string) error {
+	query := dialect.Delete("chapters").
+		Prepared(true).
+		Where(goqu.I("chapters.id").Eq(id))
+
+	_, err := db.Exec(ctx, query)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (db *Database) RecalculateNumberForSerie(ctx context.Context, serieId string) error {
 	db, tx, err := db.Begin()
 	if err != nil {
