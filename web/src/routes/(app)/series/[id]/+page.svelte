@@ -28,11 +28,7 @@
 <div class="flex flex-col gap-2 px-5">
   <div class="flex justify-center md:fixed md:h-full">
     <div class="w-[280px]">
-      <img
-        class="h-[360px] w-[280px] rounded object-cover"
-        src={data.serie.coverMedium}
-        alt=""
-      />
+      <img class="h-[360px] w-[280px] rounded object-cover" src={""} alt="" />
       <div class="h-2"></div>
       <p class="line-clamp-2 text-center font-bold">{data.serie.name}</p>
       {#if data.serie.user?.bookmark?.chapterId}
@@ -56,14 +52,14 @@
             <div class="flex flex-col gap-1">
               <a
                 class="line-clamp-1 font-medium"
-                title={chapter.title}
+                title={chapter.name}
                 href={`/view/${chapter.id}/scroll`}
               >
-                {chapter.title}
+                {chapter.name}
               </a>
-              {#if chapter.user?.isMarked}
+              <!-- {#if chapter.user?.isMarked}
                 <p class="line-clamp-1 text-sm font-light">Read</p>
-              {/if}
+              {/if} -->
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -171,14 +167,14 @@
             <div class="flex flex-col gap-1">
               <a
                 class="line-clamp-1 font-medium"
-                title={chapter.title}
+                title={chapter.name}
                 href={`/view/${chapter.id}`}
               >
-                {chapter.title}
+                {chapter.name}
               </a>
-              {#if chapter.user?.isMarked}
+              <!-- {#if chapter.user?.isMarked}
                 <p class="line-clamp-1 text-start text-sm font-light">Read</p>
-              {/if}
+              {/if} -->
             </div>
           </div>
           <div class="flex items-center gap-2">

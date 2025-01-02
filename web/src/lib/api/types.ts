@@ -4,11 +4,6 @@ import { z } from "zod";
 export const Serie = z.object({
   id: z.string(),
   name: z.string(),
-  coverOriginal: z.string(),
-  coverLarge: z.string(),
-  coverMedium: z.string(),
-  coverSmall: z.string(),
-  chapterCount: z.number(),
 });
 export type Serie = z.infer<typeof Serie>;
 
@@ -30,34 +25,24 @@ export type SerieUserData = z.infer<typeof SerieUserData>;
 export const GetSerieById = z.object({
   id: z.string(),
   name: z.string(),
-  coverOriginal: z.string(),
-  coverLarge: z.string(),
-  coverMedium: z.string(),
-  coverSmall: z.string(),
-  chapterCount: z.number(),
   user: SerieUserData.nullable().optional(),
 });
 export type GetSerieById = z.infer<typeof GetSerieById>;
 
-export const ChapterUserData = z.object({
-  isMarked: z.boolean(),
-});
-export type ChapterUserData = z.infer<typeof ChapterUserData>;
-
 export const Chapter = z.object({
   id: z.string(),
+  name: z.string(),
   serieId: z.string(),
-  title: z.string(),
+  pages: z.array(z.string()),
   number: z.number(),
   coverArt: z.string(),
-  user: ChapterUserData.nullable().optional(),
 });
 export type Chapter = z.infer<typeof Chapter>;
 
-export const GetSerieChaptersById = z.object({
+export const GetSerieChapters = z.object({
   chapters: z.array(Chapter),
 });
-export type GetSerieChaptersById = z.infer<typeof GetSerieChaptersById>;
+export type GetSerieChapters = z.infer<typeof GetSerieChapters>;
 
 export const GetChapters = z.object({
   chapters: z.array(Chapter),
@@ -66,14 +51,13 @@ export type GetChapters = z.infer<typeof GetChapters>;
 
 export const GetChapterById = z.object({
   id: z.string(),
+  name: z.string(),
   serieId: z.string(),
-  title: z.string(),
+  pages: z.array(z.string()),
   number: z.number(),
   coverArt: z.string(),
-  user: ChapterUserData.nullable().optional(),
   nextChapter: z.string().nullable(),
   prevChapter: z.string().nullable(),
-  pages: z.array(z.string()),
 });
 export type GetChapterById = z.infer<typeof GetChapterById>;
 
@@ -99,34 +83,43 @@ export const GetSystemInfo = z.object({
 });
 export type GetSystemInfo = z.infer<typeof GetSystemInfo>;
 
-export const PostAuthSignup = z.object({
+export const Signup = z.object({
   id: z.string(),
   username: z.string(),
 });
-export type PostAuthSignup = z.infer<typeof PostAuthSignup>;
+export type Signup = z.infer<typeof Signup>;
 
-export const PostAuthSignupBody = z.object({
+export const SignupBody = z.object({
   username: z.string(),
   password: z.string(),
   passwordConfirm: z.string(),
 });
-export type PostAuthSignupBody = z.infer<typeof PostAuthSignupBody>;
+export type SignupBody = z.infer<typeof SignupBody>;
 
-export const PostAuthSignin = z.object({
+export const Signin = z.object({
   token: z.string(),
 });
-export type PostAuthSignin = z.infer<typeof PostAuthSignin>;
+export type Signin = z.infer<typeof Signin>;
 
-export const PostAuthSigninBody = z.object({
+export const SigninBody = z.object({
   username: z.string(),
   password: z.string(),
 });
-export type PostAuthSigninBody = z.infer<typeof PostAuthSigninBody>;
+export type SigninBody = z.infer<typeof SigninBody>;
 
-export const GetAuthMe = z.object({
+export const ChangePasswordBody = z.object({
+  currentPassword: z.string(),
+  newPassword: z.string(),
+  newPasswordConfirm: z.string(),
+});
+export type ChangePasswordBody = z.infer<typeof ChangePasswordBody>;
+
+export const GetMe = z.object({
   id: z.string(),
   username: z.string(),
-  isOwner: z.boolean(),
+  role: z.string(),
+  displayName: z.string(),
+  quickPlaylist: z.string().nullable(),
 });
-export type GetAuthMe = z.infer<typeof GetAuthMe>;
+export type GetMe = z.infer<typeof GetMe>;
 

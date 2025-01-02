@@ -1,4 +1,14 @@
 {
+  "errorTypes": [
+    "BAD_CONTENT_TYPE_ERROR",
+    "EMPTY_BODY_ERROR",
+    "FORM_VALIDATION_ERROR",
+    "ROUTE_NOT_FOUND",
+    "SERIE_NOT_FOUND",
+    "UNKNOWN_ERROR",
+    "USER_ALREADY_EXISTS",
+    "VALIDATION_ERROR"
+  ],
   "types": [
     {
       "name": "Serie",
@@ -12,31 +22,6 @@
         {
           "name": "name",
           "type": "string",
-          "omit": false
-        },
-        {
-          "name": "coverOriginal",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "coverLarge",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "coverMedium",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "coverSmall",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "chapterCount",
-          "type": "int",
           "omit": false
         }
       ]
@@ -89,45 +74,9 @@
           "omit": false
         },
         {
-          "name": "coverOriginal",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "coverLarge",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "coverMedium",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "coverSmall",
-          "type": "string",
-          "omit": false
-        },
-        {
-          "name": "chapterCount",
-          "type": "int",
-          "omit": false
-        },
-        {
           "name": "user",
           "type": "*SerieUserData",
           "omit": true
-        }
-      ]
-    },
-    {
-      "name": "ChapterUserData",
-      "extend": "",
-      "fields": [
-        {
-          "name": "isMarked",
-          "type": "bool",
-          "omit": false
         }
       ]
     },
@@ -141,13 +90,18 @@
           "omit": false
         },
         {
+          "name": "name",
+          "type": "string",
+          "omit": false
+        },
+        {
           "name": "serieId",
           "type": "string",
           "omit": false
         },
         {
-          "name": "title",
-          "type": "string",
+          "name": "pages",
+          "type": "[]string",
           "omit": false
         },
         {
@@ -159,16 +113,11 @@
           "name": "coverArt",
           "type": "string",
           "omit": false
-        },
-        {
-          "name": "user",
-          "type": "*ChapterUserData",
-          "omit": true
         }
       ]
     },
     {
-      "name": "GetSerieChaptersById",
+      "name": "GetSerieChapters",
       "extend": "",
       "fields": [
         {
@@ -199,13 +148,18 @@
           "omit": false
         },
         {
+          "name": "name",
+          "type": "string",
+          "omit": false
+        },
+        {
           "name": "serieId",
           "type": "string",
           "omit": false
         },
         {
-          "name": "title",
-          "type": "string",
+          "name": "pages",
+          "type": "[]string",
           "omit": false
         },
         {
@@ -219,11 +173,6 @@
           "omit": false
         },
         {
-          "name": "user",
-          "type": "*ChapterUserData",
-          "omit": true
-        },
-        {
           "name": "nextChapter",
           "type": "*string",
           "omit": false
@@ -231,11 +180,6 @@
         {
           "name": "prevChapter",
           "type": "*string",
-          "omit": false
-        },
-        {
-          "name": "pages",
-          "type": "[]string",
           "omit": false
         }
       ]
@@ -295,7 +239,7 @@
       ]
     },
     {
-      "name": "PostAuthSignup",
+      "name": "Signup",
       "extend": "",
       "fields": [
         {
@@ -311,7 +255,7 @@
       ]
     },
     {
-      "name": "PostAuthSignupBody",
+      "name": "SignupBody",
       "extend": "",
       "fields": [
         {
@@ -332,7 +276,7 @@
       ]
     },
     {
-      "name": "PostAuthSignin",
+      "name": "Signin",
       "extend": "",
       "fields": [
         {
@@ -343,7 +287,7 @@
       ]
     },
     {
-      "name": "PostAuthSigninBody",
+      "name": "SigninBody",
       "extend": "",
       "fields": [
         {
@@ -359,7 +303,28 @@
       ]
     },
     {
-      "name": "GetAuthMe",
+      "name": "ChangePasswordBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "currentPassword",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "newPassword",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "newPasswordConfirm",
+          "type": "string",
+          "omit": false
+        }
+      ]
+    },
+    {
+      "name": "GetMe",
       "extend": "",
       "fields": [
         {
@@ -373,170 +338,132 @@
           "omit": false
         },
         {
-          "name": "isOwner",
-          "type": "bool",
+          "name": "role",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "displayName",
+          "type": "string",
+          "omit": false
+        },
+        {
+          "name": "quickPlaylist",
+          "type": "*string",
           "omit": false
         }
       ]
     }
   ],
-  "endpoints": [
+  "apiEndpoints": [
     {
       "name": "GetSeries",
       "method": "GET",
       "path": "/api/v1/series",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "GetSeries",
-      "bodyType": "",
-      "requireFormData": false
+      "bodyType": ""
     },
     {
       "name": "GetSerieById",
       "method": "GET",
       "path": "/api/v1/series/:id",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "SERIE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "GetSerieById",
-      "bodyType": "",
-      "requireFormData": false
+      "bodyType": ""
     },
     {
       "name": "GetSerieChapters",
       "method": "GET",
       "path": "/api/v1/series/:id/chapters",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
-      "responseType": "GetSerieChaptersById",
-      "bodyType": "",
-      "requireFormData": false
+      "responseType": "GetSerieChapters",
+      "bodyType": ""
     },
     {
       "name": "GetChapters",
       "method": "GET",
       "path": "/api/v1/chapters",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "GetChapters",
-      "bodyType": "",
-      "requireFormData": false
+      "bodyType": ""
     },
     {
       "name": "GetChapterById",
       "method": "GET",
       "path": "/api/v1/chapters/:id",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "GetChapterById",
-      "bodyType": "",
-      "requireFormData": false
+      "bodyType": ""
     },
     {
       "name": "MarkChapters",
       "method": "POST",
       "path": "/api/v1/user/markChapters",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "",
-      "bodyType": "PostUserMarkChaptersBody",
-      "requireFormData": false
+      "bodyType": "PostUserMarkChaptersBody"
     },
     {
       "name": "UnmarkChapters",
       "method": "POST",
       "path": "/api/v1/user/unmarkChapters",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "",
-      "bodyType": "PostUserUnmarkChaptersBody",
-      "requireFormData": false
+      "bodyType": "PostUserUnmarkChaptersBody"
     },
     {
       "name": "UpdateBookmark",
       "method": "POST",
       "path": "/api/v1/user/updateBookmark",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "",
-      "bodyType": "PostUserUpdateBookmarkBody",
-      "requireFormData": false
+      "bodyType": "PostUserUpdateBookmarkBody"
     },
     {
       "name": "GetSystemInfo",
       "method": "GET",
       "path": "/api/v1/system/info",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
       "responseType": "GetSystemInfo",
-      "bodyType": "",
-      "requireFormData": false
+      "bodyType": ""
     },
     {
       "name": "Signup",
       "method": "POST",
       "path": "/api/v1/auth/signup",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
-      "responseType": "PostAuthSignup",
-      "bodyType": "PostAuthSignupBody",
-      "requireFormData": false
+      "responseType": "Signup",
+      "bodyType": "SignupBody"
     },
     {
       "name": "Signin",
       "method": "POST",
       "path": "/api/v1/auth/signin",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
-      "responseType": "PostAuthSignin",
-      "bodyType": "PostAuthSigninBody",
-      "requireFormData": false
+      "responseType": "Signin",
+      "bodyType": "SigninBody"
+    },
+    {
+      "name": "ChangePassword",
+      "method": "PATCH",
+      "path": "/api/v1/auth/password",
+      "responseType": "",
+      "bodyType": "ChangePasswordBody"
     },
     {
       "name": "GetMe",
       "method": "GET",
       "path": "/api/v1/auth/me",
-      "errorTypes": [
-        "ROUTE_NOT_FOUND",
-        "UNKNOWN_ERROR",
-        "VALIDATION_ERROR"
-      ],
-      "responseType": "GetAuthMe",
-      "bodyType": "",
-      "requireFormData": false
+      "responseType": "GetMe",
+      "bodyType": ""
+    }
+  ],
+  "formApiEndpoints": null,
+  "normalEndpoints": [
+    {
+      "name": "",
+      "method": "GET",
+      "path": "/files/images/default/:image"
+    },
+    {
+      "name": "",
+      "method": "GET",
+      "path": "/files/series/:id/:image"
+    },
+    {
+      "name": "",
+      "method": "GET",
+      "path": "/files/chapters/:chapterId/:image"
     }
   ]
 }

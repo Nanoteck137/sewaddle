@@ -1,127 +1,114 @@
 <script lang="ts">
   import {
+    Book,
     Home,
-    Library,
     LogIn,
     LogOut,
     Menu,
+    Search,
     Server,
     User,
   } from "lucide-svelte";
+  import { Button } from "@nanoteck137/nano-ui";
   import "../../app.css";
+  import { fade, fly } from "svelte/transition";
+  import Link from "$lib/components/Link.svelte";
 
   const { data, children } = $props();
 
   let showSideMenu = $state(false);
+
+  function close() {
+    showSideMenu = false;
+  }
 </script>
 
 <header
-  class="fixed left-0 right-0 top-0 z-30 flex h-16 items-center gap-4 bg-[--bg-color] px-4 py-2"
+  class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
 >
-  <button
-    onclick={() => {
-      showSideMenu = true;
-    }}
-  >
-    <Menu size="32" />
-  </button>
+  <div class="container flex h-14 max-w-screen-2xl items-center gap-4">
+    <button
+      onclick={() => {
+        showSideMenu = true;
+      }}
+    >
+      <Menu size="20" />
+    </button>
 
-  <a class="text-3xl font-medium text-[--logo-color]" href="/">Sewaddle</a>
+    <a class="text-2xl font-medium text-[--logo-color]" href="/">Sewaddle</a>
+
+    <div class="flex-grow"></div>
+
+    <Button href="/search" size="icon" variant="ghost">
+      <Search />
+    </Button>
+  </div>
 </header>
 
-<main class="mt-16">
+<main class="container py-4">
   {@render children()}
 </main>
 
 {#if showSideMenu}
+  <!-- svelte-ignore a11y_consider_explicit_label -->
   <button
-    class="fixed inset-0 z-50 bg-[--modal-overlay-bg]"
+    class="fixed inset-0 z-50 bg-black/80"
     onclick={() => {
       showSideMenu = false;
     }}
+    transition:fade={{ duration: 200 }}
   ></button>
-{/if}
 
-<aside
-  class={`fixed bottom-0 top-0 z-50 flex w-80 flex-col bg-[--bg-color] px-4 text-[--fg-color] transition-transform duration-300 ${showSideMenu ? "translate-x-0" : "-translate-x-[100%]"}`}
->
-  <div class="flex h-16 items-center gap-4 px-2 py-2">
-    <button
-      onclick={() => {
-        showSideMenu = false;
-      }}
-    >
-      <Menu size="32" />
-    </button>
-    <a
-      class="text-3xl font-medium text-[--logo-color]"
-      href="/"
-      onclick={() => {
-        showSideMenu = false;
-      }}
-    >
-      Sewaddle
-    </a>
-  </div>
+  <aside
+    class={`fixed bottom-0 top-0 z-50 flex w-72 flex-col bg-sidebar text-sidebar-foreground`}
+    transition:fly={{ x: -400 }}
+  >
+    <div class="flex h-14 items-center gap-4 border-b px-8">
+      <button
+        onclick={() => {
+          showSideMenu = false;
+        }}
+      >
+        <Menu size="20" />
+      </button>
+      <a
+        class="text-2xl font-medium"
+        href="/"
+        onclick={() => {
+          showSideMenu = false;
+        }}
+      >
+        Sewaddle
+      </a>
+    </div>
 
-  {#snippet link(title: string, icon: any, href?: string)}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <svelte:element
-      this={href ? "a" : "button"}
-      class="hover:text-[--on-primary flex w-full items-center gap-2 rounded px-2 py-2 hover:bg-[--primary] hover:text-[--on-primary]"
-      onclick={() => {
-        showSideMenu = false;
-      }}
-      {href}
-    >
-      <svelte:component this={icon} size="32"></svelte:component>
-      <p class="text-xl">{title}</p>
-    </svelte:element>
-  {/snippet}
+    <div class="flex flex-col gap-2 px-4 py-4">
+      <Link title="Home" href="/" icon={Home} onClick={close} />
+      <Link title="Series" href="/series" icon={Book} onClick={close} />
+      <!-- <Link title="Albums" href="/albums" icon={DiscAlbum} onClick={close} />
+      <Link title="Tracks" href="/tracks" icon={FileMusic} onClick={close} /> -->
+    </div>
+    <div class="flex-grow"></div>
+    <div class="flex flex-col gap-2 px-4 py-2">
+      {#if data.user}
+        <Link
+          title={data.user.username}
+          href="/account"
+          icon={User}
+          onClick={close}
+        />
 
-  <div class="flex flex-col gap-2 py-2">
-    {@render link("Home", Home, "/")}
-    {@render link("Series", Library, "/series")}
-    <!-- <Link title="Home" href="/" icon={Home} onClick={close} />
-    <Link title="Artists" href="/artists" icon={Users} onClick={close} />
-    <Link title="Albums" href="/albums" icon={DiscAlbum} onClick={close} />
-    <Link title="Tracks" href="/tracks" icon={FileMusic} onClick={close} /> -->
+        {#if data.user.role === "super_user"}
+          <Link title="Server" href="/server" icon={Server} onClick={close} />
+        {/if}
 
-    <!-- {#if data.user}
-      <Link
-        title="Playlists"
-        href="/playlists"
-        icon={ListMusic}
-        onClick={close}
-      />
-    {/if} -->
-  </div>
-  <div class="flex-grow"></div>
-  <div class="flex flex-col gap-2 py-4">
-    {#if data.user}
-      {@render link(data.user.username, User, "/account")}
-      <!-- <Link
-        title={data.user.username}
-        href="/account"
-        icon={User}
-        onClick={close}
-      /> -->
-
-      {#if data.user.isOwner}
-        {@render link("Server", Server, "/server")}
-        <!-- <Link title="Server" href="/server" icon={Server} onClick={close} /> -->
+        <form class="w-full" action="/logout" method="POST">
+          <Link title="Logout" icon={LogOut} onClick={close} />
+        </form>
+      {:else}
+        <Link title="Login" href="/login" icon={LogIn} onClick={close} />
       {/if}
-
-      <form class="w-full" action="/logout" method="POST">
-        {@render link("Logout", LogOut)}
-      </form>
-    {:else}
-      {@render link("Login", LogIn, "/login")}
-      <!-- <Link title="Login" href="/login" icon={LogIn} onClick={close} /> -->
-    {/if}
-  </div>
-</aside>
-
-<svelte:head>
-  <title>Sewaddle</title>
-</svelte:head>
+    </div>
+    <div class="h-4"></div>
+  </aside>
+{/if}
