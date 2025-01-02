@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/types"
-	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/validate"
 )
 

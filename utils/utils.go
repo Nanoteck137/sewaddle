@@ -18,6 +18,8 @@ var CreateSerieId = createIdGenerator(8)
 var CreateChapterId = createIdGenerator(16)
 var CreateUserId = createIdGenerator(8)
 
+var CreateApiTokenId = createIdGenerator(32)
+
 func createIdGenerator(length int) func() string {
 	res, err := cuid2.Init(cuid2.WithLength(length))
 	if err != nil {

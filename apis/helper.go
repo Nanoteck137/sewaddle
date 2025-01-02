@@ -1,7 +1,9 @@
 package apis
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,6 +14,27 @@ import (
 )
 
 func User(app core.App, c pyrin.Context) (*database.User, error) {
+	apiTokenHeader := c.Request().Header.Get("X-Api-Token")
+	if apiTokenHeader != "" {
+		ctx := context.TODO()
+		token, err := app.DB().GetApiTokenById(ctx, apiTokenHeader)
+		if err != nil {
+			if errors.Is(err, database.ErrItemNotFound) {
+				return nil, InvalidAuth("invalid api token")
+			}
+
+			return nil, err
+		}
+
+		user, err := app.DB().GetUserById(c.Request().Context(), token.UserId)
+		if err != nil {
+			// TODO(patrik): Should we handle error here?
+			return nil, err
+		}
+
+		return &user, nil
+	}
+
 	authHeader := c.Request().Header.Get("Authorization")
 	tokenString := utils.ParseAuthHeader(authHeader)
 	if tokenString == "" {
