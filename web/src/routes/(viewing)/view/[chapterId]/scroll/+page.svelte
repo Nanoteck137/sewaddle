@@ -1,18 +1,23 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { createApiClient, formatError } from "$lib";
   import Modal from "$lib/components/Modal.svelte";
+  import { cn } from "$lib/utils.js";
+  import { Button, buttonVariants, Sheet } from "@nanoteck137/nano-ui";
   import {
     ArrowBigLeft,
     Bookmark,
+    ChevronLeft,
+    ChevronRight,
+    CircleChevronLeft,
     CircleEllipsis,
     StepBack,
     StepForward,
   } from "lucide-svelte";
+  import toast from "svelte-5-french-toast";
 
   const { data } = $props();
-
-  type Func = () => void;
-
-  let sideMenuOpen = $state(false);
+  const apiClient = createApiClient(data);
 </script>
 
 <div class="flex justify-center py-20">
@@ -44,76 +49,67 @@
   {/if}
 </div>
 
-<button
-  class="fixed bottom-10 left-10 flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/60 text-white"
-  onclick={() => {
-    sideMenuOpen = true;
-  }}
->
-  <CircleEllipsis size="30" />
-</button>
-
-<!-- <button class="fixed inset-0 bg-black/70"></button>
-<div class="fixed bottom-0 left-0 top-0 w-52 bg-red-400/90">
-  <button></button>
-</div> -->
-
-{#snippet menuButton(text: string, icon: any, href?: string, click?: Func)}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <svelte:element
-    this={href ? "a" : "button"}
-    {href}
-    class="jusitfy-center flex items-center"
-    onclick={click}
-  >
-    <svelte:component this={icon} size="30" />
-    <p class="text-lg">
-      {text}
-    </p>
-  </svelte:element>
-{/snippet}
-
-<Modal
-  open={sideMenuOpen}
-  onClose={() => {
-    sideMenuOpen = false;
-  }}
->
-  <div class="flex h-full w-full flex-col justify-center bg-blue-400 p-4">
-    <p>{data.chapter.title}</p>
-
-    <!-- {@render menuButton("Next Page", ChevronRight)}
-    {@render menuButton("Previous Page", ChevronLeft)} -->
-    {@render menuButton("First Page", StepBack)}
-    {@render menuButton("Last Page", StepForward)}
-
-    <!-- {#if data.layout === "paged"}
-      {@render menuButton(
-        "Scroll Layout",
-        GalleryHorizontal,
-        `?page=${data.page}&layout=scroll`,
-      )}
-    {:else}
-      {@render menuButton(
-        "Paged Layout",
-        GalleryVertical,
-        `?page=${data.page}&layout=paged`,
-      )}
-    {/if} -->
-
-    <form action="?/bookmarkChapter" method="post">
-      <input name="serieId" value={data.chapter.serieId} type="hidden" />
-      <input name="chapterId" value={data.chapter.id} type="hidden" />
-      {@render menuButton("Update Bookmark", Bookmark)}
-    </form>
-
-    {@render menuButton(
-      "Go back",
-      ArrowBigLeft,
-      `/series/${data.chapter.serieId}`,
-      () => {
-        sideMenuOpen = false;
-      },
+<Sheet.Root>
+  <Sheet.Trigger
+    class={cn(
+      buttonVariants({ size: "icon-lg" }),
+      "fixed bottom-10 left-10 rounded-full border",
     )}
-  </div>
-</Modal>
+  >
+    <CircleEllipsis size="30" />
+  </Sheet.Trigger>
+  <Sheet.Content side="bottom">
+    <Sheet.Header>
+      <Sheet.Title class="text-center">{data.chapter.name}</Sheet.Title>
+    </Sheet.Header>
+
+    <div class="h-4"></div>
+
+    <div class="flex flex-col justify-center gap-2 sm:flex-row">
+      <Button
+        variant="outline"
+        disabled={!data.chapter.prevChapter}
+        onclick={() => {
+          goto(`/view/${data.chapter.prevChapter}/scroll`);
+        }}
+      >
+        <ChevronLeft />
+        Prev Chapter
+      </Button>
+      <Button
+        variant="outline"
+        disabled={!data.chapter.nextChapter}
+        onclick={() => {
+          goto(`/view/${data.chapter.nextChapter}/scroll`);
+        }}
+      >
+        <ChevronRight />
+        Next Chapter
+      </Button>
+      <Button
+        variant="outline"
+        onclick={async () => {
+          const res = await apiClient.updateBookmark({
+            serieId: data.chapter.serieId,
+            chapterId: data.chapter.id,
+            page: 0,
+          });
+          if (!res.success) {
+            toast.error("Error: " + formatError(res.error));
+            console.log(formatError(res.error));
+            return;
+          }
+
+          toast.success("Updated bookmark");
+        }}
+      >
+        <Bookmark />
+        Update Bookmark
+      </Button>
+      <Button href="/series/{data.chapter.serieId}" variant="outline">
+        <CircleChevronLeft />
+        Go to Series
+      </Button>
+    </div>
+  </Sheet.Content>
+</Sheet.Root>
