@@ -49,6 +49,22 @@ func (c *Client) GetSerieChapters(id string, options Options) (*GetSerieChapters
 	return Request[GetSerieChapters](data)
 }
 
+func (c *Client) CreateSerie(body CreateSerieBody, options Options) (*CreateSerie, error) {
+	path := "/api/v1/series"
+	url, err := createUrl(c.addr, path, options.QueryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	data := RequestData{
+		Url: url,
+		Method: "POST",
+		Token: c.token,
+		Body: body,
+	}
+	return Request[CreateSerie](data)
+}
+
 func (c *Client) GetChapters(options Options) (*GetChapters, error) {
 	path := "/api/v1/chapters"
 	url, err := createUrl(c.addr, path, options.QueryParams)
@@ -207,4 +223,36 @@ func (c *Client) GetMe(options Options) (*GetMe, error) {
 		Body: nil,
 	}
 	return Request[GetMe](data)
+}
+
+func (c *Client) ChangeSerieCover(id string, body Reader, options Options) (*any, error) {
+	path := Sprintf("/api/v1/series/%v/cover", id)
+	url, err := createUrl(c.addr, path, options.QueryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	data := RequestData{
+		Url: url,
+		Method: "POST",
+		Token: c.token,
+		Body: nil,
+	}
+	return RequestForm[any](data, options.Boundary, body)
+}
+
+func (c *Client) UploadChapter(body Reader, options Options) (*any, error) {
+	path := "/api/v1/chapters"
+	url, err := createUrl(c.addr, path, options.QueryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	data := RequestData{
+		Url: url,
+		Method: "POST",
+		Token: c.token,
+		Body: body,
+	}
+	return RequestForm[any](data, options.Boundary, body)
 }
