@@ -63,8 +63,13 @@ func SerieQuery() *goqu.SelectDataset {
 		Order(goqu.I("series.name").Asc())
 }
 
-func (db *Database) GetAllSeries(ctx context.Context) ([]Serie, error) {
+// TODO(patrik): nameFilter is temporary
+func (db *Database) GetAllSeries(ctx context.Context, nameFilter string) ([]Serie, error) {
 	query := SerieQuery()
+
+	if nameFilter != "" {
+		query = query.Where(goqu.I("series.name").Eq(nameFilter))
+	}
 
 	var items []Serie
 	err := db.Select(&items, query)
@@ -191,6 +196,19 @@ func (db *Database) UpdateSerie(ctx context.Context, id string, changes SerieCha
 		Prepared(true)
 
 	_, err := db.Exec(ctx, ds)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) DeleteSerie(ctx context.Context, id string) error {
+	query := dialect.Delete("series").
+		Prepared(true).
+		Where(goqu.I("series.id").Eq(id))
+
+	_, err := db.Exec(ctx, query)
 	if err != nil {
 		return err
 	}

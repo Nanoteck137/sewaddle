@@ -24,7 +24,7 @@ type Serie struct {
 
 	CoverArt types.Images `json:"coverArt"`
 
-	MalId *string `json:"malId"`
+	MalId     *string `json:"malId"`
 	AnilistId *string `json:"anilistId"`
 }
 
@@ -32,17 +32,17 @@ func ConvertSerieImage(c pyrin.Context, serieId string, val sql.NullString) type
 	if val.Valid && val.String != "" {
 		first := "/files/series/" + serieId + "/"
 		return types.Images{
-			Small:    utils.ConvertURL(c, first+"cover-128.png"),
-			Medium:   utils.ConvertURL(c, first+"cover-256.png"),
-			Large:    utils.ConvertURL(c, first+"cover-512.png"),
+			Small:  utils.ConvertURL(c, first+"cover-128.png"),
+			Medium: utils.ConvertURL(c, first+"cover-256.png"),
+			Large:  utils.ConvertURL(c, first+"cover-512.png"),
 		}
 	}
 
 	url := utils.ConvertURL(c, "/files/images/default/default_cover.png")
 	return types.Images{
-		Small:    url,
-		Medium:   url,
-		Large:    url,
+		Small:  url,
+		Medium: url,
+		Large:  url,
 	}
 }
 
@@ -52,7 +52,7 @@ func ConvertDBSerie(c pyrin.Context, serie database.Serie) Serie {
 		Name:      serie.Name,
 		CoverArt:  ConvertSerieImage(c, serie.Id, serie.CoverArt),
 		MalId:     ConvertSqlNullString(serie.MalId),
-		AnilistId:     ConvertSqlNullString(serie.AnilistId),
+		AnilistId: ConvertSqlNullString(serie.AnilistId),
 	}
 }
 
@@ -103,7 +103,12 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 			Path:         "/series",
 			ResponseType: GetSeries{},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
-				series, err := app.DB().GetAllSeries(c.Request().Context())
+				q := c.Request().URL.Query()
+
+				nameFilter := q.Get("nameFilter")
+
+				ctx := context.TODO()
+				series, err := app.DB().GetAllSeries(ctx, nameFilter)
 				if err != nil {
 					return nil, err
 				}
@@ -245,8 +250,8 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				ctx := context.TODO()
 				_, err = app.DB().CreateSerie(ctx, database.CreateSerieParams{
-					Id:       id,
-					Name:     body.Name,
+					Id:   id,
+					Name: body.Name,
 				})
 				if err != nil {
 					return nil, err
@@ -343,6 +348,52 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 						Changed: true,
 					},
 				})
+				if err != nil {
+					return nil, err
+				}
+
+				return nil, nil
+			},
+		},
+
+		pyrin.ApiHandler{
+			Name:         "DeleteSerie",
+			Method:       http.MethodDelete,
+			Path:         "/series/:id",
+			Errors:       []pyrin.ErrorType{},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				// TODO(patrik): Move the series files to a trash can system
+				id := c.Param("id")
+
+				db, tx, err := app.DB().Begin()
+				if err != nil {
+					return nil, err
+				}
+				defer tx.Rollback()
+
+				ctx := context.TODO()
+
+				// TODO(patrik): Check for serie 
+
+				chapters, err := db.GetSerieChapters(ctx, id)
+				if err != nil {
+					return nil, err
+				}
+
+				for _, chapter := range chapters {
+					// TODO(patrik): Move chapter files to trash can
+					err = db.RemoveChapter(ctx, chapter.Id)
+					if err != nil {
+						return nil, err
+					}
+				}
+
+				err = db.DeleteSerie(ctx, id)
+				if err != nil {
+					return nil, err
+				}
+
+				err = tx.Commit()
 				if err != nil {
 					return nil, err
 				}
