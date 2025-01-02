@@ -3,13 +3,22 @@ package apis
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path"
+	"strconv"
 	"strings"
 
+	"github.com/kr/pretty"
 	"github.com/nanoteck137/pyrin"
+	"github.com/nanoteck137/pyrin/tools/transform"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/utils"
+	"github.com/nanoteck137/validate"
 )
 
 type ChapterUserData struct {
@@ -23,7 +32,6 @@ type Chapter struct {
 	SerieId string `json:"serieId"`
 
 	Pages    []string `json:"pages"`
-	Number   int64    `json:"number"`
 	CoverArt string   `json:"coverArt"`
 }
 
@@ -42,7 +50,6 @@ func ConvertDBChapter(c pyrin.Context, chapter database.Chapter) Chapter {
 		Name:     chapter.Name,
 		SerieId:  chapter.SerieId,
 		Pages:    strings.Split(chapter.Pages, ","),
-		Number:   chapter.Number,
 		CoverArt: ConvertChapterImage(c, chapter.Id, chapter.CoverArt),
 	}
 }
@@ -56,6 +63,21 @@ type GetChapterById struct {
 
 	NextChapter *string `json:"nextChapter"`
 	PrevChapter *string `json:"prevChapter"`
+}
+
+type UploadChapterBody struct {
+	Name    string `json:"name"`
+	SerieId string `json:"serieId"`
+}
+
+func (b *UploadChapterBody) Transform() {
+	b.Name = transform.String(b.Name)
+}
+
+func (b UploadChapterBody) Validate() error {
+	return validate.ValidateStruct(&b,
+		validate.Field(&b.Name, validate.Required),
+	)
 }
 
 func InstallChapterHandlers(app core.App, group pyrin.Group) {
@@ -154,6 +176,109 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 					NextChapter: nextChapter,
 					PrevChapter: prevChapter,
 				}, nil
+			},
+		},
+
+		pyrin.FormApiHandler{
+			Name:   "UploadChapter",
+			Method: http.MethodPost,
+			Path:   "/chapters",
+			Spec: pyrin.FormSpec{
+				BodyType: UploadChapterBody{},
+				Files: map[string]pyrin.FormFileSpec{
+					"pages": {
+						NumExpected: 1,
+					},
+				},
+			},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				body, err := pyrin.Body[UploadChapterBody](c)
+				if err != nil {
+					return nil, err
+				}
+
+				db, tx, err := app.DB().Begin()
+				if err != nil {
+					return nil, err
+				}
+				defer tx.Rollback()
+
+				ctx := context.TODO()
+
+				pages, err := pyrin.FormFiles(c, "pages")
+				if err != nil {
+					return nil, err
+				}
+
+				id := utils.CreateChapterId()
+
+				chapterDir := app.WorkDir().ChapterDir(id)
+				err = os.Mkdir(chapterDir, 0755)
+				if err != nil {
+					return nil, err
+				}
+
+				copyFormFileToDest := func(fileHeader *multipart.FileHeader, dstName string) error {
+					src, err := fileHeader.Open()
+					if err != nil {
+						return err
+					}
+
+					dst, err := os.OpenFile(dstName, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+					if err != nil {
+						return err
+					}
+
+					_, err = io.Copy(dst, src)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				}
+
+				var pageNames []string
+				
+				for i, p := range pages {
+					fmt.Printf("p.Filename: %v\n", p.Filename)
+
+					// TODO(patrik): Check filename ext and content-type
+					name := strconv.Itoa(i) + path.Ext(p.Filename)
+					dst := path.Join(chapterDir, name)
+
+					err = copyFormFileToDest(p, dst)
+					if err != nil {
+						return nil, err
+					}
+
+					pageNames = append(pageNames, name)
+				}
+
+				// TODO(patrik): Check serieId
+
+				chapter, err := db.CreateChapter(ctx, database.CreateChapterParams{
+					Id:       id,
+					Name:     body.Name,
+					SerieId:  body.SerieId,
+					Pages:    strings.Join(pageNames, ","),
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				pretty.Println(chapter)
+
+				err = tx.Commit()
+				if err != nil {
+					return nil, err
+				}
+
+				err = app.DB().RecalculateNumberForSerie(ctx, chapter.SerieId)
+				if err != nil {
+					return nil, err
+				}
+
+				return nil, nil
 			},
 		},
 	)

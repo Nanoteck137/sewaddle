@@ -20,9 +20,9 @@ type Chapter struct {
 
 	SerieId string `db:"serie_id"`
 
-	Pages  string         `db:"pages"`
-	Number int64          `db:"number"`
-	CoverArt  sql.NullString `db:"cover_art"`
+	Pages    string         `db:"pages"`
+	Number   int64          `db:"number"`
+	CoverArt sql.NullString `db:"cover_art"`
 
 	Created int64 `db:"created"`
 	Updated int64 `db:"updated"`
@@ -200,47 +200,57 @@ func (db *Database) IsChapterMarked(ctx context.Context, userId, chapterId strin
 }
 
 type CreateChapterParams struct {
+	Id   string
+	Name string
+
 	SerieId string
 
-	Title  string
-	Pages  string
-	Number sql.NullInt64
-	Cover  sql.NullString
+	Pages    string
+	Number   int64
+	CoverArt sql.NullString
 
 	Created int64
 	Updated int64
 }
 
 func (db *Database) CreateChapter(ctx context.Context, params CreateChapterParams) (Chapter, error) {
-	// TODO(patrik): Trim space here?
+	t := time.Now().UnixMilli()
+	created := params.Created
+	updated := params.Updated
 
-	if params.Created == 0 && params.Updated == 0 {
-		t := time.Now().UnixMilli()
-		params.Created = t
-		params.Updated = t
+	if created == 0 && updated == 0 {
+		created = t
+		updated = t
+	}
+
+	id := params.Id
+	if id == "" {
+		id = utils.CreateChapterId()
 	}
 
 	query := dialect.Insert("chapters").
 		Rows(goqu.Record{
-			"id":       utils.CreateChapterId(),
+			"id":   id,
+			"name": params.Name,
+
 			"serie_id": params.SerieId,
 
-			"title":  params.Title,
-			"pages":  params.Pages,
-			"number": params.Number,
-			"cover":  params.Cover,
+			"pages":     params.Pages,
+			"number":    params.Number,
+			"cover_art": params.CoverArt,
 
-			"created": params.Created,
-			"updated": params.Updated,
+			"created": created,
+			"updated": updated,
 		}).
 		Returning(
 			"chapters.id",
+			"chapters.name",
+
 			"chapters.serie_id",
 
-			"chapters.title",
 			"chapters.pages",
 			"chapters.number",
-			"chapters.cover",
+			"chapters.cover_art",
 
 			"chapters.created",
 			"chapters.updated",

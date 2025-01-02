@@ -32,7 +32,7 @@ func RegisterHandlers(app core.App, router pyrin.Router) {
 				id := c.Param("id")
 				image := c.Param("image")
 
-				p := app.WorkDir().SerieDir(id).ImagesDir()
+				p := app.WorkDir().SerieDir(id)
 				f := os.DirFS(p)
 
 				return pyrin.ServeFile(c, f, image)

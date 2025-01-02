@@ -118,8 +118,8 @@ func (db *Database) CreateSerie(ctx context.Context, params CreateSerieParams) (
 
 			"cover_art": params.CoverArt,
 
-			"created": params.Created,
-			"updated": params.Updated,
+			"created": created,
+			"updated": updated,
 		}).
 		Returning(
 			"series.id",

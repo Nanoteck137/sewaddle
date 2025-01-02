@@ -5,11 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"os"
 
 	"github.com/nanoteck137/pyrin"
+	"github.com/nanoteck137/pyrin/tools/transform"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
 	"github.com/nanoteck137/sewaddle/utils"
+	"github.com/nanoteck137/validate"
 )
 
 type Serie struct {
@@ -52,6 +55,24 @@ type GetSerieById struct {
 
 type GetSerieChapters struct {
 	Chapters []Chapter `json:"chapters"`
+}
+
+type CreateSerie struct {
+	SerieId string `json:"serieId"`
+}
+
+type CreateSerieBody struct {
+	Name string `json:"name"`
+}
+
+func (b *CreateSerieBody) Transform() {
+	b.Name = transform.String(b.Name)
+}
+
+func (b CreateSerieBody) Validate() error {
+	return validate.ValidateStruct(&b,
+		validate.Field(&b.Name, validate.Required),
+	)
 }
 
 func InstallSerieHandlers(app core.App, group pyrin.Group) {
@@ -187,6 +208,41 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				}
 
 				return res, nil
+			},
+		},
+
+		pyrin.ApiHandler{
+			Name:         "CreateSerie",
+			Method:       http.MethodPost,
+			Path:         "/series",
+			ResponseType: CreateSerie{},
+			BodyType:     CreateSerieBody{},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				body, err := pyrin.Body[CreateSerieBody](c)
+				if err != nil {
+					return nil, err
+				}
+
+				id := utils.CreateSerieId()
+
+				ctx := context.TODO()
+				_, err = app.DB().CreateSerie(ctx, database.CreateSerieParams{
+					Id:       id,
+					Name:     body.Name,
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				serieDir := app.WorkDir().SerieDir(id)
+				err = os.Mkdir(serieDir, 0755)
+				if err != nil {
+					return nil, err
+				}
+
+				return CreateSerie{
+					SerieId: id,
+				}, nil
 			},
 		},
 	)
