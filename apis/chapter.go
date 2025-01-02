@@ -3,20 +3,20 @@ package apis
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/kr/pretty"
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/pyrin/tools/transform"
 	"github.com/nanoteck137/sewaddle/core"
 	"github.com/nanoteck137/sewaddle/database"
+	"github.com/nanoteck137/sewaddle/types"
 	"github.com/nanoteck137/sewaddle/utils"
 	"github.com/nanoteck137/validate"
 )
@@ -31,8 +31,18 @@ type Chapter struct {
 
 	SerieId string `json:"serieId"`
 
-	Pages    []string `json:"pages"`
-	CoverArt string   `json:"coverArt"`
+	Pages    []string     `json:"pages"`
+	CoverArt types.Images `json:"coverArt"`
+
+	User *ChapterUserData `json:"user,omitempty"`
+}
+
+func CreateChapterCoverImage(c pyrin.Context, chapterId string) types.Images {
+	return types.Images{
+		Small:  utils.ConvertURL(c, "/files/chapters/"+chapterId+"/cover-small.png"),
+		Medium: utils.ConvertURL(c, "/files/chapters/"+chapterId+"/cover-medium.png"),
+		Large:  utils.ConvertURL(c, "/files/chapters/"+chapterId+"/cover-large.png"),
+	}
 }
 
 func ConvertChapterImage(c pyrin.Context, chapterId string, image sql.NullString) string {
@@ -45,12 +55,18 @@ func ConvertChapterImage(c pyrin.Context, chapterId string, image sql.NullString
 }
 
 func ConvertDBChapter(c pyrin.Context, chapter database.Chapter) Chapter {
+	pages := strings.Split(chapter.Pages, ",")
+
+	for i, p := range pages {
+		pages[i] = utils.ConvertURL(c, "/files/chapters/"+chapter.Id+"/"+p)
+	}
+
 	return Chapter{
 		Id:       chapter.Id,
 		Name:     chapter.Name,
 		SerieId:  chapter.SerieId,
-		Pages:    strings.Split(chapter.Pages, ","),
-		CoverArt: ConvertChapterImage(c, chapter.Id, chapter.CoverArt),
+		Pages:    pages,
+		CoverArt: CreateChapterCoverImage(c, chapter.Id),
 	}
 }
 
@@ -237,13 +253,32 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 					return nil
 				}
 
+				type File struct {
+					Index int
+					File  *multipart.FileHeader
+				}
+
+				var sortedFiles []File
+
 				var pageNames []string
-				
-				for i, p := range pages {
-					fmt.Printf("p.Filename: %v\n", p.Filename)
+
+				for _, p := range pages {
+					num := utils.ExtractNumber(p.Filename)
+					sortedFiles = append(sortedFiles, File{
+						Index: num,
+						File:  p,
+					})
+				}
+
+				sort.Slice(sortedFiles, func(i, j int) bool {
+					return sortedFiles[i].Index < sortedFiles[j].Index
+				})
+
+				for _, f := range sortedFiles {
+					p := f.File
 
 					// TODO(patrik): Check filename ext and content-type
-					name := strconv.Itoa(i) + path.Ext(p.Filename)
+					name := strconv.Itoa(f.Index) + path.Ext(p.Filename)
 					dst := path.Join(chapterDir, name)
 
 					err = copyFormFileToDest(p, dst)
@@ -254,19 +289,37 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 					pageNames = append(pageNames, name)
 				}
 
-				// TODO(patrik): Check serieId
+				cover := path.Join(chapterDir, pageNames[0])
 
-				chapter, err := db.CreateChapter(ctx, database.CreateChapterParams{
-					Id:       id,
-					Name:     body.Name,
-					SerieId:  body.SerieId,
-					Pages:    strings.Join(pageNames, ","),
-				})
+				dst := path.Join(chapterDir, "cover-small.png")
+				err = utils.CreateResizedImage(cover, dst, 128, 228)
 				if err != nil {
 					return nil, err
 				}
 
-				pretty.Println(chapter)
+				dst = path.Join(chapterDir, "cover-medium.png")
+				err = utils.CreateResizedImage(cover, dst, 256, 455)
+				if err != nil {
+					return nil, err
+				}
+
+				dst = path.Join(chapterDir, "cover-large.png")
+				err = utils.CreateResizedImage(cover, dst, 512, 910)
+				if err != nil {
+					return nil, err
+				}
+
+				// TODO(patrik): Check serieId
+
+				chapter, err := db.CreateChapter(ctx, database.CreateChapterParams{
+					Id:      id,
+					Name:    body.Name,
+					SerieId: body.SerieId,
+					Pages:   strings.Join(pageNames, ","),
+				})
+				if err != nil {
+					return nil, err
+				}
 
 				err = tx.Commit()
 				if err != nil {
