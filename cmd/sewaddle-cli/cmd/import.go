@@ -35,9 +35,10 @@ type OldMangaInfo struct {
 var importOldCmd = &cobra.Command{
 	Use: "old",
 	Run: func(cmd *cobra.Command, args []string) {
+
 		server, _ := cmd.Flags().GetString("server")
 		dir, _ := cmd.Flags().GetString("dir")
-		fmt.Printf("dir: %v\n", dir)
+		excludeChapters, _ := cmd.Flags().GetBool("exclude-chapters")
 
 		mangaInfoFilename := path.Join(dir, "manga.json")
 		data, err := os.ReadFile(mangaInfoFilename)
@@ -160,31 +161,34 @@ var importOldCmd = &cobra.Command{
 			return nil
 		}
 
-		for _, chapter := range mangaInfo.Chapters {
-			fmt.Printf("Uploading '%s' ...", chapter.Name)
-			chapterDir := path.Join(dir, "chapters", strconv.Itoa(chapter.Index))
+		if !excludeChapters {
+			for _, chapter := range mangaInfo.Chapters {
+				fmt.Printf("Uploading '%s' ...", chapter.Name)
+				chapterDir := path.Join(dir, "chapters", strconv.Itoa(chapter.Index))
 
-			var pages []string
-			for _, p := range chapter.Pages {
-				pages = append(pages, path.Join(chapterDir, p))
+				var pages []string
+				for _, p := range chapter.Pages {
+					pages = append(pages, path.Join(chapterDir, p))
+				}
+
+				err := uploadChapter(api.UploadChapterBody{
+					Name:    chapter.Name,
+					SerieId: serie.SerieId,
+				}, pages)
+				if err != nil {
+					fmt.Printf("failed\n")
+					log.Fatal("Failed to upload chapter", "err", err)
+				}
+
+				fmt.Printf("done\n")
 			}
-
-			err := uploadChapter(api.UploadChapterBody{
-				Name:    chapter.Name,
-				SerieId: serie.SerieId,
-			}, pages)
-			if err != nil {
-				fmt.Printf("failed\n")
-				log.Fatal("Failed to upload chapter", "err", err)
-			}
-
-			fmt.Printf("done\n")
 		}
 	},
 }
 
 func init() {
 	importOldCmd.Flags().StringP("dir", "d", ".", "Directory to import")
+	importOldCmd.Flags().Bool("exclude-chapters", false, "Excludes chapters and only imports the serie")
 
 	importCmd.AddCommand(importOldCmd)
 
