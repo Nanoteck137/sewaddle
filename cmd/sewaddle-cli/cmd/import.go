@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"archive/zip"
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -186,11 +188,138 @@ var importOldCmd = &cobra.Command{
 	},
 }
 
+type ComicInfo struct {
+	Title string 
+}
+
+var importCbzCmd = &cobra.Command{
+	Use: "cbz <SERIE_ID> <...CBZ>",
+	Args: cobra.MinimumNArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		serieId := args[0]
+		files := args[1:]
+
+		server, _ := cmd.Flags().GetString("server")
+
+		apiClient := api.New(server)
+
+		fmt.Printf("serieId: %v\n", serieId)
+		pretty.Println(files)
+
+		uploadChapter := func(body api.UploadChapterBody, pages []*zip.File) error {
+			var b bytes.Buffer
+			w := multipart.NewWriter(&b)
+
+			{
+				dw, err := w.CreateFormField("body")
+				if err != nil {
+					return err
+				}
+
+				encoder := json.NewEncoder(dw)
+				err = encoder.Encode(&body)
+				if err != nil {
+					return err
+				}
+			}
+
+			for i, p := range pages {
+				dw, err := w.CreateFormFile("pages", strconv.Itoa(i)+path.Ext(p.Name))
+				if err != nil {
+					return err
+				}
+
+				src, err := p.Open()
+				if err != nil {
+					return err
+				}
+				defer src.Close()
+
+				_, err = io.Copy(dw, src)
+				if err != nil {
+					return err
+				}
+			}
+
+			err := w.Close()
+			if err != nil {
+				return err
+			}
+
+			_, err = apiClient.UploadChapter(&b, api.Options{
+				Boundary: w.Boundary(),
+			})
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+
+		_ = uploadChapter
+
+		for _, file := range files {
+			zr, err := zip.OpenReader(file)
+			if err != nil {
+				log.Fatal("Failed to open zip reader", "err", err)
+			}
+			defer zr.Close()
+
+			chapterName := path.Base(file)
+
+			var images []*zip.File
+
+			for _, f := range zr.File {
+				ext := path.Ext(f.Name)
+
+				if f.Name == "ComicInfo.xml" {
+					fmt.Println("Found ComicInfo.xml")
+
+					r, err := f.Open()
+					if err != nil {
+						log.Fatal("Failed to open zip file", "name", f.Name, "err", err)
+					}
+
+					var comicInfo ComicInfo
+					decoder := xml.NewDecoder(r)
+					err = decoder.Decode(&comicInfo)
+					if err != nil {
+						log.Fatal("Failed to decode xml", "err", err)
+					}
+
+					chapterName = comicInfo.Title
+
+					pretty.Println(comicInfo)
+					continue
+				}
+
+				switch ext {
+				case ".png", ".jpg", ".jpeg":
+					images = append(images, f)
+				default:
+					fmt.Printf("Found unsupported file extention: %s (skipping)\n", f.Name)
+				}
+			}
+
+			fmt.Printf("name: %v\n", chapterName)
+
+			err = uploadChapter(api.UploadChapterBody{
+				Name:    chapterName,
+				SerieId: serieId,
+			}, images)
+			if err != nil {
+				log.Fatal("Failed to upload chapter", "path", file, "err", err)
+			}
+		}
+	},
+}
+
 func init() {
 	importOldCmd.Flags().StringP("dir", "d", ".", "Directory to import")
 	importOldCmd.Flags().Bool("exclude-chapters", false, "Excludes chapters and only imports the serie")
 
 	importCmd.AddCommand(importOldCmd)
+	importCmd.AddCommand(importCbzCmd)
 
 	rootCmd.AddCommand(importCmd)
 }
