@@ -1,17 +1,7 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
   import {
-    Bookmark,
-    BookmarkMinus,
-    BookmarkPlus,
-    BookMinus,
-    BookOpen,
-    BookPlus,
-    Check,
-    Edit,
     EllipsisVertical,
-    FolderPen,
-    Import,
     ListOrdered,
     Play,
     Trash,
