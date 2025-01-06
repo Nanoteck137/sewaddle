@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path"
+	"time"
 
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/pyrin/tools/transform"
@@ -357,12 +359,11 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 		},
 
 		pyrin.ApiHandler{
-			Name:         "DeleteSerie",
-			Method:       http.MethodDelete,
-			Path:         "/series/:id",
-			Errors:       []pyrin.ErrorType{},
+			Name:   "DeleteSerie",
+			Method: http.MethodDelete,
+			Path:   "/series/:id",
+			Errors: []pyrin.ErrorType{ErrTypeSerieNotFound},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
-				// TODO(patrik): Move the series files to a trash can system
 				id := c.Param("id")
 
 				db, tx, err := app.DB().Begin()
@@ -373,7 +374,12 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 
 				ctx := context.TODO()
 
-				// TODO(patrik): Check for serie 
+				serie, err := db.GetSerieById(ctx, id)
+				if err != nil {
+					if errors.Is(err, database.ErrItemNotFound) {
+						return nil, SerieNotFound()
+					}
+				}
 
 				chapters, err := db.GetSerieChapters(ctx, id)
 				if err != nil {
@@ -381,11 +387,28 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				}
 
 				for _, chapter := range chapters {
-					// TODO(patrik): Move chapter files to trash can
+					dir := app.WorkDir().ChapterDir(chapter.Id)
+					targetName := fmt.Sprintf("chapter-%s-%d", chapter.Id, time.Now().UnixMilli())
+					target := path.Join(app.WorkDir().Trash(), targetName)
+
+					err = os.Rename(dir, target)
+					if err != nil && !os.IsNotExist(err) {
+						return nil, err
+					}
+
 					err = db.RemoveChapter(ctx, chapter.Id)
 					if err != nil {
 						return nil, err
 					}
+				}
+
+				dir := app.WorkDir().SerieDir(serie.Id)
+				targetName := fmt.Sprintf("serie-%s-%d", serie.Id, time.Now().UnixMilli())
+				target := path.Join(app.WorkDir().Trash(), targetName)
+
+				err = os.Rename(dir, target)
+				if err != nil && !os.IsNotExist(err) {
+					return nil, err
 				}
 
 				err = db.DeleteSerie(ctx, id)

@@ -3,6 +3,8 @@ package apis
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -11,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/nanoteck137/pyrin"
 	"github.com/nanoteck137/pyrin/tools/transform"
@@ -336,13 +339,14 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 		},
 
 		pyrin.ApiHandler{
-			Name:         "RemoveChapter",
+			Name:         "DeleteChapter",
 			Method:       http.MethodDelete,
 			Path:         "/chapters/:id",
-			Errors:       []pyrin.ErrorType{},
+			Errors:       []pyrin.ErrorType{ErrTypeChapterNotFound},
 			HandlerFunc: func(c pyrin.Context) (any, error) {
-				// TODO(patrik): Move the chapter files to a trash can system
 				id := c.Param("id")
+
+				ctx := context.TODO()
 
 				db, tx, err := app.DB().Begin()
 				if err != nil {
@@ -350,7 +354,24 @@ func InstallChapterHandlers(app core.App, group pyrin.Group) {
 				}
 				defer tx.Rollback()
 
-				ctx := context.TODO()
+				chapter, err := app.DB().GetChapterById(ctx, id)
+				if err != nil {
+					if errors.Is(err, database.ErrItemNotFound) {
+						return nil, ChapterNotFound()
+					}
+
+					return nil, err
+				}
+
+				dir := app.WorkDir().ChapterDir(chapter.Id)
+				targetName := fmt.Sprintf("chapter-%s-%d", chapter.Id, time.Now().UnixMilli())
+				target := path.Join(app.WorkDir().Trash(), targetName)
+
+				err = os.Rename(dir, target)
+				if err != nil && !os.IsNotExist(err) {
+					return nil, err
+				}
+
 				err = db.RemoveChapter(ctx, id)
 				if err != nil {
 					return nil, err
