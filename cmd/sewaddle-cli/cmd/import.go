@@ -10,9 +10,12 @@ import (
 	"mime/multipart"
 	"os"
 	"path"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/kr/pretty"
+	"github.com/maruel/natural"
 	"github.com/nanoteck137/sewaddle/cmd/sewaddle-cli/api"
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/spf13/cobra"
@@ -265,7 +268,7 @@ var importCbzCmd = &cobra.Command{
 			}
 			defer zr.Close()
 
-			chapterName := path.Base(file)
+			chapterName := strings.TrimSuffix(path.Base(file), path.Ext(file))
 
 			var images []*zip.File
 
@@ -302,6 +305,10 @@ var importCbzCmd = &cobra.Command{
 			}
 
 			fmt.Printf("name: %v\n", chapterName)
+
+			sort.SliceStable(images, func(i, j int) bool {
+				return natural.Less(images[i].Name, images[j].Name)
+			})
 
 			err = uploadChapter(api.UploadChapterBody{
 				Name:    chapterName,
