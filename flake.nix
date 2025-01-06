@@ -27,20 +27,20 @@
           pname = "sewaddle";
           version = fullVersion;
           src = ./.;
-          subPackages = ["cmd/sewaddle" "cmd/sewaddle-import"];
+          subPackages = ["cmd/sewaddle" "cmd/sewaddle-cli"];
 
           ldflags = [
             "-X github.com/nanoteck137/sewaddle/cmd.Version=${version}"
             "-X github.com/nanoteck137/sewaddle/cmd.Commit=${self.dirtyRev or self.rev or "no-commit"}"
           ];
 
-          vendorHash = "sha256-tJFaEaMSa/7u1LD2gSsKH/2ozZmpcXwmSEElAiy5xI0=";
+          vendorHash = "sha256-wulRRQi0VVVwIpgHphof1ewTDByJ3CIhp3IQIjXRtq8=";
 
           nativeBuildInputs = [ pkgs.makeWrapper ];
 
           postFixup = ''
             wrapProgram $out/bin/sewaddle --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.imagemagick ]}
-            wrapProgram $out/bin/sewaddle-import --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.imagemagick ]}
+            wrapProgram $out/bin/sewaddle-cli --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.imagemagick ]}
           '';
         };
 
@@ -49,7 +49,7 @@
           version = fullVersion;
 
           src = gitignore.lib.gitignoreSource ./web;
-          npmDepsHash = "sha256-iExJLb5vqA7wlzhZ3b1TRaS0j34waNGy7lFp8G3fnCo=";
+          npmDepsHash = "sha256-/baraTJgtvMKrA5cm2q+u2alPM1stPawXsUH5AZrwMU=";
 
           PUBLIC_VERSION=version;
           PUBLIC_COMMIT=self.rev or "dirty";
