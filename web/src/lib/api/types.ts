@@ -72,6 +72,13 @@ export const CreateSerieBody = z.object({
 });
 export type CreateSerieBody = z.infer<typeof CreateSerieBody>;
 
+export const EditSerieBody = z.object({
+  name: z.string().nullable().optional(),
+  malId: z.string().nullable().optional(),
+  anilistId: z.string().nullable().optional(),
+});
+export type EditSerieBody = z.infer<typeof EditSerieBody>;
+
 export const GetChapters = z.object({
   chapters: z.array(Chapter),
 });

@@ -1,7 +1,7 @@
 import { error } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
+import type { LayoutServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: LayoutServerLoad = async ({ locals, params }) => {
   const serie = await locals.apiClient.getSerieById(params.id);
   if (!serie.success) {
     throw error(serie.error.code, { message: serie.error.message });

@@ -24,6 +24,10 @@ export class ApiClient extends BaseApiClient {
     return this.request("/api/v1/series", "POST", api.CreateSerie, z.any(), body, options)
   }
   
+  editSerie(id: string, body: api.EditSerieBody, options?: ExtraOptions) {
+    return this.request(`/api/v1/series/${id}`, "PATCH", z.undefined(), z.any(), body, options)
+  }
+  
   deleteSerie(id: string, options?: ExtraOptions) {
     return this.request(`/api/v1/series/${id}`, "DELETE", z.undefined(), z.any(), undefined, options)
   }
@@ -36,7 +40,7 @@ export class ApiClient extends BaseApiClient {
     return this.request(`/api/v1/chapters/${id}`, "GET", api.GetChapterById, z.any(), undefined, options)
   }
   
-  removeChapter(id: string, options?: ExtraOptions) {
+  deleteChapter(id: string, options?: ExtraOptions) {
     return this.request(`/api/v1/chapters/${id}`, "DELETE", z.undefined(), z.any(), undefined, options)
   }
   

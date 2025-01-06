@@ -1,6 +1,7 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
   import {
+    Edit,
     EllipsisVertical,
     ListOrdered,
     Play,
@@ -80,16 +81,25 @@
               Play
             </DropdownMenu.Item>
 
-            <!-- <DropdownMenu.Item
+            <DropdownMenu.Item
               onSelect={() => {
-                goto(`/albums/${data.album.id}/edit/details`);
+                goto(`/series/${data.serie.id}/edit/details`);
               }}
             >
               <Edit />
-              Edit Album
+              Edit Details
             </DropdownMenu.Item>
 
             <DropdownMenu.Item
+              onSelect={() => {
+                goto(`/series/${data.serie.id}/edit/details`);
+              }}
+            >
+              <ListOrdered />
+              Calculate Chapter Order
+            </DropdownMenu.Item>
+
+            <!-- <DropdownMenu.Item
               onSelect={() => {
                 goto(`/albums/${data.album.id}/edit/import`);
               }}
@@ -142,24 +152,13 @@
       {data.serie.name}
     </p>
 
-    <!-- {#if data.album.name.other}
-      <p class="text-xs">Other Name: {data.album.name.other}</p>
+    {#if data.serie.malId}
+      <p class="text-xs">Mal ID: {data.serie.malId}</p>
     {/if}
 
-    {#if data.album.year}
-      <p class="text-xs">Year: {data.album.year}</p>
+    {#if data.serie.anilistId}
+      <p class="text-xs">Anilist ID: {data.serie.anilistId}</p>
     {/if}
-
-    {#if data.album.tags.length > 0}
-      <p class="text-xs">Tags: {data.album.tags.join(", ")}</p>
-    {/if}
-
-    {#if data.album.featuringArtists.length > 0}
-      <p class="text-xs">Featuring Artists</p>
-      {#each data.album.featuringArtists as artist}
-        <p class="pl-2 text-xs">{artist.name.default}</p>
-      {/each}
-    {/if} -->
   </div>
 </div>
 
@@ -167,20 +166,24 @@
   <Separator />
 </div>
 
-<div class="flex gap-2">
-  <Button class="w-full" variant="outline">
-    <ListOrdered />
-    Re-Calculate Chapter Order
-  </Button>
-  <!-- <Button href="edit/import" class="w-full" variant="outline">
-      <Import />
-      Import Tracks
-    </Button> -->
-</div>
-
 <div class="flex justify-between px-2 py-2 text-xs">
   <p>Chapters</p>
-  <p>{data.chapters.length} chapter(s)</p>
+  <div class="flex gap-2">
+    <p>{data.chapters.length} chapter(s)</p>
+
+    <Checkbox
+      checked={selectedChapters.length >= data.chapters.length}
+      onCheckedChange={(v) => {
+        console.log(v);
+        if (v) {
+          selectedChapters = data.chapters.map((v) => v.id);
+        } else {
+          selectedChapters = [];
+        }
+        // selectedChapters.push(chapter.id);
+      }}
+    />
+  </div>
 </div>
 
 <div>
@@ -263,7 +266,7 @@
                       });
 
                       if (confirmed) {
-                        const res = await apiClient.removeChapter(chapter.id);
+                        const res = await apiClient.deleteChapter(chapter.id);
                         if (!res.success) {
                           toast.error("Error: " + formatError(res.error));
                           console.error(formatError(res.error));
@@ -322,7 +325,7 @@
 
               if (confirmed) {
                 for (const id of selectedChapters) {
-                  const res = await apiClient.removeChapter(id);
+                  const res = await apiClient.deleteChapter(id);
                   if (!res.success) {
                     toast.error("Error: " + formatError(res.error));
                     console.error(formatError(res.error));

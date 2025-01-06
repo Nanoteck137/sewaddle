@@ -1,6 +1,7 @@
 {
   "errorTypes": [
     "BAD_CONTENT_TYPE_ERROR",
+    "CHAPTER_NOT_FOUND",
     "EMPTY_BODY_ERROR",
     "FORM_VALIDATION_ERROR",
     "ROUTE_NOT_FOUND",
@@ -208,6 +209,27 @@
           "name": "name",
           "type": "string",
           "omit": false
+        }
+      ]
+    },
+    {
+      "name": "EditSerieBody",
+      "extend": "",
+      "fields": [
+        {
+          "name": "name",
+          "type": "*string",
+          "omit": true
+        },
+        {
+          "name": "malId",
+          "type": "*string",
+          "omit": true
+        },
+        {
+          "name": "anilistId",
+          "type": "*string",
+          "omit": true
         }
       ]
     },
@@ -485,6 +507,13 @@
       "bodyType": "CreateSerieBody"
     },
     {
+      "name": "EditSerie",
+      "method": "PATCH",
+      "path": "/api/v1/series/:id",
+      "responseType": "",
+      "bodyType": "EditSerieBody"
+    },
+    {
       "name": "DeleteSerie",
       "method": "DELETE",
       "path": "/api/v1/series/:id",
@@ -506,7 +535,7 @@
       "bodyType": ""
     },
     {
-      "name": "RemoveChapter",
+      "name": "DeleteChapter",
       "method": "DELETE",
       "path": "/api/v1/chapters/:id",
       "responseType": "",

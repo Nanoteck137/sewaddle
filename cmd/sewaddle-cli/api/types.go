@@ -61,6 +61,12 @@ type CreateSerieBody struct {
 	Name string `json:"name"`
 }
 
+type EditSerieBody struct {
+	Name *string `json:"name,omitempty"`
+	MalId *string `json:"malId,omitempty"`
+	AnilistId *string `json:"anilistId,omitempty"`
+}
+
 type GetChapters struct {
 	Chapters []Chapter `json:"chapters"`
 }
