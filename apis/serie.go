@@ -97,6 +97,27 @@ func (b CreateSerieBody) Validate() error {
 	)
 }
 
+type EditSerieBody struct {
+	Name *string `json:"name,omitempty"`
+
+	MalId     *string `json:"malId,omitempty"`
+	AnilistId *string `json:"anilistId,omitempty"`
+}
+
+func (b *EditSerieBody) Transform() {
+	b.Name = transform.StringPtr(b.Name)
+	b.MalId = transform.StringPtr(b.MalId)
+	b.AnilistId = transform.StringPtr(b.AnilistId)
+}
+
+func (b EditSerieBody) Validate() error {
+	return validate.ValidateStruct(&b,
+		validate.Field(&b.Name, validate.Required.When(b.Name != nil)),
+		validate.Field(&b.MalId, validate.Required.When(b.MalId != nil)),
+		validate.Field(&b.AnilistId, validate.Required.When(b.AnilistId != nil)),
+	)
+}
+
 func InstallSerieHandlers(app core.App, group pyrin.Group) {
 	group.Register(
 		pyrin.ApiHandler{
@@ -268,6 +289,69 @@ func InstallSerieHandlers(app core.App, group pyrin.Group) {
 				return CreateSerie{
 					SerieId: id,
 				}, nil
+			},
+		},
+
+		pyrin.ApiHandler{
+			Name:     "EditSerie",
+			Method:   http.MethodPatch,
+			Path:     "/series/:id",
+			BodyType: EditSerieBody{},
+			Errors:   []pyrin.ErrorType{ErrTypeSerieNotFound},
+			HandlerFunc: func(c pyrin.Context) (any, error) {
+				id := c.Param("id")
+
+				body, err := pyrin.Body[EditSerieBody](c)
+				if err != nil {
+					return nil, err
+				}
+
+				ctx := context.TODO()
+
+				serie, err := app.DB().GetSerieById(ctx, id)
+				if err != nil {
+					if errors.Is(err, database.ErrItemNotFound) {
+						return nil, SerieNotFound()
+					}
+
+					return nil, err
+				}
+
+				changes := database.SerieChanges{}
+
+				if body.Name != nil {
+					changes.Name = types.Change[string]{
+						Value:   *body.Name,
+						Changed: *body.Name != serie.Name,
+					}
+				}
+
+				if body.MalId != nil {
+					changes.MalId = types.Change[sql.NullString]{
+						Value: sql.NullString{
+							String: *body.MalId,
+							Valid:  *body.MalId != "",
+						},
+						Changed: *body.MalId != serie.MalId.String,
+					}
+				}
+
+				if body.AnilistId != nil {
+					changes.AnilistId = types.Change[sql.NullString]{
+						Value: sql.NullString{
+							String: *body.AnilistId,
+							Valid:  *body.AnilistId != "",
+						},
+						Changed: *body.AnilistId != serie.AnilistId.String,
+					}
+				}
+
+				err = app.DB().UpdateSerie(ctx, serie.Id, changes)
+				if err != nil {
+					return nil, err
+				}
+
+				return nil, nil
 			},
 		},
 
