@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/kr/pretty"
 	"github.com/nanoteck137/sewaddle/cmd/sewaddle-cli/api"
 	"github.com/nanoteck137/sewaddle/core/log"
 	"github.com/spf13/cobra"
@@ -18,13 +19,12 @@ var serieCmd = &cobra.Command{
 }
 
 var serieNewCmd = &cobra.Command{
-	Use: "new <NAME>",
-	Args: cobra.ExactArgs(1),
+	Use: "new",
 	Run: func(cmd *cobra.Command, args []string) {
 		cover, _ := cmd.Flags().GetString("cover")
 		server, _ := cmd.Flags().GetString("server")
 
-		name := args[0]
+		name, _ := cmd.Flags().GetString("name")
 
 		apiClient := api.New(server)
 
@@ -32,6 +32,8 @@ var serieNewCmd = &cobra.Command{
 			Name: name,
 		}, api.Options{})
 		if err != nil {
+			// TODO(patrik): Print better error
+			pretty.Println(err)
 			log.Fatal("Failed to create serie", "err", err)
 		}
 
@@ -66,6 +68,7 @@ var serieNewCmd = &cobra.Command{
 				Boundary: w.Boundary(),
 			})
 			if err != nil {
+
 				return err
 			}
 
@@ -83,6 +86,8 @@ var serieNewCmd = &cobra.Command{
 }
 
 func init() {
+	serieNewCmd.Flags().String("name", "", "Serie name (required)")
+	serieNewCmd.MarkFlagRequired("name")
 	serieNewCmd.Flags().String("cover", "", "Serie cover filename (optional)")
 
 	serieCmd.AddCommand(serieNewCmd)
